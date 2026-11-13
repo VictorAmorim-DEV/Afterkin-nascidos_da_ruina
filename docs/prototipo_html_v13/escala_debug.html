@@ -1,0 +1,22 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Calibração de escala — Afterkin: Nascidos da Ruína</title>
+<style>body{margin:0;background:#262b33;color:#dde;font:12px sans-serif}canvas{display:block}</style></head>
+<body><canvas id="c"></canvas>
+<script src="assets/folhas_data.js"></script><script src="assets/objetos_data.js"></script>
+<script src="js/sprites.js"></script><script src="js/atlas.js"></script><script>
+/* Cada sprite desenhado na ESCALA DO DICIONÁRIO, com o personagem (1,75 m) ao lado
+   e réguas de 1 m. Use para ajustar 'escala' em js/sprites.js. */
+const D=AFTERKIN_SPRITES,hero=new Image();hero.src=(window.AFTERKIN_OBJ_DATA&&AFTERKIN_OBJ_DATA['assets/char_human.png'])||'assets/char_human.png';
+AfterkinAtlas.load(SPR=>{const c=document.getElementById('c'),g=c.getContext('2d'),Z=+(new URLSearchParams(location.search).get('z')||0.55);
+ const only=(new URLSearchParams(location.search).get('cat')||'').split(',').filter(Boolean);
+ const names=Object.keys(SPR).filter(n=>!only.length||only.includes(SPR[n].cat));
+ const W=1800;let x=20,y=20,rowH=0;const pos=[];
+ for(const n of names){const p=SPR[n],w=p.w*p.escala*Z+60,h=p.h*p.escala*Z+40;if(x+w>W){x=20;y+=rowH+30;rowH=0}pos.push([n,x,y,w,h]);x+=w+16;rowH=Math.max(rowH,h)}
+ c.width=W;c.height=y+rowH+50;g.fillStyle='#262b33';g.fillRect(0,0,c.width,c.height);
+ for(const [n,x0,y0,w,h] of pos){const p=SPR[n],s=p.escala*Z,gy=y0+h-24;
+  g.fillStyle='#30363f';g.fillRect(x0-6,y0-6,w+4,h+20);
+  g.drawImage(p.canvas,x0+50,gy-p.pivo[1]*s,p.w*s,p.h*s);
+  const hs=0.5*Z,hx=x0+22;if(hero.complete)g.drawImage(hero,0,0,160,160,hx-80*hs,gy-149*hs,160*hs,160*hs);
+  g.strokeStyle='#ffd23f';g.lineWidth=1;for(let m=0;m<=40;m++){const yy=gy-m*D.VPM*Z;if(yy<y0-4)break;g.beginPath();g.moveTo(x0-4,yy);g.lineTo(x0+(m%5?2:8),yy);g.stroke()}
+  g.fillStyle='#fff';g.fillText(n+'  ×'+p.escala+'  ('+p.ref+')',x0,gy+14)}
+ document.title='OK '+names.length});
+</script></body></html>

@@ -1,0 +1,157 @@
+
+=== V10 — FOLHAS NOVAS, PROFUNDIDADE, LUZ E TERRENO ===
+Arquivos novos:
+  js/atlas.js     Coordenadas (x, y, largura, altura) de cada peça das duas folhas.
+                  No carregamento: recorta, isola a peça (descarta pedaços de vizinhos),
+                  fecha os buracos brancos da folha "civis", calcula âncora e footprint.
+  js/depth.js     Ordenação topológica por footprint (substitui o sort por x+y).
+                  Prédio translúcido + silhueta do jogador quando ele passa por trás.
+  js/lighting.js  Luz ambiente por hora, postes, fogueiras e lanterna (F) com sombra
+                  dos prédios (polígono de visibilidade), luz de fachada e de personagem.
+  js/terrain.js   Autotile de meio-fio/faixas e bordas orgânicas entre materiais.
+  assets/folhas_data.js  As duas folhas em base64 (o Chrome bloqueia leitura de pixels
+                  de imagens abertas via file://; assim funciona abrindo o index.html direto).
+  assets/folha_construcoes.png / folha_civis.png  As folhas originais.
+  atlas_debug.html  Abra no navegador para ver cada peça com âncora (ponto vermelho)
+                  e footprint (losango verde). Use para ajustar o atlas.
+
+Teclas novas: F = lanterna   F3 = mostra footprints e ordem de desenho.
+
+Ajustar uma peça (js/atlas.js):
+  r:[x,y,l,a]      retângulo na folha
+  anchor:[x,y]     canto frontal da base, em coordenadas DA FOLHA
+  fp:[A,B]         meias-larguras da base (px da folha) — use o núcleo do prédio,
+                   sem o quintal/quadra, para a luz e a colisão ficarem mais justas
+  flat:true        peça de chão (estacionamento)
+Escala: SPR_SCALE no index.html (1.4 = 1 px da folha vira 1.4 px de tela no zoom 1).
+Peças maiores que o lote são reduzidas automaticamente para caber.
+
+Limitação: rua_reta / rua_T / rua_curva / rotatoria da folha não estão em 2:1
+(são faixas em vista frontal) — o chão continua com tiles.jpg + autotile.
+Console (teste): __afterkin.setTime(22*60)  __afterkin.tp(x,y)  __afterkin.find('hospital')
+
+=== V10.1 — MESCLA SUAVE DO TILESET ===
+- Bordas entre materiais: degradê largo (≈40% do tile) com contorno de ruído
+  contínuo entre tiles, no lugar do corte pontilhado. Custo extra: zero
+  (as máscaras são geradas uma vez e ficam em cache).
+- Camada de gradiente: 1 pixel por tile com a cor média do material,
+  ampliada com filtro bilinear só no trecho visível → transição de cor
+  contínua entre grama, folhas, terra, areia e calçada. Só aparece onde dois
+  materiais se encontram; asfalto, faixas, água e meio-fio ficam nítidos.
+  Custo: um drawImage por quadro.
+- Configurações → Vídeo → Qualidade gráfica:
+    Baixa = só as bordas suaves   |   Média/Alta = bordas + gradiente
+    Automática (padrão) = liga o gradiente e desliga sozinho se o quadro
+    passar de 28 ms por 3 segundos.
+
+=== V11 — MAPA REESCRITO COM REGRAS ISOMÉTRICAS RÍGIDAS E ESCALA REAL ===
+Escala: personagem 1,75 m = 53 px · 1 m no chão = 49,5 unidades · tile = 1,29 m.
+Mapa: 348 × 304 tiles ≈ 449 × 392 m. 3 cidades (quarteirões de 77 m, ruas de 9 m +
+calçadas de 2,6 m), 4 vilarejos, 5 acampamentos, rio, 2 cachoeiras, pontes e rodovia.
+
+1) DICIONÁRIO (js/sprites.js): um registro por elemento, com retângulo EXATO
+   r:[x,y,largura,altura] na imagem de origem — nada é fatiado automaticamente.
+   Inclui os PNGs antigos (casas, carros, árvores, postes...) e as 2 folhas novas.
+2) ESCALA INDIVIDUAL: campo 'escala' de cada registro (px de tela por px da imagem).
+   'ref' diz qual medida real foi usada (andar 2,8–3,5 m, porta 2,1 m, comprimento
+   do veículo). Para conferir/ajustar: abra escala_debug.html — cada peça aparece
+   ao lado do personagem com régua de 1 m.
+     escala_debug.html?cat=vehicle      só veículos
+     escala_debug.html?cat=tower,row&z=1   prédios em tamanho real
+3) FILA ÚNICA: prédios das folhas, PNGs antigos, veículos, árvores, postes, cercas,
+   portões, personagem e inimigos são ordenados juntos, pela BASE (ponto de contato).
+   Padrão = base inteira (corrige o caso do personagem ao lado de prédio grande).
+   F4 alterna para "Y do pivô" puro, para comparação. F3 mostra bases e pivôs.
+4) PIVÔ NA BASE: pivo:[x,y] = vértice inferior da base (pé do prédio / rodas).
+   Todo objeto é colocado, colidido, iluminado e ordenado a partir desse ponto.
+
+Raio-x: quando o personagem passa atrás de algo, só uma elipse em volta dele fica
+transparente (o resto do prédio permanece opaco).
+Sombras: oclusão de contato em tudo + sombra projetada do sol nos PNGs antigos
+(as folhas já têm sombra pintada). Qualidade Baixa desliga a sombra do sol.
+Desempenho: o custo maior é preencher sprites grandes; em placa de vídeo comum é leve.
+Se ficar lento, use Configurações → Vídeo → Baixa.
+
+=== V11.1 — MINIMAPA E BÚSSOLA ===
+Canto inferior direito. Norte real = de onde nasce o rio (−Y do mundo); Leste = +X.
+- O minimapa usa a mesma projeção isométrica da tela: ruas e prédios ficam no mesmo
+  ângulo que você vê, e o N aponta para onde o norte está na tela (em cima à direita).
+- Seta amarela = você, apontando para onde está indo (ou olhando, se parado).
+- Leitura do rumo: "Indo para NE · 045°" (N, NE, L, SE, S, SO, O, NO).
+- Pontos vermelhos = inimigos que perceberam você. Círculo azul = seu totem.
+- M (ou clique no minimapa) alterna entre pequeno (~60 m) e grande (~180 m).
+Com o teclado: W = Noroeste, D = Nordeste, S = Sudeste, A = Sudoeste.
+
+=== V12 — CONSTRUÇÕES INTERATIVAS (código) E OTIMIZAÇÃO ===
+CASAS feitas em código (não são mais imagens coladas):
+- Planta gerada por cômodos (sala, quartos, cozinha, banheiro), paredes de 2,8 m,
+  portas de 0,95 m, janelas de 1,1 m; tijolo, madeira ou reboco; telhado de duas águas
+  com telha de ardósia, barro ou zinco, musgo, buracos e chaminé.
+- Janelas: inteiras, quebradas ou tapadas com tábuas. Portas: abertas, fechadas ou arrombadas.
+- Móveis: camas, sofás, estantes, guarda-roupas, geladeira, fogão, pia, banheira...
+PRÉDIOS GRANDES (hospital, delegacia, mercado, escola, igreja...): a arte da folha é a
+fachada; ao entrar, o interior é gerado em código (enfermarias, escritórios, lojas...).
+ENTRAR: ande pela porta (E abre/fecha). O telhado some, as paredes da frente baixam.
+VASCULHAR: E perto de geladeira, guarda-roupa, cômoda, armário de remédios, prateleira...
+LUZ:
+- Paredes bloqueiam a luz; janelas e portas abertas deixam passar.
+- Dentro é escuro; de dia o sol entra pelas janelas; à noite use a lanterna (F).
+- Algumas casas têm lampião: à noite as janelas brilham e a luz vaza para a rua.
+MORADORES:
+- Zumbis, vampiros e ratos dormem dentro das construções.
+- Barulho acorda (paredes abafam). Vampiros e ratos saem à noite; vampiros voltam ao amanhecer.
+- Vampiros e ratos abrem portas; zumbis arrombam portas fechadas.
+OTIMIZAÇÃO:
+- Chão desenhado uma vez em blocos (cache) em vez de milhares de tiles por quadro.
+- Decalques fora da lista de objetos; moradores dormindo quase não custam.
+- Imagens embutidas em WebP sem perda; PNGs duplicados removidos (assets 26 MB → 13 MB).
+- Na mesma máquina de teste: 9 → ~36 quadros por segundo.
+
+=== V13 — CIDADES INSPIRADAS EM THE WALKING DEAD (tudo em código) ===
+PLANEJAMENTO URBANO (genWorld → cidadesTWD, no index.html)
+- Cidade principal: 4 × 3 quarteirões de 77 m.
+    Centro comercial em volta de uma ROTATÓRIA (ilha com estátua, pracinhas
+    com bancos nos quatro cantos): prédios de 3 a 5 andares, lojas, banco,
+    farmácia, delegacia. Cada quarteirão do centro tem prédios no perímetro,
+    de frente para a rua, um BECO cortando o miolo (caçambas, lixo) e
+    ESTACIONAMENTO com vagas pintadas.
+    Hospital (4 andares, tendas de triagem, barricadas, estacionamento cercado),
+    supermercado com estacionamento, escola com quadra esportiva e ônibus
+    escolar, igreja com torre e cemitério, posto de gasolina (cobertura,
+    bombas, totem, loja de conveniência).
+    Bairros residenciais nos cantos; dois deles cortados por RUA SECUNDÁRIA.
+- Área industrial afastada, ao norte do viaduto: galpões de zinco, oficina,
+    containers, caminhões, chaminé de fábrica, alambrado com portões.
+- Cidade pequena (noroeste): comércio, mercado, farmácia, oficina, praça e casas.
+- Vilarejo na estrada entre a cidade pequena e a área industrial.
+- Rio a leste da cidade principal com 2 PONTES; viaduto atravessando o mapa
+    (as avenidas passam por baixo).
+
+CONSTRUÇÕES EM CÓDIGO — predio(tx0,ty0,tx1,ty1,{uso,andares,frente,loja,cob,...})
+- Usos: apartamentos, loja, banco, farmacia, mercado, posto, delegacia,
+    hospital, escola, igreja, oficina, galpao.
+- Telhado plano com platibanda, casa de máquinas, ar-condicionado, caixa
+    d'água e antena; galpão com telhado de zinco; igreja com torre e agulha.
+- Fachada: janelas por andar (inteiras, quebradas, tapadas com tábuas,
+    queimadas, com cortina, raramente acesas à noite), vitrines e toldos,
+    placas (no telhado quando a frente não está virada para a câmera),
+    varandas, escada de incêndio, faixa azul da delegacia, cruz do hospital,
+    colunas do banco, portões de enrolar na oficina/galpão.
+- Deterioração: manchas e escorridos, rachaduras, rombos com tijolo exposto,
+    fuligem de incêndio, hera subindo, pichações ("NÃO ABRA", "MORTOS DENTRO",
+    "SOCORRO"...), entulho na base, letras faltando nas placas.
+- Interior: ao entrar, o prédio fica transparente e mostra o térreo gerado em
+    código (lojas, enfermarias, escritórios, celas, salas de aula...).
+- Desempenho: a casca de cada prédio é desenhada uma vez num canvas (cache).
+
+DETALHES
+- Casas com quintal, jardim, entrada de carro, caixa de correio, varal, galpão
+    de ferramentas; cercas de madeira, alambrado, muros de tijolo/reboco
+    (com trechos desabados) e cerquinha de estacas na frente.
+- Calçadas com postes e árvores (algumas mortas, raízes rachando o piso).
+- Bueiros espaçados (menos que antes), carros e ônibus abandonados — parte
+    deles queimada —, lixo, entulho e mato invadindo o asfalto.
+- Objetos em código (tipo 'cod'): cobertura e bombas do posto, totem,
+    containers, lápides, estátua, tabela de basquete, bancos, caixa de correio,
+    barricadas, chaminé.
+- Novo ponto de partida: bosque a oeste da cidade principal.
