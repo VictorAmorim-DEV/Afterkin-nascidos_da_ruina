@@ -3,18 +3,20 @@
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_player"]
 [ext_resource type="Texture2D" path="res://assets/sprites/characters/player_human.png" id="2_tex"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_feet"]
-radius = 10.0
+[sub_resource type="ConvexPolygonShape2D" id="shape_feet"]
+points = PackedVector2Array(8.5, 0, 6.01, 3.01, 0, 4.25, -6.01, 3.01, -8.5, 0, -6.01, -3.01, -0, -4.25, 6.01, -3.01)
 
 [node name="Player" type="CharacterBody2D"]
 collision_layer = 2
+motion_mode = 1
 script = ExtResource("1_player")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
-scale = Vector2(0.25, 0.25)
+scale = Vector2(0.5, 0.5)
 texture = ExtResource("2_tex")
+offset = Vector2(0, -69)
+hframes = 4
+vframes = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CircleShape2D_feet")
-
-[node name="Camera2D" type="Camera2D" parent="."]
+shape = SubResource("shape_feet")

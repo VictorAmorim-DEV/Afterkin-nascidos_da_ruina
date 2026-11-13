@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/objects/obj_barrier.png" id="1_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(9.52, 14.79, -29.58, -4.76, -9.52, -14.79, 29.58, 4.76)
+
+[node name="Barrier" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-29.92, -28.05)
+scale = Vector2(0.34, 0.34)
+texture = ExtResource("1_tex")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")

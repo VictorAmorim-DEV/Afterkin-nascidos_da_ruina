@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/objects/obj_tires.png" id="1_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(-3, 22.2, -44.4, 1.5, 3, -22.2, 44.4, -1.5)
+
+[node name="Tires" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-49.8, -40.2)
+scale = Vector2(0.6, 0.6)
+texture = ExtResource("1_tex")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")

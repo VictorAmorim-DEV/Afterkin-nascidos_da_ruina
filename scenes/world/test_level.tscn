@@ -1,0 +1,74 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
+[ext_resource type="Texture2D" path="res://assets/tilesets/terrain_tiles.jpg" id="2_tiles"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/barrier.tscn" id="p_barrier"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/boulder.tscn" id="p_boulder"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/bush.tscn" id="p_bush"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/car.tscn" id="p_car"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/deadtree.tscn" id="p_deadtree"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/lamp.tscn" id="p_lamp"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/tires.tscn" id="p_tires"]
+[ext_resource type="PackedScene" path="res://scenes/world/props/tree.tscn" id="p_tree"]
+
+[node name="TestLevel" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Ground" type="Node2D" parent="."]
+z_index = -1
+script = ExtResource("1_ground")
+tiles = ExtResource("2_tiles")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+
+[node name="Tree1" parent="." instance=ExtResource("p_tree")]
+position = Vector2(-33.54, -117.12)
+
+[node name="Tree2" parent="." instance=ExtResource("p_tree")]
+position = Vector2(236.46, -52.12)
+
+[node name="Tree3" parent="." instance=ExtResource("p_tree")]
+position = Vector2(246.46, 132.88)
+
+[node name="Tree4" parent="." instance=ExtResource("p_tree")]
+position = Vector2(-3.54, -232.12)
+
+[node name="Deadtree1" parent="." instance=ExtResource("p_deadtree")]
+position = Vector2(-239.37, -93.89)
+
+[node name="Boulder1" parent="." instance=ExtResource("p_boulder")]
+position = Vector2(149.7, 12.93)
+
+[node name="Bush1" parent="." instance=ExtResource("p_bush")]
+position = Vector2(-19.58, 36.7)
+
+[node name="Bush2" parent="." instance=ExtResource("p_bush")]
+position = Vector2(-44.58, -45.8)
+
+[node name="Lamp1" parent="." instance=ExtResource("p_lamp")]
+position = Vector2(-90, 37)
+
+[node name="Lamp2" parent="." instance=ExtResource("p_lamp")]
+position = Vector2(-345, -90.5)
+
+[node name="Car1" parent="." instance=ExtResource("p_car")]
+position = Vector2(-53.14, 135.92)
+
+[node name="Barrier1" parent="." instance=ExtResource("p_barrier")]
+position = Vector2(-215.52, 13.21)
+
+[node name="Barrier2" parent="." instance=ExtResource("p_barrier")]
+position = Vector2(-243.52, 27.21)
+
+[node name="Barrier3" parent="." instance=ExtResource("p_barrier")]
+position = Vector2(-271.52, 41.21)
+
+[node name="Tires1" parent="." instance=ExtResource("p_tires")]
+position = Vector2(3, 212.8)
+
+[node name="Tree5" parent="." instance=ExtResource("p_tree")]
+position = Vector2(-343.54, 117.88)
+
+[node name="Deadtree2" parent="." instance=ExtResource("p_deadtree")]
+position = Vector2(-164.37, 218.61)

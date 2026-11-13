@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/objects/obj_tree.png" id="1_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(3.54, 22.12, -44.25, -1.77, -3.54, -22.12, 44.25, 1.77)
+
+[node name="Tree" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-105.31, -221.25)
+scale = Vector2(0.885, 0.885)
+texture = ExtResource("1_tex")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")

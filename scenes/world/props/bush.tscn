@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites/objects/obj_bush.png" id="1_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(-0.42, 8.3, -16.6, 0.21, 0.42, -8.3, 16.6, -0.21)
+
+[node name="Bush" type="StaticBody2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-19.67, -34.39)
+scale = Vector2(0.279, 0.279)
+texture = ExtResource("1_tex")
+centered = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")
