@@ -68,6 +68,8 @@ func _process(_delta: float) -> void:
 		relogio.text = _ciclo.texto_relogio()
 	if _jogador == null:
 		return
+	# V13: hudArea
+	relogio.text += " · " + ("SEU ESCONDERIJO" if _jogador.territorio.abrigo else "TERRAS ABANDONADAS")
 	folego.max_value = _jogador.stamina_max
 	folego.value = _jogador.stamina
 	folego_texto.text = "FÔLEGO %d%%%s" % [int(_jogador.stamina), " · EXAUSTO" if _jogador.exausto else ""]
@@ -78,8 +80,8 @@ func _process(_delta: float) -> void:
 	else:
 		_preenchimento.bg_color = COR_FOLEGO
 	var eq: String = _jogador.inventario.id_equipado()
-	estado.text = "%s · Lanterna %s · %s" % [_jogador.nome_postura(), "ligada" if _jogador.lanterna_ligada else "desligada",
-		Itens.nome(eq) if eq != "" else "mãos livres"]
+	estado.text = "%s • %s · Lanterna %s · %s" % [_jogador.nome_postura(), _jogador.texto_furtividade(),
+		"ligada" if _jogador.lanterna_ligada else "desligada", Itens.nome(eq) if eq != "" else "mãos livres"]
 	_vida_barra.max_value = _jogador.vida_max
 	_vida_barra.value = _jogador.vida
 	_fome_barra.value = _jogador.fome

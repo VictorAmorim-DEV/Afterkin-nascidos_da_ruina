@@ -47,6 +47,7 @@ var face: float = PI / 2.0               ## direção do olhar, em radianos, no 
 var pulo_z: float = 0.0                  ## altura do pulo (px de tela)
 var pulo_v: float = 0.0
 var lanterna_ligada: bool = true
+var _anel_ruido := Node2D.new()
 var ruido: float = 110.0                 ## barulho que o jogador faz (para os inimigos, fase de combate)
 
 ## --- sobrevivência e mochila (V13) ---
@@ -90,6 +91,36 @@ func _ready() -> void:
 	territorio.jogador = self
 	add_child(territorio)
 	inventario.inicial()
+	# anel de barulho no chão (V13 l.1650): raio = distância em que os inimigos ouvem
+	_anel_ruido.z_index = -1
+	_anel_ruido.draw.connect(_desenhar_anel_ruido)
+	add_child(_anel_ruido)
+
+
+func _process(_delta: float) -> void:
+	_anel_ruido.queue_redraw()
+
+
+func _desenhar_anel_ruido() -> void:
+	if dirigindo != null:
+		return
+	var pts := PackedVector2Array()
+	for k in 40:
+		pts.append(IsoMath.mundo_para_tela(Vector2.from_angle(TAU * k / 40.0) * ruido))
+	_anel_ruido.draw_colored_polygon(pts, Color(1, 1, 1, 0.03))
+	pts.append(pts[0])
+	_anel_ruido.draw_polyline(pts, Color(1, 1, 1, 0.15), 2.0)
+
+
+## Furtividade pelo barulho (V13: hudStealth).
+func texto_furtividade() -> String:
+	if ruido < 70.0:
+		return "Quase invisível"
+	if ruido < 130.0:
+		return "Discreto"
+	if ruido < 230.0:
+		return "Visível"
+	return "Barulhento"
 
 
 func _unhandled_input(event: InputEvent) -> void:

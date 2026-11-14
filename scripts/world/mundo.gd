@@ -37,6 +37,8 @@ class Chunk:
 
 var _chunks: Dictionary = {}          ## Vector2i -> Chunk
 var _estado: Dictionary = {}          ## Vector2i -> inimigos que restavam ao descarregar
+var _coletados: Dictionary = {}       ## Vector2i (posição de mundo arredondada) -> galho/pedra já pego
+var _portoes: Dictionary = {}         ## Vector2i (meio do vão) -> aberto, depois que o jogador mexeu
 var _fila_chao: Array[Vector2i] = []
 var _fila_obj: Array[Vector2i] = []
 var _obra: Chunk = null
@@ -273,6 +275,16 @@ func _descarregar(k: Vector2i) -> void:
 	_chunks.erase(k)
 
 
+## Galho/pedra pego: não volta quando o chunk for gerado de novo.
+func marcar_coletado(p_mundo: Vector2) -> void:
+	_coletados[Vector2i(p_mundo)] = true
+
+
+## Portão aberto/fechado pelo jogador: o estado sobrevive ao descarregar o chunk.
+func lembrar_portao(meio_mundo: Vector2, aberto: bool) -> void:
+	_portoes[Vector2i(meio_mundo)] = aberto
+
+
 func chunks_carregados() -> int:
 	return _chunks.size()
 
@@ -339,6 +351,23 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			ca.position = IsoMath.mundo_para_tela(spec["p"])
 			add_child(ca)
 			no = ca
+		"portao":
+			var pt := PortaoNo.new()
+			pt.a = spec["a"]
+			pt.b = spec["b"]
+			pt.estilo = spec["e"]
+			pt.aberto = _portoes.get(Vector2i((pt.a + pt.b) * 0.5), spec["aberto"])
+			add_child(pt)
+			no = pt
+		"coleta":
+			if not _coletados.has(Vector2i(spec["p"])):
+				var cs := ColetaSolta.new()
+				cs.tipo = spec["t"]
+				cs.variante = spec["v"]
+				cs.origem = spec["p"]
+				cs.position = IsoMath.mundo_para_tela(spec["p"])
+				add_child(cs)
+				no = cs
 		"inimigo":
 			var cena_i := _cena("res://scenes/enemies/inimigo.tscn")
 			if cena_i != null:

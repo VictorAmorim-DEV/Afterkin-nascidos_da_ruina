@@ -296,9 +296,29 @@ static func _cerca_ret(r: Rect2, lado: String, centro: float, larg: float, estil
 			var p1 := Vector2(g1, a.y) if horiz else Vector2(a.x, g1)
 			segs.append([a, p0, estilo])
 			segs.append([p1, b, estilo])
+			segs.append([p0, p1, estilo, "portao"])            # o vão vira portão (V13: gate)
 		else:
 			segs.append([a, b, estilo])
 	return segs
+
+
+## Specs de um segmento devolvido por _cerca_ret: trechos de cerca de até 256 u ou o portão do vão.
+## Só entra o que tiver o meio dentro de 'r' (o chunk); 'ferro' = portão de ferro do acampamento (V13).
+static func _specs_cerca(seg: Array, r: Rect2, specs: Array, ferro: bool = false) -> void:
+	var sa: Vector2 = seg[0]
+	var sb: Vector2 = seg[1]
+	if seg.size() > 3:
+		var meio := (sa + sb) * 0.5
+		if r.has_point(meio):
+			var h := absi(int(meio.x * 0.37 + meio.y * 0.61)) % 100     # estado inicial fixo por posição
+			specs.append({"k": "portao", "a": sa, "b": sb, "e": "ferro" if ferro else "madeira",
+				"aberto": (not ferro) and h < 35})
+		return
+	for pedaco in _dividir(sa, sb, 256.0):
+		var pa: Vector2 = pedaco[0]
+		var pb: Vector2 = pedaco[1]
+		if r.has_point((pa + pb) * 0.5):
+			specs.append({"k": "cerca", "a": pa, "b": pb, "e": seg[2]})
 
 
 static func _aldeia(nome: String, x0: float, n: int, bio: int, sem: int) -> Dictionary:
@@ -488,14 +508,7 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 				if rng.randf() < 0.6:
 					specs.append({"k": "prop", "n": "caixote", "p": cp + Vector2(rng.randf_range(0.0, 400.0), (6 * 64 + 40) if cd["f"] == "s" else -50), "loot": "caixa"})
 		for cg in ad["cercas"]:
-			var seg: Array = cg
-			var sa: Vector2 = seg[0]
-			var sb: Vector2 = seg[1]
-			for pedaco in _dividir(sa, sb, 256.0):
-				var pa: Vector2 = pedaco[0]
-				var pb: Vector2 = pedaco[1]
-				if r.has_point((pa + pb) * 0.5):
-					specs.append({"k": "cerca", "a": pa, "b": pb, "e": seg[2]})
+			_specs_cerca(cg, r, specs)
 	# ---- acampamentos e cachoeira ----
 	for cm in _camps:
 		_planejar_acampamento(cm, r, rng, specs)
@@ -510,6 +523,7 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 	# ---- vegetação, pedras, cactos, ruínas ----
 	if z != "urbano":
 		_natureza(r, rng, segs, specs, z)
+	_coletas(c, r, segs, z, specs)
 	# ---- inimigos por zona ----
 	_inimigos(r, rng, segs, specs, z, vivos)
 	return specs
@@ -613,14 +627,7 @@ static func _planejar_acampamento(cm: Dictionary, r: Rect2, rng: RandomNumberGen
 	var ret := Rect2(cc.x - hw, cc.y - hh, hw * 2.0, hh * 2.0)
 	var gc: float = cc.x
 	for cg in _cerca_ret(ret, gate, gc, 300.0, est):
-		var seg: Array = cg
-		var sa: Vector2 = seg[0]
-		var sb: Vector2 = seg[1]
-		for pedaco in _dividir(sa, sb, 256.0):
-			var pa: Vector2 = pedaco[0]
-			var pb: Vector2 = pedaco[1]
-			if r.has_point((pa + pb) * 0.5):
-				specs.append({"k": "cerca", "a": pa, "b": pb, "e": est})
+		_specs_cerca(cg, r, specs, true)
 	var tendas: Array = [Vector2(-400, -330), Vector2(-130, -340), Vector2(150, -330), Vector2(410, -310),
 		Vector2(-440, 40), Vector2(440, 60)]
 	for i in tendas.size():
@@ -672,14 +679,11 @@ static func _casa_isolada(c: Vector2i, specs: Array) -> void:
 		return
 	var casa: Rect2 = d["casa"]
 	var plantio: Rect2 = d["plantio"]
+	var tudo := Rect2(-1e7, -1e7, 2e7, 2e7)        # a casa isolada inteira pertence ao chunk que a sorteou
 	for cg in _cerca_ret(casa.grow(70.0), "s", casa.get_center().x, 200.0, "madeira"):
-		var seg: Array = cg
-		for pedaco in _dividir(seg[0], seg[1], 256.0):
-			specs.append({"k": "cerca", "a": pedaco[0], "b": pedaco[1], "e": "madeira"})
+		_specs_cerca(cg, tudo, specs)
 	for cg2 in _cerca_ret(plantio.grow(30.0), "n", plantio.get_center().x, 240.0, "arame"):
-		var seg2: Array = cg2
-		for pedaco2 in _dividir(seg2[0], seg2[1], 256.0):
-			specs.append({"k": "cerca", "a": pedaco2[0], "b": pedaco2[1], "e": "arame"})
+		_specs_cerca(cg2, tudo, specs)
 	specs.append({"k": "edificio", "p": casa.position, "w": 7, "h": 6, "f": "s",
 		"sem": _rng_chunk(c, 99).randi() % 100000, "mor": 1})
 
@@ -788,6 +792,31 @@ static func _natureza(r: Rect2, rng: RandomNumberGenerator, segs: Array, specs: 
 			if livre(rp, 90.0, segs):
 				var ruina: String = ["entulho_laje", "entulho_pedras", "barreira_quebrada", "carro_capo_aberto", "arvore_morta", "sacos_areia_b"][rng.randi() % 6]
 				specs.append({"k": "prop", "n": ruina, "p": rp, "col": "rocha" if ruina == "entulho_laje" else ""})
+
+
+## Galhos e pedras pequenas pegos com E (V13: natural(1600, branch/pebble) e o anel em volta do início, l.967-968).
+## RNG próprio por chunk, para não mexer no sorteio da vegetação.
+static func _coletas(c: Vector2i, r: Rect2, segs: Array, z: String, specs: Array) -> void:
+	if z != "urbano" and z != "ruina":
+		var g := _rng_chunk(c, 31)
+		for k in g.randi_range(2, 6):
+			var p: Vector2 = r.position + Vector2(g.randf_range(24.0, CH - 24.0), g.randf_range(24.0, CH - 24.0))
+			var v := bioma_valor(p.x, p.y)
+			var tipo := "galho" if g.randf() < clampf(0.6 - 0.45 * v, 0.0, 0.6) else "pedrinha"
+			var var_ := g.randi() % 6
+			if livre(p, 20.0, segs):
+				specs.append({"k": "coleta", "t": tipo, "p": p, "v": var_})
+	# anel em volta do ponto inicial: o jogador nasce com material à mão para o primeiro machado
+	if r.grow(700.0).has_point(INICIO):
+		var g2 := RandomNumberGenerator.new()
+		g2.seed = SEMENTE * 31 + 7
+		for i in 24:
+			var a := g2.randf() * TAU
+			var d := g2.randf_range(150.0, 690.0)
+			var q := INICIO + Vector2.from_angle(a) * d
+			var vv := g2.randi() % 6
+			if r.has_point(q) and not CIDADE.grow(20.0).has_point(q) and agua_em(q.x, q.y) == 0:
+				specs.append({"k": "coleta", "t": "galho" if i % 2 == 1 else "pedrinha", "p": q, "v": vv})
 
 
 static func _inimigos(r: Rect2, rng: RandomNumberGenerator, segs: Array, specs: Array, z: String, vivos: int) -> void:

@@ -17,6 +17,7 @@ var _receitas := VBoxContainer.new()
 var _status := Label.new()
 var _terr_info := Label.new()
 var _terr_botoes := HBoxContainer.new()
+var _cartoes := GridContainer.new()      ## V13: aba Status (statusItems)
 
 
 func _ready() -> void:
@@ -111,6 +112,15 @@ func _montar() -> void:
 	lado.add_child(_terr_info)
 	lado.add_child(_terr_botoes)
 
+	var te := Label.new()
+	te.text = "ESTADO"
+	te.add_theme_font_size_override("font_size", 14)
+	col.add_child(te)
+	_cartoes.columns = 4
+	_cartoes.add_theme_constant_override("h_separation", 6)
+	_cartoes.add_theme_constant_override("v_separation", 6)
+	col.add_child(_cartoes)
+
 	_status.text = "Arraste para reorganizar · I / Tab / Esc fecha"
 	_status.modulate = Color(1, 1, 1, 0.6)
 	_status.add_theme_font_size_override("font_size", 12)
@@ -154,6 +164,40 @@ func _atualizar() -> void:
 	_montar_info()
 	_montar_receitas()
 	_montar_territorio()
+	_montar_cartoes()
+
+
+## Cartões de estado do jogador (V13: statusItems — raça, forma, nível, vida, fome, sol, doença, totem).
+func _montar_cartoes() -> void:
+	for c in _cartoes.get_children():
+		c.queue_free()
+	var j := _jogador
+	var t: Territorio = j.territorio
+	var dados := [
+		["Raça", j.NOMES_RACA[j.raca]], ["Forma", "Rato" if j.forma_rato() else "Humano"], ["Nível", str(j.nivel)],
+		["Vida", "%d / %d" % [ceili(j.vida), int(j.vida_max)]], ["Fome", "%d%%" % int(j.fome)],
+		["Exposição solar", "%d / 60 min" % int(j.sol)], ["Doença", j.doenca.tipo if not j.doenca.is_empty() else "Nenhuma"],
+		["Totem", ("Nível %d" % t.totem.nivel) if t.tem_totem() else "Nenhum"]]
+	for d in dados:
+		var cartao := PanelContainer.new()
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(1, 1, 1, 0.05)
+		sb.set_corner_radius_all(4)
+		sb.set_content_margin_all(6)
+		cartao.add_theme_stylebox_override("panel", sb)
+		cartao.custom_minimum_size = Vector2(150, 0)
+		var v := VBoxContainer.new()
+		var n := Label.new()
+		n.text = d[0]
+		n.add_theme_font_size_override("font_size", 12)
+		n.modulate = Color(1, 1, 1, 0.6)
+		var val := Label.new()
+		val.text = d[1]
+		val.add_theme_font_size_override("font_size", 14)
+		v.add_child(n)
+		v.add_child(val)
+		cartao.add_child(v)
+		_cartoes.add_child(cartao)
 
 
 func _montar_territorio() -> void:

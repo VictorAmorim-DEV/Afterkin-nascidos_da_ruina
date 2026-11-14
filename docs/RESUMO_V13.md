@@ -11,8 +11,8 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ `loot` para objetos soltos: só `scrap` (l.1398)
 - ✅ `craft`, `recipeCost`, `placeTotem`, `removeTotem`, `build` (l.106-122, 995, 1451) → `Inventario.fabricar` + `Territorio` (totem, abrigo, receita do totem na UI)
 - ✅ `harvestHit`, `NODE` (árvore/pedra com machado/picareta, l.1427) → `Coletavel`
-- ⬜ `branch`/`pebble` (galho e pedra pequena pegos com E, l.1398-1403)
-- ✅ `xpGain` (l.154) · ⬜ `updateUI` completo (l.1460): falta raça/nível/exposição solar/doença/totem
+- ✅ `branch`/`pebble` (l.1398-1404) → `ColetaSolta` (1–3 madeira/pedra, 2 XP; espalhados por `MundoGen._coletas` + anel no início; o que foi pego não volta: `Mundo._coletados`)
+- ✅ `xpGain` (l.154) · ✅ `updateUI` (l.1460): `hudStealth` (postura + furtividade), `hudArea`, cartões `statusItems` na mochila, anel de barulho no chão (l.1650)
 
 ## Combate e inimigos
 - ✅ `attack` (l.1415), `nearestEnemy` (l.1397) → `Player.atacar`; ✅ morte do jogador (`step`, l.1848)
@@ -34,7 +34,7 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 ## Veículos / cenário (objetos `COD`, l.691-727)
 - ✅ carros dirigíveis: **a V13 não tem** (só cenário); `Veiculo` é recurso novo (5 veículos HD, sem combustível)
 - ✅ carros abandonados nas ruas/estradas (`MundoGen._carro`: 82% dirigíveis, 18% estáticos); ⬜ `COD` completo, `estacionamento`
-- ✅ cercas (`CercaNo`: madeira, arame, paliçada; `_cerca_ret`); ⬜ portões que abrem (`gate`, `toggleGate`, `nearGate`: hoje o portão é só um vão)
+- ✅ cercas (`CercaNo`: madeira, arame, paliçada; `_cerca_ret`); ✅ portões (`gate`, `toggleGate`, `nearGate`, `drawGate`) → `PortaoNo` em todo vão de `_cerca_ret` (ferro no acampamento, fechado como na V13; madeira nos quintais/roças); estado lembrado em `Mundo._portoes`
 - ⬜ `LAMP`, `mobiliarioUrbano` (l.294, 324)
 - Na V13 carros NÃO são lootáveis (só `scrap`, `house`, `pharmacy`, `sewer`, `camp`)
 
