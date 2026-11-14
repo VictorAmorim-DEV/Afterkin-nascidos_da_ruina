@@ -20,7 +20,7 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ `atualizarInimigos` (l.1358), `rota`, `proxPorta` (l.1346-1357) → `Inimigo` + `Edificio.rota_*`; zumbi arromba porta, rato abre
 - ✅ vampiro inimigo (dorme de dia, sai à noite ×1,35, volta para casa); ⬜ `cortes` (l.1342, só desenho de parede)
 - ✅ `povoarEdificios` (l.1160): zumbi 58% / vampiro 22% / rato 20% (`Edificio.moradores`); ⬜ prédios altos
-- ⬜ inimigos pelo mundo aberto (hoje só os da cena de teste)
+- ✅ inimigos pelo mundo aberto: densidade por zona (`MundoGen._inimigos`); o que o jogador matou não volta ao recarregar o chunk
 - ✅ sprites HD das 4 raças (`SpriteFrames`: humano, homem_rato, rato_gigante, vampiro, zumbi)
 
 ## Raças e formas
@@ -33,18 +33,22 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 
 ## Veículos / cenário (objetos `COD`, l.691-727)
 - ✅ carros dirigíveis: **a V13 não tem** (só cenário); `Veiculo` é recurso novo (5 veículos HD, sem combustível)
-- ⬜ `COD`, `codObj`, `codBox`, `estacionamento` (l.728), `SPR_CAR` (l.984): objetos de cenário do mundo aberto
-- ⬜ cercas e portões: `fseg`, `fenceRect`, `gate`, `toggleGate`, `nearGate` (l.272-291, 991)
+- ✅ carros abandonados nas ruas/estradas (`MundoGen._carro`: 82% dirigíveis, 18% estáticos); ⬜ `COD` completo, `estacionamento`
+- ✅ cercas (`CercaNo`: madeira, arame, paliçada; `_cerca_ret`); ⬜ portões que abrem (`gate`, `toggleGate`, `nearGate`: hoje o portão é só um vão)
 - ⬜ `LAMP`, `mobiliarioUrbano` (l.294, 324)
 - Na V13 carros NÃO são lootáveis (só `scrap`, `house`, `pharmacy`, `sewer`, `camp`)
 
-## Mundo aberto (gerador procedural, l.166-980)
-- ⬜ `genWorld` (l.943), `cidadesTWD` (l.914), `cidade`, `vilarejo`, `acampamento` (l.393-459)
-- ⬜ quadras: `quadraCasas`, `quadraComercial`, `quadraHospital`, `quadraMercado`, `quadraEscola`, `quadraIgreja`, `quadraPosto`, `quadraIndustrial`, `quadraPraca`, `quadraParque` (l.364-380, 771-872)
-- ⬜ ruas: `rua`, `pintarVias`, `faixas`, `esquina`, `rotatoria`, `arvoresCalcada` (l.299-323, 880-898)
-- ⬜ rio e pontes: `riverCells`, `paintRiver`, `ponte`, `cachoeira`, `viaduto` (l.460-508)
+## Mundo aberto (gerador procedural, l.166-980) → `MundoGen` + `Mundo` (chunks de 1024 u, mundo 60 × 28 chunks)
+- ✅ `genWorld` (l.943) → `Mundo` (streaming: chão e água raio 3, objetos raio 2, descarrega acima de 4) + `MundoGen.planejar`
+- ✅ `cidadesTWD` (l.914), `cidade` (l.393) → cidade 3 × 4 quarteirões, lotes de 512 u com casa/prédio modular (`Edificio`), entulho, mato (`_planejar_cidade`)
+- ✅ `vilarejo` (l.413) → `MundoGen._aldeia`: casas dos dois lados da estrada de terra, quintais cercados e roças; vilarejo seco no semiárido; casas isoladas na roça (`casa_isolada_em`)
+- ✅ `acampamento` (l.438) → `_planejar_acampamento`: paliçada/arame, tendas, fogueira com luz, caixotes lootáveis, sacos de areia no portão; 2 acampamentos ligados por trilhas
+- ✅ ruas: `rua`, `pintarVias`, `faixas` → `ChaoChunk._ruas` (calçada, asfalto, faixa central); ⬜ `esquina`, `rotatoria`, `arvoresCalcada`
+- ✅ rio e pontes: `riverCells`, `paintRiver`, `ponte`, `cachoeira` (l.460-508) → rio N→S com água funda bloqueando (colisão), água rasa (−38% de velocidade), 2 vaus, ponte de madeira, cachoeira animada na nascente; ⬜ `viaduto`
+- ✅ biomas (novo, a V13 não tinha): tropical → semiárido → deserto, mistura suave do chão por vértice; 5 `Area2D` + Tween de `DiaNoite.tinta_bioma`
+- ⬜ quadras especiais: `quadraComercial`, `quadraHospital`, `quadraMercado`, `quadraEscola`, `quadraIgreja`, `quadraPosto`, `quadraIndustrial`, `quadraPraca`, `quadraParque` (os lotes da cidade são genéricos)
 - ⬜ prédios altos: `predio` (l.528), `fachadaPredio`, `telhadoPlano`, `torreIgreja`, `PAREDES_PREDIO`, `LOJAS`, `PLACAS`, `PICHA`
-- ⬜ terreno: `tileAt`, `autotileRoads`, `buildBlendLayer` (`js/terrain.js`), `decal`, `cluster`
+- ✅ terreno: `tileAt`, `autotileRoads`, `buildBlendLayer` → texturas procedurais (`TerrenoTexturas`) + polígonos recortados por chunk (`ChaoChunk`)
 - ⬜ minimapa: `construirMinimapa`, `desenharMinimapa` (l.1763-1818)
 
 ## Construções (já na Godot: `scripts/world/edificio.gd`)

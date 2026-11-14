@@ -15,10 +15,14 @@ const AMBIENTE: Array = [
 @export var minutos_por_segundo: float = 24.0                 ## velocidade do relógio
 @export var pausado: bool = false
 
+## Tinta do bioma (multiplica a luz do dia/noite). O Mundo muda isto com um Tween ao cruzar faixas de bioma.
+var tinta_bioma := Color.WHITE
+var _cor_base := Color.WHITE
+
 
 func _ready() -> void:
 	add_to_group("ciclo_dia_noite")
-	color = cor_ambiente(minutos)
+	_aplicar()
 
 
 func _process(delta: float) -> void:
@@ -27,7 +31,12 @@ func _process(delta: float) -> void:
 		while minutos >= 1440.0:
 			minutos -= 1440.0
 			dia += 1
-	color = cor_ambiente(minutos)
+	_aplicar()
+
+
+func _aplicar() -> void:
+	_cor_base = cor_ambiente(minutos)
+	color = Color(_cor_base.r * tinta_bioma.r, _cor_base.g * tinta_bioma.g, _cor_base.b * tinta_bioma.b)
 
 
 ## Cor da luz ambiente no minuto dado (0 a 1440).
@@ -47,7 +56,7 @@ func cor_ambiente(m: float) -> Color:
 
 ## 0 = dia claro, perto de 0,85 = noite fechada.
 func escuridao() -> float:
-	return 1.0 - (color.r + color.g + color.b) / 3.0
+	return 1.0 - (_cor_base.r + _cor_base.g + _cor_base.b) / 3.0
 
 
 func eh_noite() -> bool:

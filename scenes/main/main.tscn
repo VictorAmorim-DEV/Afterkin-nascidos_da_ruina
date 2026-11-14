@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/main.gd" id="1_main"]
-[ext_resource type="PackedScene" path="res://scenes/world/test_level.tscn" id="2_level"]
+[ext_resource type="PackedScene" path="res://scenes/world/mundo.tscn" id="2_level"]
 [ext_resource type="Script" path="res://scripts/systems/iso_camera.gd" id="3_cam"]
 [ext_resource type="Script" path="res://scripts/systems/dia_noite.gd" id="4_ciclo"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]

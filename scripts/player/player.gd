@@ -220,6 +220,9 @@ func velocidade_atual() -> float:
 		v = prone_speed
 	if exausto:
 		v *= 0.85
+	var mundo := get_tree().get_first_node_in_group("mundo")
+	if mundo != null:
+		v *= float(mundo.call("fator_terreno", global_position))     # água rasa do rio atrapalha
 	if raca == "zombie":
 		v *= 0.85
 	if forma_rato():
