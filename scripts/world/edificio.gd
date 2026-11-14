@@ -47,6 +47,9 @@ const CORES_MOV := {"cama": [Color8(122, 90, 58), Color8(94, 74, 60)], "sofa": [
 @export var altura_tiles: int = 8
 @export_enum("s", "e", "n", "w") var frente: String = "s"
 @export var semente: int = 7
+@export_group("Moradores")
+## Inimigos que dormem dentro da casa ao começar (V13: povoarEdificios).
+@export var moradores: int = 0
 @export_group("Visibilidade")
 ## Opacidade das paredes que ficam na frente da câmera quando o cômodo atrás delas está revelado.
 @export_range(0.0, 1.0, 0.01) var opacidade_frente: float = 0.2
@@ -78,12 +81,15 @@ var _rng_loot := RandomNumberGenerator.new()
 func _ready() -> void:
 	y_sort_enabled = true
 	add_to_group("interativo")
+	add_to_group("edificio")
 	_rng.seed = semente
 	_rng_loot.randomize()
 	_gerar_planta()
 	_construir()
 	_recalcular()
 	_aplicar(1000.0)
+	if moradores > 0:
+		call_deferred("_povoar")
 
 
 # =====================================================================
@@ -159,6 +165,8 @@ func _porta(p: Dictionary, t: int, ext: bool) -> Dictionary:
 	var a := Vector2(cx, cy - o) if p.eixo == "x" else Vector2(cx - o, cy)
 	var b := Vector2(cx, cy + o) if p.eixo == "x" else Vector2(cx + o, cy)
 	d.salas = [sala_de(a), sala_de(b)]
+	d.hp = 6.0                                   ## segundos de pancada de zumbi até arrombar
+	d.pto = {d.salas[0]: a, d.salas[1]: b}       ## ponto de passagem de cada lado
 	if ext:
 		d.sala = d.salas[0] if d.salas[0] >= 0 else d.salas[1]
 	p.ab.append({"t": t, "tipo": "porta", "ref": d})
@@ -717,6 +725,130 @@ func _porta_perto(p: Vector2):
 			dist = dd
 			melhor = d
 	return melhor
+
+
+# =====================================================================
+# INIMIGOS: moradores, rotas e portas (V13: povoarEdificios, proxPorta, rota)
+# =====================================================================
+func _povoar() -> void:
+	var cena: PackedScene = load("res://scenes/enemies/inimigo.tscn")
+	for k in moradores:
+		var raca := "zombie" if _rng.randf() < 0.72 else "rat"
+		var s: Dictionary = _pick(salas)
+		for t in 10:
+			var x: float = (s.x0 + 0.5 + _rng.randf() * (s.x1 - s.x0 - 1)) * TILE
+			var y: float = (s.y0 + 0.5 + _rng.randf() * (s.y1 - s.y0 - 1)) * TILE
+			var livre := true
+			for m in moveis:
+				if x > m.x0 - 14 and x < m.x1 + 14 and y > m.y0 - 14 and y < m.y1 + 14:
+					livre = false
+			if not livre:
+				continue
+			var e: Node2D = cena.instantiate()
+			e.raca = raca
+			e.dorme = true
+			e.casa = self
+			get_parent().add_child(e)
+			e.global_position = to_global(IsoMath.mundo_para_tela(Vector2(x, y)))
+			break
+
+
+## Porta de entrada da casa (a primeira externa).
+func porta_ext():
+	for d in portas:
+		if d.ext:
+			return d
+	return null
+
+
+## Menor caminho de portas internas entre os cômodos 'ra' e 'rb'; devolve a primeira porta.
+func proxima_porta(ra: int, rb: int):
+	if ra < 0 or rb < 0 or ra == rb:
+		return null
+	var prev := {ra: null}
+	var fila := [ra]
+	while not fila.is_empty():
+		var c: int = fila.pop_front()
+		if c == rb:
+			break
+		for d in grafo[c]:
+			var o: int = d.salas[1] if d.salas[0] == c else d.salas[0]
+			if not prev.has(o):
+				prev[o] = [c, d]
+				fila.append(o)
+	if not prev.has(rb):
+		return null
+	var cur := rb
+	var porta = null
+	while prev[cur] != null:
+		porta = prev[cur][1]
+		if prev[cur][0] == ra:
+			break
+		cur = prev[cur][0]
+	return porta
+
+
+## Atravessa uma porta de A para B sem oscilar: longe -> ponto de entrada; perto do vão -> centro; no centro -> saída.
+func _cruza(d: Dictionary, pos: Vector2, a: Vector2, b: Vector2) -> Array:
+	var centro := Vector2(d.x, d.y)
+	var dc := pos.distance_to(centro)
+	if dc < 16.0:
+		return [b, d]
+	if dc < 44.0 or pos.distance_to(a) < 26.0:
+		return [centro, d]
+	return [a, d]
+
+
+func _passar(d: Dictionary, de: int, pos: Vector2) -> Array:
+	var o: int = d.salas[1] if d.salas[0] == de else d.salas[0]
+	return _cruza(d, pos, d.pto[de], d.pto[o])
+
+
+## Próximo ponto de passagem (e a porta, se houver) para ir de 'pos' a 'alvo', ambos locais e dentro da casa.
+func rota_interna(pos: Vector2, alvo: Vector2) -> Array:
+	var d = proxima_porta(sala_de(pos), sala_de(alvo))
+	if d != null:
+		return _passar(d, sala_de(pos), pos)
+	return [alvo, null]
+
+
+## De dentro da casa para fora: passa pelas portas internas até o cômodo da porta de entrada e sai.
+func rota_saida(pos: Vector2) -> Array:
+	var p = porta_ext()
+	if p == null:
+		return [pos, null]
+	var ra := sala_de(pos)
+	if ra != p.sala:
+		var d = proxima_porta(ra, p.sala)
+		if d != null:
+			return _passar(d, ra, pos)
+	return _cruza(p, pos, p.pto[p.sala], p.pto[-1])
+
+
+## De fora para dentro: vai até a porta de entrada e entra.
+func rota_entrada(pos: Vector2) -> Array:
+	var p = porta_ext()
+	if p == null:
+		return [pos, null]
+	return _cruza(p, pos, p.pto[-1], p.pto[p.sala])
+
+
+func abrir_porta(d: Dictionary) -> void:
+	if d.open:
+		return
+	d.open = true
+	d.no_col.set_deferred("disabled", true)
+	_sujo = true
+
+
+## Pancada de zumbi na porta fechada. Devolve true quando ela cedeu.
+func bater_porta(d: Dictionary, delta: float) -> bool:
+	d.hp -= delta
+	if d.hp > 0.0:
+		return false
+	d.quebrada = true
+	abrir_porta(d)
+	return true
 
 
 ## Móvel vasculhável (V13: movelPerto): só dentro da casa, ainda não vasculhado, a até 0,95 m.

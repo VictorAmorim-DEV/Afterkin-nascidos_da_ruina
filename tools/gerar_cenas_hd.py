@@ -74,10 +74,24 @@ CENARIO = [
     ("arvore_frondosa", 940, 330), ("arvore_fina", 900, 780), ("arvore_outono", 900, -620),
     ("arvore_jovem", -90, -280),
     ("caixote", -150, 40), ("caixa_madeira", -620, 840),
+    ("entulho_laje", 60, -220), ("entulho_laje", -330, 120),
 ]
 
 # recipientes vasculháveis (scripts/items/lootavel.gd): nó do cenário -> tabela de loot da V13
-LOOTAVEIS = {"Caixote1": "caixa", "CaixaMadeira1": "caixa", "EntulhoPedras1": "scrap", "EntulhoLaje1": "scrap"}
+LOOTAVEIS = {"Caixote1": "caixa", "CaixaMadeira1": "caixa", "EntulhoPedras1": "scrap"}
+
+# colhíveis (scripts/items/coletavel.gd): árvores pedem machado e as lajes pedem picareta
+def tipo_coletavel(nome):
+    if nome.startswith("arvore") or nome == "palmeira":
+        return "arvore"
+    return "rocha" if nome == "entulho_laje" else None
+
+# inimigos do teste (scripts/enemies/inimigo.gd): (nó, raça, x, y em mundo, dormindo)
+INIMIGOS = [
+    ("Zumbi1", "zombie", -520, -330, True), ("Zumbi2", "zombie", 760, 330, True),
+    ("Rato1", "rat", 330, -560, True), ("Rato2", "rat", -380, 560, True),
+    ("Zumbi3", "zombie", -1000, 820, False),
+]
 
 
 # objetos só de enfeite: sem colisão e sem bloquear a luz (o jogador passa por cima)
@@ -194,16 +208,25 @@ def cena_teste():
         no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
         tela = ((x - y) * 0.5, (x + y) * 0.25)          # projeção isométrica 2:1
         nos += f'[node name="{no}" parent="." instance=ExtResource("p_{nome}")]\nposition = {vec(tela)}\n\n'
+        tc = tipo_coletavel(nome)
+        if tc:
+            nos += (f'[node name="Colher" type="Node2D" parent="{no}"]\nscript = ExtResource("s_coletavel")\n'
+                    f'tipo = "{tc}"\n\n')
         if no in LOOTAVEIS:
             nos += (f'[node name="Loot" type="Node2D" parent="{no}"]\nposition = Vector2(0, -8)\n'
                     f'script = ExtResource("s_lootavel")\ntipo = "{LOOTAVEIS[no]}"\n\n')
     ext += '[ext_resource type="Script" path="res://scripts/world/edificio.gd" id="s_edificio"]\n'
     ext += '[ext_resource type="Script" path="res://scripts/items/lootavel.gd" id="s_lootavel"]\n'
+    ext += '[ext_resource type="Script" path="res://scripts/items/coletavel.gd" id="s_coletavel"]\n'
+    ext += '[ext_resource type="PackedScene" path="res://scenes/enemies/inimigo.tscn" id="e_inimigo"]\n'
     for nome, tx, ty, larg, alt, frente, semente in EDIFICIOS:
         nos += (f'[node name="{nome}" type="Node2D" parent="."]\nposition = {vec(((tx - ty) * 32.0, (tx + ty) * 16.0))}\n'
                 f'script = ExtResource("s_edificio")\nlargura_tiles = {larg}\naltura_tiles = {alt}\n'
-                f'frente = "{frente}"\nsemente = {semente}\n\n')
-    return f'''[gd_scene load_steps={len(usados) + 7} format=3]
+                f'frente = "{frente}"\nsemente = {semente}\nmoradores = {3 if nome == "Casa1" else 0}\n\n')
+    for nome, raca, x, y, dorme in INIMIGOS:
+        nos += (f'[node name="{nome}" parent="." instance=ExtResource("e_inimigo")]\nposition = {vec(((x - y) * 0.5, (x + y) * 0.25))}\n'
+                f'raca = "{raca}"\ndorme = {"true" if dorme else "false"}\n\n')
+    return f'''[gd_scene load_steps={len(usados) + 9} format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://{REC}/chao/grama.png" id="2_grama"]

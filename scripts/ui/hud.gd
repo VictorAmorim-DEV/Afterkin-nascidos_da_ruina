@@ -110,7 +110,7 @@ func _montar_vitais() -> void:
 	for n in [_vida_texto, _vida_barra, _fome_barra]:
 		painel.add_child(n)
 		painel.move_child(n, painel.get_child_count() - 2)     # antes da linha de ajuda
-	ajuda.text += " · I mochila"
+	ajuda.text += " · I mochila · botão esquerdo atacar/colher"
 
 
 func _montar_toast() -> void:

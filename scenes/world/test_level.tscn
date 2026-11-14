@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3]
+[gd_scene load_steps=41 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/chao/grama.png" id="2_grama"]
@@ -38,6 +38,8 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_enferrujado.tscn" id="p_sedan_enferrujado"]
 [ext_resource type="Script" path="res://scripts/world/edificio.gd" id="s_edificio"]
 [ext_resource type="Script" path="res://scripts/items/lootavel.gd" id="s_lootavel"]
+[ext_resource type="Script" path="res://scripts/items/coletavel.gd" id="s_coletavel"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/inimigo.tscn" id="e_inimigo"]
 
 [node name="TestLevel" type="Node2D"]
 y_sort_enabled = true
@@ -90,32 +92,72 @@ position = Vector2(155, 202.5)
 [node name="ArvoreFrondosa1" parent="." instance=ExtResource("p_arvore_frondosa")]
 position = Vector2(-30, -95)
 
+[node name="Colher" type="Node2D" parent="ArvoreFrondosa1"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
+
 [node name="ArvoreOutono1" parent="." instance=ExtResource("p_arvore_outono")]
 position = Vector2(-250, -265)
+
+[node name="Colher" type="Node2D" parent="ArvoreOutono1"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
 
 [node name="ArvoreFina1" parent="." instance=ExtResource("p_arvore_fina")]
 position = Vector2(250, -195)
 
+[node name="Colher" type="Node2D" parent="ArvoreFina1"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
+
 [node name="ArvoreJovem1" parent="." instance=ExtResource("p_arvore_jovem")]
 position = Vector2(-360, 30)
+
+[node name="Colher" type="Node2D" parent="ArvoreJovem1"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
 
 [node name="Palmeira1" parent="." instance=ExtResource("p_palmeira")]
 position = Vector2(-470, 85)
 
+[node name="Colher" type="Node2D" parent="Palmeira1"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
+
 [node name="ArvoreMorta1" parent="." instance=ExtResource("p_arvore_morta")]
 position = Vector2(490, 145)
+
+[node name="Colher" type="Node2D" parent="ArvoreMorta1"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
 
 [node name="ArvoreFrondosa2" parent="." instance=ExtResource("p_arvore_frondosa")]
 position = Vector2(305, 317.5)
 
+[node name="Colher" type="Node2D" parent="ArvoreFrondosa2"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
+
 [node name="ArvoreFina2" parent="." instance=ExtResource("p_arvore_fina")]
 position = Vector2(60, 420)
+
+[node name="Colher" type="Node2D" parent="ArvoreFina2"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
 
 [node name="ArvoreOutono2" parent="." instance=ExtResource("p_arvore_outono")]
 position = Vector2(760, 70)
 
+[node name="Colher" type="Node2D" parent="ArvoreOutono2"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
+
 [node name="ArvoreJovem2" parent="." instance=ExtResource("p_arvore_jovem")]
 position = Vector2(95, -92.5)
+
+[node name="Colher" type="Node2D" parent="ArvoreJovem2"]
+script = ExtResource("s_coletavel")
+tipo = "arvore"
 
 [node name="Caixote1" parent="." instance=ExtResource("p_caixote")]
 position = Vector2(-95, -27.5)
@@ -132,6 +174,20 @@ position = Vector2(-730, 55)
 position = Vector2(0, -8)
 script = ExtResource("s_lootavel")
 tipo = "caixa"
+
+[node name="EntulhoLaje1" parent="." instance=ExtResource("p_entulho_laje")]
+position = Vector2(140, -40)
+
+[node name="Colher" type="Node2D" parent="EntulhoLaje1"]
+script = ExtResource("s_coletavel")
+tipo = "rocha"
+
+[node name="EntulhoLaje2" parent="." instance=ExtResource("p_entulho_laje")]
+position = Vector2(-225, -52.5)
+
+[node name="Colher" type="Node2D" parent="EntulhoLaje2"]
+script = ExtResource("s_coletavel")
+tipo = "rocha"
 
 [node name="CapimAlto1" parent="." instance=ExtResource("p_capim_alto")]
 position = Vector2(-902.5, -83.75)
@@ -186,13 +242,12 @@ position = Vector2(-580, -210)
 [node name="MatoFino2" parent="." instance=ExtResource("p_mato_fino")]
 position = Vector2(-460, -150)
 
-[node name="EntulhoLaje1" parent="." instance=ExtResource("p_entulho_laje")]
+[node name="EntulhoLaje3" parent="." instance=ExtResource("p_entulho_laje")]
 position = Vector2(-360, -100)
 
-[node name="Loot" type="Node2D" parent="EntulhoLaje1"]
-position = Vector2(0, -8)
-script = ExtResource("s_lootavel")
-tipo = "scrap"
+[node name="Colher" type="Node2D" parent="EntulhoLaje3"]
+script = ExtResource("s_coletavel")
+tipo = "rocha"
 
 [node name="CapimAlto3" parent="." instance=ExtResource("p_capim_alto")]
 position = Vector2(-580, 90)
@@ -204,3 +259,29 @@ largura_tiles = 10
 altura_tiles = 8
 frente = "s"
 semente = 3
+moradores = 3
+
+[node name="Zumbi1" parent="." instance=ExtResource("e_inimigo")]
+position = Vector2(-95, -212.5)
+raca = "zombie"
+dorme = true
+
+[node name="Zumbi2" parent="." instance=ExtResource("e_inimigo")]
+position = Vector2(215, 272.5)
+raca = "zombie"
+dorme = true
+
+[node name="Rato1" parent="." instance=ExtResource("e_inimigo")]
+position = Vector2(445, -57.5)
+raca = "rat"
+dorme = true
+
+[node name="Rato2" parent="." instance=ExtResource("e_inimigo")]
+position = Vector2(-470, 45)
+raca = "rat"
+dorme = true
+
+[node name="Zumbi3" parent="." instance=ExtResource("e_inimigo")]
+position = Vector2(-910, -45)
+raca = "zombie"
+dorme = false

@@ -10,14 +10,18 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ `SAQUE`, `CONTEM`, `movelPerto`, `EDIF_interagir` (l.1054, 1169-1182) → `Edificio`
 - ✅ `loot` para objetos soltos: só `scrap` (l.1398)
 - ⬜ `craft`, `recipeCost`, `placeTotem`, `removeTotem`, `build` (l.106-122, 995, 1451): fabricação, totem, abrigo
-- ⬜ `harvestHit`, `NODE` (árvore/pedra com machado/picareta, l.1427), `branch`/`pebble`
-- ⬜ `xpGain` (l.154), `updateUI` (HUD completo, l.1460)
+- ✅ `harvestHit`, `NODE` (árvore/pedra com machado/picareta, l.1427) → `Coletavel`
+- ⬜ `branch`/`pebble` (galho e pedra pequena pegos com E, l.1398-1403)
+- ✅ `xpGain` (l.154) · ⬜ `updateUI` completo (l.1460): falta raça/nível/exposição solar/doença/totem
 
 ## Combate e inimigos
-- ⬜ `attack` (l.1415), `nearestEnemy` (l.1397), `infectPlayer` (l.1436), `useMed` (doenças)
-- ⬜ `atualizarInimigos` (l.1358), `rota`, `proxPorta`, `cortes` (IA que atravessa portas, l.1342-1357)
-- ⬜ `povoarEdificios` (l.1160, moradores dormindo, `dorme`), `world.enemies`
-- ⬜ `drawChar`, `sombraChar` (sprites das raças já existem como SpriteFrames)
+- ✅ `attack` (l.1415), `nearestEnemy` (l.1397) → `Player.atacar`; ✅ morte do jogador (`step`, l.1848)
+- ⬜ `infectPlayer` (l.1436), `useMed` (doenças)
+- ✅ `atualizarInimigos` (l.1358), `rota`, `proxPorta` (l.1346-1357) → `Inimigo` + `Edificio.rota_*`; zumbi arromba porta, rato abre
+- ⬜ vampiro (dorme de dia, sai à noite), `cortes` (l.1342, só desenho de parede)
+- ✅ `povoarEdificios` (l.1160) só zumbi/rato (`Edificio.moradores`); ⬜ prédios altos e vampiros
+- ⬜ inimigos pelo mundo aberto (hoje só os da cena de teste)
+- ✅ sprites HD de zumbi e rato gigante (`SpriteFrames`); ⬜ vampiro/homem-rato jogáveis
 
 ## Raças e formas
 - ⬜ `race()`, `formRat()`, `transform` (l.1446), `maxLife` (l.153), `speed`

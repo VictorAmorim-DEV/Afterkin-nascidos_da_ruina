@@ -56,6 +56,9 @@ var fome: float = 100.0                  ## 100 = saciado; cai 0,13/s e, em 0, t
 var xp: int = 0
 var nivel: int = 1
 var inventario: Inventario
+var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
+var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
+var morto: bool = false
 
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
@@ -90,6 +93,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif pulo_z <= 0.0 and stamina >= gasto_pulo and not _saltando:
 			pulo_v = impulso_pulo
 			stamina -= gasto_pulo
+	elif event.is_action_pressed("attack"):
+		atacar()
 	elif event.is_action_pressed("flashlight"):
 		lanterna_ligada = not lanterna_ligada
 
@@ -266,7 +271,10 @@ func _animar(olhar: Vector2, rapidez: float) -> void:
 	var quadros := sprite.sprite_frames
 	var anim := "andar_" + DIRECOES[linha]
 	var quadro := 0
-	if postura == Postura.DEITADO:
+	if golpe_t > 0.0 and postura == Postura.EM_PE and quadros.has_animation("atacar_" + DIRECOES[linha_olhar]):
+		anim = "atacar_" + DIRECOES[linha_olhar]
+		flip = flip_olhar
+	elif postura == Postura.DEITADO:
 		anim = "deitado"
 		flip = tela.x < 0.0
 	elif postura == Postura.AGACHADO:
@@ -337,9 +345,13 @@ func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 # SOBREVIVÊNCIA, XP E ITENS (portado da V13: eat, useMed, xpGain, step)
 # =====================================================================
 func _atualizar_vitais(delta: float) -> void:
+	ataque_cd = maxf(0.0, ataque_cd - delta)
+	golpe_t = maxf(0.0, golpe_t - delta)
 	fome = maxf(0.0, fome - delta * 0.13)
 	if fome <= 0.0:
 		vida = maxf(0.0, vida - delta * 0.7)
+	if vida <= 0.0 and not morto:
+		_morrer()
 
 
 ## Mensagem curta na tela (toast do HUD).
@@ -380,3 +392,71 @@ func largar_slot(i: int, qtd: int = 0) -> void:
 	var pos := global_position + IsoMath.mundo_para_tela(frente)
 	ItemNoChao.largar(get_parent(), pos, r.id, r.quantidade, r.extra)
 	aviso("Você largou %d %s." % [r.quantidade, Itens.nome(r.id).to_lower()])
+
+
+# =====================================================================
+# COMBATE E COLETA (portado da V13: attack, harvestHit, nearestEnemy)
+# =====================================================================
+## Multiplicador de dano da mão/ferramenta equipada. A V13 não distingue (todos 1,0);
+## aqui o machado e a picareta batem um pouco mais forte.
+const BONUS_ARMA := {"machado": 1.35, "picareta": 1.2}
+
+
+func _inimigo_perto() -> Inimigo:
+	var melhor: Inimigo = null
+	var dist := 55.0
+	var olhar := Vector2.from_angle(face)
+	for e in get_tree().get_nodes_in_group("inimigo"):
+		var v: Vector2 = IsoMath.tela_para_mundo(e.global_position - global_position)
+		var d := v.length()
+		if d < dist and v.dot(olhar) > -8.0:
+			dist = d
+			melhor = e
+	return melhor
+
+
+func atacar() -> void:
+	if ataque_cd > 0.0 or morto or _saltando:
+		return
+	postura = Postura.EM_PE if postura == Postura.AGACHADO else postura
+	var alvo := _inimigo_perto()
+	if alvo == null:
+		var melhor: Coletavel = null
+		var dist := INF
+		for c in get_tree().get_nodes_in_group("coletavel"):
+			if c.esta_ao_alcance(global_position) and c.distancia(global_position) < dist:
+				dist = c.distancia(global_position)
+				melhor = c
+		if melhor != null:
+			ataque_cd = 0.5
+			if melhor.golpear(self):
+				golpe_t = 0.2
+			else:
+				ataque_cd = 0.35
+			return
+		aviso("Nada ao alcance.")
+		ataque_cd = 0.35
+		return
+	var dano: float = 16.0 * 1.1 * BONUS_ARMA.get(inventario.id_equipado(), 1.0)
+	ataque_cd = 0.6
+	golpe_t = 0.2
+	aviso("Você acertou um %s (%d de dano)." % [Inimigo.NOMES[alvo.raca], roundi(dano)])
+	alvo.receber_dano(dano)
+
+
+func receber_dano(n: float, _quem: String = "") -> void:
+	if morto:
+		return
+	vida = maxf(0.0, vida - n)
+	sprite.modulate = Color(1.0, 0.4, 0.4)
+	create_tween().tween_property(sprite, "modulate", Color.WHITE, 0.25)
+
+
+func _morrer() -> void:
+	morto = true
+	aviso("Você morreu. O mundo continua sem você.")
+	set_physics_process(false)
+	sprite.animation = &"caido"
+	sprite.frame = 0
+	await get_tree().create_timer(3.0).timeout
+	get_tree().reload_current_scene()
