@@ -50,8 +50,17 @@ func _poli_recortado(pts: PackedVector2Array, tex: Texture2D, cor: Color) -> voi
 	var rp := PackedVector2Array([_r.position, Vector2(_r.end.x, _r.position.y), _r.end, Vector2(_r.position.x, _r.end.y)])
 	for q in Geometry2D.intersect_polygons(pts, rp):
 		var qp: PackedVector2Array = q
-		if not Geometry2D.is_polygon_clockwise(qp):
+		# lascas de recorte (< 1 u², ex.: trilha raspando o canto do chunk) não triangulam e são invisíveis
+		if not Geometry2D.is_polygon_clockwise(qp) and _area_dupla(qp) >= 2.0:
 			_poli(qp, tex, cor)
+
+
+static func _area_dupla(p: PackedVector2Array) -> float:
+	var s := 0.0
+	for i in p.size():
+		var j := (i + 1) % p.size()
+		s += p[i].x * p[j].y - p[j].x * p[i].y
+	return absf(s)
 
 
 func _ret(rc: Rect2, tex: Texture2D, cor: Color) -> void:

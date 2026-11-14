@@ -4,7 +4,8 @@ extends Node2D
 ## A origem do nó fica no chão (pé do objeto), por isso o Y-Sort funciona.
 
 const RAIO := 1.0 * IsoMath.METRO       ## alcance da coleta, em unidades de mundo
-const CENA := preload("res://scenes/items/item_no_chao.tscn")
+## Carregada sob demanda: um preload aqui fecharia o ciclo cena ↔ script (a cena referencia este script).
+const CAMINHO_CENA := "res://scenes/items/item_no_chao.tscn"
 
 var id: String = "madeira"
 var quantidade: int = 1
@@ -16,7 +17,7 @@ var _t: float = 0.0
 
 ## Cria o item em 'pos_tela' (px globais) dentro de 'pai'.
 static func largar(pai: Node, pos_tela: Vector2, id_: String, qtd: int, extra_: Dictionary = {}) -> ItemNoChao:
-	var n: ItemNoChao = CENA.instantiate()
+	var n: ItemNoChao = (load(CAMINHO_CENA) as PackedScene).instantiate()
 	n.id = id_
 	n.quantidade = qtd
 	n.extra = extra_
