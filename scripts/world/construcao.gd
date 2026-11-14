@@ -1,92 +1,101 @@
 extends Node2D
-## Construção em camadas, sem troca de tela.
+## Construção em camadas, com corte por cômodo no estilo Project Zomboid.
 ##
-## Camadas (ver tools/gerar_construcao.py):
-##   Chao      piso e móveis pintados do interior
-##   Interior  Y-Sort com móveis soltos e a folha da porta
-##   Fachada   teto e paredes externas — some quando o jogador entra
-## Quando o jogador entra na AreaInterior (interior + soleira) a Fachada perde a
-## opacidade e o interior aparece; ao sair, tudo volta. A porta abre e fecha na tecla
-## de interação (E) quando o jogador está perto dela.
+## Camadas (ver tools/gerar_construcao.py), uma de cada por cômodo:
+##   Interior<Cômodo>  piso, móveis e as paredes altas do fundo
+##   Fachada<Cômodo>   telhado + parede frontal
+## As peças foram recortadas pela mesma linha, então sempre encaixam sem emenda.
+##
+## Com a casa fechada só a fachada aparece: de fora não dá para ver nada dentro.
+## Quando um cômodo é REVELADO — o jogador entra nele, ou abre uma porta/janela
+## dele —, só a metade da fachada daquele cômodo some (telhado e parede da frente).
+## As paredes altas do fundo, os móveis e o piso continuam à vista, e os outros
+## cômodos seguem fechados.
 
+@export var comodos: PackedStringArray = []
 @export var duracao_transicao: float = 0.35
-@export var alcance_porta: float = 48.0        ## distância (px de tela) para usar a porta
-@export var porta_aberta: bool = false
+## Abrir uma porta ou janela já revela o cômodo, mesmo com o jogador do lado de fora.
+@export var revelar_ao_abrir: bool = true
 
-var _dentro: int = 0
+var _dentro: Dictionary = {}          ## cômodo -> nº de corpos do jogador dentro
+var _aberto: Dictionary = {}          ## cômodo -> alguma abertura dele está aberta
 var _transicao: Tween
-
-@onready var chao: Sprite2D = $Chao
-@onready var interior: Node2D = $Interior
-@onready var fachada: Node2D = $Fachada
-@onready var vao_da_porta: Polygon2D = $Fachada/VaoDaPorta
-@onready var porta_fechada: Polygon2D = $Interior/PortaFechada
-@onready var porta_aberta_visual: Polygon2D = $Interior/PortaAberta
-@onready var porta_colisao: CollisionPolygon2D = $Paredes/Porta
-@onready var porta_oclusor: LightOccluder2D = $Oclusores/Porta
-@onready var area: Area2D = $AreaInterior
-@onready var ponto_da_porta: Marker2D = $PontoDaPorta
 
 
 func _ready() -> void:
-	add_to_group("interativo")
-	chao.modulate.a = 0.0
-	interior.modulate.a = 0.0
-	area.body_entered.connect(_ao_entrar)
-	area.body_exited.connect(_ao_sair)
-	_aplicar_porta()
+	for c in comodos:
+		_dentro[c] = 0
+		_aberto[c] = false
+		var area := get_node_or_null("Area" + c.capitalize()) as Area2D
+		if area != null:
+			area.body_entered.connect(_corpo_entrou.bind(c))
+			area.body_exited.connect(_corpo_saiu.bind(c))
+	for no in find_children("*", "Node2D", true, false):
+		if no is Abertura:
+			no.mudou.connect(_abertura_mudou)
+	_abertura_mudou()
+	_aplicar(0.0)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") and _jogador_perto_da_porta():
-		porta_aberta = not porta_aberta
-		_aplicar_porta()
-		get_viewport().set_input_as_handled()
-
-
-## Texto mostrado pelo HUD quando há algo para interagir (vazio = nada).
-func texto_interacao() -> String:
-	if _jogador_perto_da_porta():
-		return "E — fechar a porta" if porta_aberta else "E — abrir a porta"
-	return ""
+## Um cômodo está revelado quando o jogador está nele ou quando uma porta
+## ou janela dele foi aberta.
+func revelado(comodo: String) -> bool:
+	return _dentro.get(comodo, 0) > 0 or (revelar_ao_abrir and _aberto.get(comodo, false))
 
 
 func jogador_dentro() -> bool:
-	return _dentro > 0
+	for c in comodos:
+		if _dentro.get(c, 0) > 0:
+			return true
+	return false
 
 
-func _jogador_perto_da_porta() -> bool:
-	var jogador := get_tree().get_first_node_in_group("jogador") as Node2D
-	if jogador == null:
-		return false
-	return jogador.global_position.distance_to(ponto_da_porta.global_position) <= alcance_porta
-
-
-func _aplicar_porta() -> void:
-	porta_colisao.set_deferred("disabled", porta_aberta)
-	porta_oclusor.occluder_light_mask = 0 if porta_aberta else 1   # porta aberta deixa a luz passar
-	porta_fechada.visible = not porta_aberta
-	porta_aberta_visual.visible = porta_aberta
-	vao_da_porta.visible = porta_aberta
-
-
-func _ao_entrar(corpo: Node2D) -> void:
+func _corpo_entrou(corpo: Node2D, comodo: String) -> void:
 	if corpo.is_in_group("jogador"):
-		_dentro += 1
-		_revelar(true)
+		_dentro[comodo] = _dentro.get(comodo, 0) + 1
+		_aplicar(duracao_transicao)
 
 
-func _ao_sair(corpo: Node2D) -> void:
+func _corpo_saiu(corpo: Node2D, comodo: String) -> void:
 	if corpo.is_in_group("jogador"):
-		_dentro = maxi(0, _dentro - 1)
-		if _dentro == 0:
-			_revelar(false)
+		_dentro[comodo] = maxi(0, _dentro.get(comodo, 0) - 1)
+		_aplicar(duracao_transicao)
 
 
-func _revelar(mostrar_interior: bool) -> void:
+func _abertura_mudou() -> void:
+	for c in comodos:
+		_aberto[c] = false
+	for no in find_children("*", "Node2D", true, false):
+		if no is Abertura and no.aberta:
+			for c in no.comodos:
+				_aberto[c] = true
+	_aplicar(duracao_transicao)
+
+
+func _aplicar(duracao: float) -> void:
+	var alvos: Dictionary = {}                      # nó -> alfa de destino
+	for c in comodos:
+		var mostrar := revelado(c)
+		var dentro := get_node_or_null("Interior" + c.capitalize())
+		if dentro != null:
+			alvos[dentro] = 1.0 if mostrar else 0.0
+		var fora := get_node_or_null("Fachada" + c.capitalize())
+		if fora != null:
+			alvos[fora] = 0.0 if mostrar else 1.0
+		# os sprites das portas e janelas acompanham a camada em que são desenhados
+		for sp in get_children():
+			if sp is Sprite2D:
+				if String(sp.name).ends_with("_fachada_" + c):
+					sp.visible = not mostrar
+				elif String(sp.name).ends_with("_interior_" + c):
+					sp.visible = mostrar
+
 	if _transicao != null and _transicao.is_valid():
 		_transicao.kill()
+	if duracao <= 0.0:
+		for alvo in alvos:
+			alvo.modulate.a = alvos[alvo]
+		return
 	_transicao = create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE)
-	_transicao.tween_property(fachada, "modulate:a", 0.0 if mostrar_interior else 1.0, duracao_transicao)
-	_transicao.tween_property(interior, "modulate:a", 1.0 if mostrar_interior else 0.0, duracao_transicao)
-	_transicao.tween_property(chao, "modulate:a", 1.0 if mostrar_interior else 0.0, duracao_transicao)
+	for alvo in alvos:
+		_transicao.tween_property(alvo, "modulate:a", alvos[alvo], duracao)

@@ -1,45 +1,75 @@
 #!/usr/bin/env python3
 """
-Afterkin: Nascidos da Ruína — gera a cena de construção em camadas.
+Afterkin: Nascidos da Ruína — gera a cena da casa em camadas (estilo Project Zomboid).
 
-Uso (na raiz do projeto):
+Uso (na raiz do projeto, depois de tools/preparar_casa_hd.py):
     python tools/gerar_construcao.py
 
-Gera scenes/world/buildings/casa_abandonada.tscn com as camadas:
-    Chao      interior visto de cima (recorte interior_XX) deformado para caber na base
-              da fachada — piso, paredes internas e móveis pintados
-    Interior  Y-Sort: móveis soltos e a folha da porta (o jogador passa na frente/atrás)
-    Fachada   teto + paredes externas (recorte predio_XX), some quando o jogador entra
-    Paredes   colisão das paredes externas, com a porta (abre na tecla E)
-    Oclusores LightOccluder2D das paredes (bloqueiam a lanterna)
-    AreaInterior  Area2D que detecta o jogador dentro da casa ou na soleira
+Gera scenes/world/buildings/casa_abandonada.tscn.
 
-A fachada é isométrica e o interior é visto de cima, então o interior é encaixado por
-uma transformação afim: o retângulo das paredes externas do interior (INT_*) é levado
-ao paralelogramo da base da fachada (FACH_ESQ, FACH_PIVO, FACH_DIR), medidos à mão.
-Todas as paredes, a porta, a área e os móveis são definidos em px do INTERIOR.
+TODAS as medidas abaixo estão em px das imagens da casa (1774x887), que foram
+desenhadas na mesma posição e escala. O nó raiz da cena tem escala ESCALA, então
+dentro da cena tudo continua em px da imagem — é só medir na arte e anotar aqui.
+A origem do nó é PIVO (o canto do chão mais perto da câmera).
+
+Camadas:
+    Interior<Cômodo>  piso, móveis e paredes altas do fundo daquele cômodo
+    Fachada<Cômodo>   telhado + parede frontal daquele cômodo
+As quatro peças foram recortadas pela MESMA linha, então encaixam sem emenda:
+mostrando o interior de um cômodo e a fachada do outro, a casa continua inteira.
+Cada metade da fachada some quando o cômodo dela é revelado (o jogador entra ou
+abre uma porta/janela dele); a outra continua fechada, escondendo aquele cômodo.
+
+As duas metades usam o script IsoProp: a arte é fatiada em colunas ordenadas pela
+base da casa, então o jogador passa na frente da parede quando está do lado de fora
+e atrás dela quando está dentro.
 """
-import os
+import json, os, sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REC = "assets/sprites_hd_recortados"
-
 NOME = "casa_abandonada"
-FACHADA = "construcoes/predio_03"
-INTERIOR = "construcoes/interior_01"
-ESCALA = 1.4                                   # porta da fachada = 2,1 m ≈ 64 px de tela
 
-# base da fachada, em px do recorte predio_03: canto esquerdo, pivô (canto da frente), canto direito
-FACH_ESQ, FACH_PIVO, FACH_DIR = (17, 141), (163, 178), (228, 148)
-# vão da porta pintada na fachada (px do recorte): 4 cantos
-FACH_PORTA = [(79, 157), (97, 161.5), (97, 118.5), (79, 114)]
+ESCALA = 0.29                      # px da imagem -> px de tela (porta de 2,1 m = 63 px)
+PIVO = (700, 845)                  # origem do nó: canto do chão mais perto da câmera
+BASE_ESQ, BASE_DIR = (250, 690), (1690, 588)     # cantos do chão, para a ordenação
 
-# retângulo externo das paredes no recorte interior_01 (px) e espessura das paredes
-INT_X0, INT_Y0, INT_X1, INT_Y1 = 20, 13, 213, 170
-PAREDE = 9
-PORTA_X0, PORTA_X1 = 100, 125                  # vão da porta na parede de baixo
-# móveis soltos (cena em scenes/world/props_hd, posição do pivô em px do interior)
-MOVEIS = [("barril_azul", 108, 36), ("caixote", 58, 100), ("caixa_madeira", 152, 90)]
+# --- cômodos: polígono do piso (onde o jogador anda) ---
+COMODOS = {
+    "sala":    [(500, 460), (830, 370), (1040, 448), (1020, 650)],
+    "cozinha": [(830, 370), (1030, 320), (1570, 520), (1310, 610), (1040, 645), (1040, 448)],
+}
+# --- paredes: (nome, p0, p1, espessura em y) ---  espessura negativa = parede do fundo
+PAREDES = [
+    ("FundoSala",     (500, 460), (830, 370), -24),
+    ("FundoCozinha",  (830, 370), (1030, 320), -24),
+    ("LateralDireita", (1030, 320), (1570, 520), -24),
+    ("FrenteCozinhaA", (1570, 520), (1310, 610), 24),
+    ("FrenteCozinhaB", (1310, 610), (1250, 618), 24),
+    ("FrenteCozinhaC", (1130, 633), (1040, 645), 24),
+    ("FrenteSalaA",   (1020, 650), (927, 616), 24),
+    ("FrenteSalaB",   (824, 578), (500, 460), 24),
+    ("InternaA",      (830, 370), (885, 390), -16),
+    ("InternaB",      (975, 424), (1040, 448), -16),
+]
+# --- aberturas: porta/janela que abrem na tecla E ---
+# vao: trecho da parede que elas fecham | sprites: (camada, x0,y0,x1,y1, espelhado)
+ABERTURAS = [
+    dict(nome="PortaEntrada", rotulo="a porta", comodos=["cozinha"], alcance=115,
+         fechada="porta_tabuas_fechada", aberta="porta_tabuas_aberta",
+         vao=((1250, 618), (1130, 633)), espessura=24, ponto=(1190, 640),
+         sprites=[("fachada_cozinha", 1120, 440, 1265, 665, False),
+                  ("interior_cozinha", 1128, 488, 1252, 652, False)]),
+    dict(nome="JanelaSala", rotulo="a janela", comodos=["sala"], alcance=95,
+         fechada="janela_postigo_fechada", aberta="janela_postigo_aberta",
+         vao=((927, 616), (824, 578)), espessura=24, ponto=(876, 597),
+         sprites=[("fachada_sala", 782, 448, 979, 598, True),
+                  ("interior_sala", 777, 585, 987, 697, True)]),
+    dict(nome="PortaInterna", rotulo="a porta do cômodo", comodos=["sala", "cozinha"], alcance=95,
+         fechada="porta_almofadada_fechada", aberta="porta_almofadada_aberta",
+         vao=((885, 390), (975, 424)), espessura=-16, ponto=(930, 407),
+         sprites=[("interior_sala", 882, 222, 978, 432, True)]),
+]
 
 
 def n(v):
@@ -48,144 +78,120 @@ def n(v):
 
 
 def vec(p):
-    return "Vector2(%s, %s)" % (n(p[0]), n(p[1]))
+    return "Vector2(%s, %s)" % (n(p[0] - PIVO[0]), n(p[1] - PIVO[1]))
 
 
 def pts(ps):
-    return "PackedVector2Array(%s)" % ", ".join(n(c) for p in ps for c in p)
+    return "PackedVector2Array(%s)" % ", ".join(
+        "%s, %s" % (n(p[0] - PIVO[0]), n(p[1] - PIVO[1])) for p in ps)
 
 
-# cantos da base em px de tela, relativos ao pivô
-E = ((FACH_ESQ[0] - FACH_PIVO[0]) * ESCALA, (FACH_ESQ[1] - FACH_PIVO[1]) * ESCALA)
-D = ((FACH_DIR[0] - FACH_PIVO[0]) * ESCALA, (FACH_DIR[1] - FACH_PIVO[1]) * ESCALA)
-T = (E[0] + D[0], E[1] + D[1])                 # canto de trás
-LARG, ALT = float(INT_X1 - INT_X0), float(INT_Y1 - INT_Y0)
-EIXO_X = ((D[0] - T[0]) / LARG, (D[1] - T[1]) / LARG)      # 1 px do interior para a direita
-EIXO_Y = ((E[0] - T[0]) / ALT, (E[1] - T[1]) / ALT)        # 1 px do interior para baixo
-ORIGEM = (T[0] - INT_X0 * EIXO_X[0] - INT_Y0 * EIXO_Y[0], T[1] - INT_X0 * EIXO_X[1] - INT_Y0 * EIXO_Y[1])
-
-
-def m(u, v):
-    """px do interior -> px de tela relativo ao pivô da casa."""
-    return (ORIGEM[0] + u * EIXO_X[0] + v * EIXO_Y[0], ORIGEM[1] + u * EIXO_X[1] + v * EIXO_Y[1])
-
-
-def ret(u0, v0, u1, v1, rel=(0.0, 0.0)):
-    q = [m(u0, v0), m(u1, v0), m(u1, v1), m(u0, v1)]
-    return [(x - rel[0], y - rel[1]) for x, y in q]
+def faixa(p0, p1, esp):
+    """Quadrilátero de uma parede: o segmento e o mesmo segmento deslocado em y."""
+    return [p0, p1, (p1[0], p1[1] + esp), (p0[0], p0[1] + esp)]
 
 
 def main():
-    x0, y0, x1, y1, p = INT_X0, INT_Y0, INT_X1, INT_Y1, PAREDE
-    paredes = {
-        "ParedeFundo": ret(x0, y0, x1, y0 + p),
-        "ParedeEsquerda": ret(x0, y0, x0 + p, y1),
-        "ParedeDireita": ret(x1 - p, y0, x1, y1),
-        "ParedeFrenteA": ret(x0, y1 - p, PORTA_X0, y1),
-        "ParedeFrenteB": ret(PORTA_X1, y1 - p, x1, y1),
-    }
-    porta = ret(PORTA_X0, y1 - p, PORTA_X1, y1)
-    centro_porta = m((PORTA_X0 + PORTA_X1) / 2.0, y1 - p / 2.0)
-    folha_fechada = ret(PORTA_X0, y1 - 7, PORTA_X1, y1 - 2, centro_porta)
-    folha_aberta = ret(PORTA_X0 - 3, y1 - 4, PORTA_X0 + 3, y1 + PORTA_X1 - PORTA_X0, centro_porta)
-    area_interior = ret(x0, y0, x1, y1)
-    soleira = ret(PORTA_X0 - 8, y1, PORTA_X1 + 8, y1 + 16)
-    # vão escuro sobre a porta pintada da fachada (aparece quando a porta está aberta)
-    vao = [((x - FACH_PIVO[0]) * ESCALA, (y - FACH_PIVO[1]) * ESCALA) for x, y in FACH_PORTA]
-    vao_y = max(q[1] for q in vao) + 3.0
-    vao = [(x, y - vao_y) for x, y in vao]
+    with open(os.path.join(RAIZ, REC, "casa", "casa.json"), encoding="utf-8") as f:
+        casa = json.load(f)
+    pj = casa["portas_janelas"]
 
-    usados = sorted({mv[0] for mv in MOVEIS})
-    sub, nos = "", ""
-    for nome, q in paredes.items():
-        nos += f'[node name="{nome}" type="CollisionPolygon2D" parent="Paredes"]\npolygon = {pts(q)}\n\n'
-    nos += f'[node name="Porta" type="CollisionPolygon2D" parent="Paredes"]\npolygon = {pts(porta)}\n\n'
-    nos += '[node name="Oclusores" type="Node2D" parent="."]\n\n'
-    for nome, q in list(paredes.items()) + [("Porta", porta)]:
-        sub += f'[sub_resource type="OccluderPolygon2D" id="oc_{nome}"]\npolygon = {pts(q)}\n\n'
-        nos += f'[node name="{nome}" type="LightOccluder2D" parent="Oclusores"]\noccluder = SubResource("oc_{nome}")\n\n'
-    moveis, cont = "", {}
-    for nome, u, v in MOVEIS:
-        cont[nome] = cont.get(nome, 0) + 1
-        no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
-        moveis += f'[node name="{no}" parent="Interior" instance=ExtResource("m_{nome}")]\nposition = {vec(m(u, v))}\n\n'
-    ext = "".join(f'[ext_resource type="PackedScene" path="res://scenes/world/props_hd/{u}.tscn" id="m_{u}"]\n' for u in usados)
+    ext, sub, nos = [], [], []
+    ext.append('[ext_resource type="Script" path="res://scripts/world/construcao.gd" id="1_casa"]')
+    ext.append('[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="2_prop"]')
+    ext.append('[ext_resource type="Script" path="res://scripts/world/abertura.gd" id="3_abre"]')
+    camadas = ["interior_sala", "interior_cozinha", "fachada_sala", "fachada_cozinha"]
+    for arq in camadas:
+        ext.append('[ext_resource type="Texture2D" path="res://%s/casa/%s.png" id="t_%s"]' % (REC, arq, arq))
+        ext.append('[ext_resource type="Texture2D" path="res://%s/casa/%s_n.png" id="n_%s"]' % (REC, arq, arq))
+        sub.append('[sub_resource type="CanvasTexture" id="ct_%s"]\n'
+                   'diffuse_texture = ExtResource("t_%s")\n'
+                   'normal_texture = ExtResource("n_%s")' % (arq, arq, arq))
+    usadas = sorted({a[k] for a in ABERTURAS for k in ("fechada", "aberta")})
+    for u in usadas:
+        ext.append('[ext_resource type="Texture2D" path="res://%s/portas_janelas/%s.png" id="pj_%s"]' % (REC, u, u))
 
-    cena = f'''[gd_scene load_steps={len(usados) + 5 + len(paredes) + 1} format=3]
+    # ---------- raiz ----------
+    nos.append('[node name="%s" type="Node2D"]\n'
+               'y_sort_enabled = true\nscale = Vector2(%s, %s)\nscript = ExtResource("1_casa")\n'
+               'comodos = PackedStringArray("sala", "cozinha")'
+               % ("".join(t.capitalize() for t in NOME.split("_")), n(ESCALA), n(ESCALA)))
 
-[ext_resource type="Script" path="res://scripts/world/construcao.gd" id="1_casa"]
-[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="2_prop"]
-[ext_resource type="Texture2D" path="res://{REC}/{FACHADA}.png" id="3_fachada"]
-[ext_resource type="Texture2D" path="res://{REC}/{INTERIOR}.png" id="4_interior"]
-{ext}
-{sub}[node name="{"".join(t.capitalize() for t in NOME.split("_"))}" type="Node2D"]
-y_sort_enabled = true
-script = ExtResource("1_casa")
+    # ---------- interior de cada cômodo (ordenado atrás do jogador) ----------
+    for lado in ("sala", "cozinha"):
+        nos.append('[node name="Interior%s" type="Sprite2D" parent="."]\n'
+                   'modulate = Color(1, 1, 1, 0)\nlight_mask = 2\ntexture_filter = 2\n'
+                   'position = Vector2(0, %s)\ntexture = SubResource("ct_interior_%s")\n'
+                   'centered = false\noffset = Vector2(%s, %s)'
+                   % (lado.capitalize(), n(-PIVO[1] - 80), lado, n(-PIVO[0]), n(80)))
 
-[node name="Chao" type="Sprite2D" parent="."]
-z_index = -1
-texture_filter = 2
-transform = Transform2D({EIXO_X[0]:.5f}, {EIXO_X[1]:.5f}, {EIXO_Y[0]:.5f}, {EIXO_Y[1]:.5f}, {ORIGEM[0]:.3f}, {ORIGEM[1]:.3f})
-texture = ExtResource("4_interior")
-centered = false
+    # ---------- as duas metades da fachada ----------
+    for arq, lado in (("fachada_sala", "sala"), ("fachada_cozinha", "cozinha")):
+        nos.append('[node name="Fachada%s" type="StaticBody2D" parent="."]\n'
+                   'y_sort_enabled = true\ncollision_layer = 0\ncollision_mask = 0\n'
+                   'script = ExtResource("2_prop")\ntextura = SubResource("ct_%s")\nescala = 1.0\n'
+                   'base_esq = Vector2(%s, %s)\npivo = Vector2(%s, %s)\nbase_dir = Vector2(%s, %s)\n'
+                   'largura_fatia = 64.0\nfolga = 26.0\nluz_por_lado = false\nluz_checar_obstaculos = false'
+                   % (lado.capitalize(), arq, n(BASE_ESQ[0]), n(BASE_ESQ[1]),
+                      n(PIVO[0]), n(PIVO[1]), n(BASE_DIR[0]), n(BASE_DIR[1])))
 
-[node name="Interior" type="Node2D" parent="."]
-y_sort_enabled = true
+    # ---------- paredes (colisão + oclusão da luz) ----------
+    nos.append('[node name="Paredes" type="StaticBody2D" parent="."]')
+    for nome, p0, p1, esp in PAREDES:
+        nos.append('[node name="%s" type="CollisionPolygon2D" parent="Paredes"]\npolygon = %s'
+                   % (nome, pts(faixa(p0, p1, esp))))
+    nos.append('[node name="Oclusores" type="Node2D" parent="."]')
+    for nome, p0, p1, esp in PAREDES:
+        sub.append('[sub_resource type="OccluderPolygon2D" id="oc_%s"]\npolygon = %s'
+                   % (nome, pts(faixa(p0, p1, esp))))
+        nos.append('[node name="%s" type="LightOccluder2D" parent="Oclusores"]\noccluder = SubResource("oc_%s")'
+                   % (nome, nome))
 
-[node name="PortaFechada" type="Polygon2D" parent="Interior"]
-position = {vec(centro_porta)}
-light_mask = 2
-color = Color(0.36, 0.25, 0.16, 1)
-polygon = {pts(folha_fechada)}
+    # ---------- áreas dos cômodos ----------
+    for comodo, poli in COMODOS.items():
+        nos.append('[node name="Area%s" type="Area2D" parent="."]\ncollision_layer = 0\ncollision_mask = 2'
+                   % comodo.capitalize())
+        nos.append('[node name="Piso" type="CollisionPolygon2D" parent="Area%s"]\npolygon = %s'
+                   % (comodo.capitalize(), pts(poli)))
 
-[node name="PortaAberta" type="Polygon2D" parent="Interior"]
-visible = false
-position = {vec(centro_porta)}
-light_mask = 2
-color = Color(0.36, 0.25, 0.16, 1)
-polygon = {pts(folha_aberta)}
+    # ---------- aberturas ----------
+    for a in ABERTURAS:
+        caminhos = []
+        for k, (camada, x0, y0, x1, y1, esp) in enumerate(a["sprites"]):
+            sn = "%s_%s" % (a["nome"], camada)
+            tw, th = pj[a["fechada"]][2], pj[a["fechada"]][3]
+            sx, sy = (x1 - x0) / float(tw), (y1 - y0) / float(th)
+            # dobradiça: o sprite cresce a partir da origem, então a origem é a dobradiça
+            px = x1 if esp else x0
+            nos.append('[node name="%s" type="Sprite2D" parent="."]\nlight_mask = 2\ntexture_filter = 2\n'
+                       'position = %s\nscale = Vector2(%s, %s)\ntexture = ExtResource("pj_%s")\n'
+                       'centered = false\noffset = Vector2(0, %s)'
+                       % (sn, vec((px, a["ponto"][1])), n(-sx if esp else sx), n(sy),
+                          a["fechada"], n((y0 - a["ponto"][1]) / sy)))
+            caminhos.append('NodePath("../%s")' % sn)
+        nos.append('[node name="Vao%s" type="CollisionPolygon2D" parent="Paredes"]\npolygon = %s'
+                   % (a["nome"], pts(faixa(a["vao"][0], a["vao"][1], a["espessura"]))))
+        sub.append('[sub_resource type="OccluderPolygon2D" id="oc_Vao%s"]\npolygon = %s'
+                   % (a["nome"], pts(faixa(a["vao"][0], a["vao"][1], a["espessura"]))))
+        nos.append('[node name="Vao%s" type="LightOccluder2D" parent="Oclusores"]\noccluder = SubResource("oc_Vao%s")'
+                   % (a["nome"], a["nome"]))
+        nos.append('[node name="%s" type="Node2D" parent="."]\nposition = %s\nscript = ExtResource("3_abre")\n'
+                   'rotulo = "%s"\nalcance = %s\ncomodos = PackedStringArray(%s)\n'
+                   'textura_fechada = ExtResource("pj_%s")\ntextura_aberta = ExtResource("pj_%s")\n'
+                   'sprites = Array[NodePath]([%s])\ncolisao = NodePath("../Paredes/Vao%s")\noclusor = NodePath("../Oclusores/Vao%s")'
+                   % (a["nome"], vec(a["ponto"]), a["rotulo"], n(a["alcance"] * ESCALA),
+                      ", ".join('"%s"' % c for c in a["comodos"]),
+                      a["fechada"], a["aberta"], ", ".join(caminhos), a["nome"], a["nome"]))
 
-{moveis}[node name="Fachada" type="StaticBody2D" parent="."]
-y_sort_enabled = true
-collision_layer = 0
-collision_mask = 0
-script = ExtResource("2_prop")
-textura = ExtResource("3_fachada")
-escala = {n(ESCALA)}
-base_esq = {vec(FACH_ESQ)}
-pivo = {vec(FACH_PIVO)}
-base_dir = {vec(FACH_DIR)}
-luz_checar_obstaculos = false
-
-[node name="VaoDaPorta" type="Polygon2D" parent="Fachada"]
-visible = false
-position = Vector2(0, {n(vao_y)})
-light_mask = 2
-color = Color(0.03, 0.03, 0.04, 0.92)
-polygon = {pts(vao)}
-
-[node name="Paredes" type="StaticBody2D" parent="."]
-
-{nos}[node name="AreaInterior" type="Area2D" parent="."]
-collision_layer = 0
-collision_mask = 2
-
-[node name="Interior" type="CollisionPolygon2D" parent="AreaInterior"]
-polygon = {pts(area_interior)}
-
-[node name="Soleira" type="CollisionPolygon2D" parent="AreaInterior"]
-polygon = {pts(soleira)}
-
-[node name="PontoDaPorta" type="Marker2D" parent="."]
-position = {vec(m((PORTA_X0 + PORTA_X1) / 2.0, y1 + 2))}
-'''
-    cam = os.path.join(RAIZ, "scenes/world/buildings")
-    os.makedirs(cam, exist_ok=True)
-    with open(os.path.join(cam, NOME + ".tscn"), "w", encoding="utf-8", newline="\n") as f:
+    cena = "[gd_scene load_steps=%d format=3]\n\n%s\n\n%s\n\n%s\n" % (
+        len(ext) + len(sub) + 1, "\n".join(ext), "\n\n".join(sub), "\n\n".join(nos))
+    cam = os.path.join(RAIZ, "scenes/world/buildings", NOME + ".tscn")
+    os.makedirs(os.path.dirname(cam), exist_ok=True)
+    with open(cam, "w", encoding="utf-8", newline="\n") as f:
         f.write(cena)
-    print("scenes/world/buildings/%s.tscn gerada" % NOME)
-    print("base (tela, rel. ao pivô): esq %s  dir %s  trás %s" % (vec(E), vec(D), vec(T)))
+    print("scenes/world/buildings/%s.tscn — %d paredes, %d aberturas, %d cômodos"
+          % (NOME, len(PAREDES), len(ABERTURAS), len(COMODOS)))
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

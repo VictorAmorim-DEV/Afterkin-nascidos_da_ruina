@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/objetos_natureza/vegetacao_31.png" id="2_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(0, 0, -2.49, -1.25, 0, -2.49, 2.49, -1.25)
+
+[sub_resource type="OccluderPolygon2D" id="oclusor_base"]
+polygon = PackedVector2Array(0, 0, -2.49, -1.25, 0, -2.49, 2.49, -1.25)
+
+[node name="MatoRasteiro" type="StaticBody2D"]
+y_sort_enabled = true
+script = ExtResource("1_prop")
+textura = ExtResource("2_tex")
+escala = 0.3
+base_esq = Vector2(14.08, 63.77)
+pivo = Vector2(22.39, 67.92)
+base_dir = Vector2(30.7, 63.77)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("oclusor_base")

@@ -42,6 +42,18 @@ PROPS = {
     "caixa_madeira":    ("objetos_natureza/recipiente_02", 0.60, "caixa"),
     "barril_azul":      ("objetos_natureza/recipiente_04", 0.60, "caixa"),
     "arvore_jovem":     ("objetos_natureza/arvore_01", 0.80, "tronco"),
+    "mato_alto":        ("objetos_natureza/vegetacao_18", 0.34, "tronco"),
+    "mato_fino":        ("objetos_natureza/vegetacao_19", 0.30, "tronco"),
+    "mato_seco":        ("objetos_natureza/vegetacao_29", 0.30, "tronco"),
+    "mato_rasteiro":    ("objetos_natureza/vegetacao_31", 0.30, "tronco"),
+    "capim":            ("objetos_natureza/vegetacao_40", 0.30, "tronco"),
+    "capim_alto":       ("objetos_natureza/vegetacao_48", 0.34, "tronco"),
+    "arbusto_largo":    ("objetos_natureza/vegetacao_02", 0.40, "tronco"),
+    "arbusto_redondo":  ("objetos_natureza/vegetacao_10", 0.40, "tronco"),
+    "arbusto_baixo":    ("objetos_natureza/vegetacao_20", 0.40, "tronco"),
+    "arbusto_folhudo":  ("objetos_natureza/vegetacao_33", 0.40, "tronco"),
+    "entulho_pedras":   ("objetos_natureza/pedra_05", 0.45, "caixa"),
+    "entulho_laje":     ("objetos_natureza/pedra_03", 0.45, "caixa"),
     "arvore_frondosa":  ("objetos_natureza/arvore_02", 0.80, "tronco"),
     "arvore_outono":    ("objetos_natureza/arvore_03", 0.80, "tronco"),
     "palmeira":         ("objetos_natureza/arvore_04", 0.80, "tronco"),
@@ -66,7 +78,17 @@ CENARIO = [
 
 # construções (scenes/world/buildings, geradas por tools/gerar_construcao.py): (cena, x, y do pivô)
 CONSTRUCOES = [
-    ("casa_abandonada", -420, 120),
+    ("casa_abandonada", -900, 250),
+]
+
+# vegetação, mato e entulho em volta da base da casa, para ela não ficar "colada" no chão
+ENTORNO = [
+    ("capim_alto", -1120, 340), ("mato_alto", -1110, 250), ("arbusto_largo", -1000, 280),
+    ("capim", -900, 300), ("mato_fino", -860, 220), ("arbusto_baixo", -860, 120),
+    ("mato_rasteiro", -830, 30), ("capim_alto", -800, -60), ("arbusto_folhudo", -780, -140),
+    ("mato_seco", -1100, 420), ("capim", -820, 300), ("entulho_pedras", -960, 380),
+    ("entulho_laje", -880, -30), ("arbusto_redondo", -1180, 180), ("mato_alto", -760, -230),
+    ("capim", -1040, 440), ("mato_fino", -700, -300), ("arbusto_largo", -1240, 320),
 ]
 
 
@@ -136,10 +158,10 @@ occluder = SubResource("oclusor_base")
 
 
 def cena_teste():
-    usados = sorted({c[0] for c in CENARIO})
+    usados = sorted({c[0] for c in CENARIO + ENTORNO})
     ext = "".join(f'[ext_resource type="PackedScene" path="res://scenes/world/props_hd/{u}.tscn" id="p_{u}"]\n' for u in usados)
     nos, cont = "", {}
-    for nome, x, y in CENARIO:
+    for nome, x, y in CENARIO + ENTORNO:
         cont[nome] = cont.get(nome, 0) + 1
         no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
         tela = ((x - y) * 0.5, (x + y) * 0.25)          # projeção isométrica 2:1

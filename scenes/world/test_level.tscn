@@ -1,9 +1,13 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/chao/grama.png" id="2_grama"]
 [ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/chao/estrada.png" id="4_estrada"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arbusto_baixo.tscn" id="p_arbusto_baixo"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arbusto_folhudo.tscn" id="p_arbusto_folhudo"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arbusto_largo.tscn" id="p_arbusto_largo"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arbusto_redondo.tscn" id="p_arbusto_redondo"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_fina.tscn" id="p_arvore_fina"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_frondosa.tscn" id="p_arvore_frondosa"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_jovem.tscn" id="p_arvore_jovem"]
@@ -13,9 +17,17 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_destruida.tscn" id="p_barreira_destruida"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_listrada.tscn" id="p_barreira_listrada"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_longa.tscn" id="p_barreira_longa"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/capim.tscn" id="p_capim"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/capim_alto.tscn" id="p_capim_alto"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/carro_capo_aberto.tscn" id="p_carro_capo_aberto"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/entulho_laje.tscn" id="p_entulho_laje"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/entulho_pedras.tscn" id="p_entulho_pedras"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/jipe.tscn" id="p_jipe"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/kombi.tscn" id="p_kombi"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_alto.tscn" id="p_mato_alto"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_fino.tscn" id="p_mato_fino"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_rasteiro.tscn" id="p_mato_rasteiro"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_seco.tscn" id="p_mato_seco"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/palmeira.tscn" id="p_palmeira"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/picape.tscn" id="p_picape"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sacos_areia_a.tscn" id="p_sacos_areia_a"]
@@ -102,5 +114,59 @@ position = Vector2(760, 70)
 [node name="ArvoreJovem2" parent="." instance=ExtResource("p_arvore_jovem")]
 position = Vector2(95, -92.5)
 
+[node name="CapimAlto1" parent="." instance=ExtResource("p_capim_alto")]
+position = Vector2(-730, -195)
+
+[node name="MatoAlto1" parent="." instance=ExtResource("p_mato_alto")]
+position = Vector2(-680, -215)
+
+[node name="ArbustoLargo1" parent="." instance=ExtResource("p_arbusto_largo")]
+position = Vector2(-640, -180)
+
+[node name="Capim1" parent="." instance=ExtResource("p_capim")]
+position = Vector2(-600, -150)
+
+[node name="MatoFino1" parent="." instance=ExtResource("p_mato_fino")]
+position = Vector2(-540, -160)
+
+[node name="ArbustoBaixo1" parent="." instance=ExtResource("p_arbusto_baixo")]
+position = Vector2(-490, -185)
+
+[node name="MatoRasteiro1" parent="." instance=ExtResource("p_mato_rasteiro")]
+position = Vector2(-430, -200)
+
+[node name="CapimAlto2" parent="." instance=ExtResource("p_capim_alto")]
+position = Vector2(-370, -215)
+
+[node name="ArbustoFolhudo1" parent="." instance=ExtResource("p_arbusto_folhudo")]
+position = Vector2(-320, -230)
+
+[node name="MatoSeco1" parent="." instance=ExtResource("p_mato_seco")]
+position = Vector2(-760, -170)
+
+[node name="Capim2" parent="." instance=ExtResource("p_capim")]
+position = Vector2(-560, -130)
+
+[node name="EntulhoPedras1" parent="." instance=ExtResource("p_entulho_pedras")]
+position = Vector2(-670, -145)
+
+[node name="EntulhoLaje1" parent="." instance=ExtResource("p_entulho_laje")]
+position = Vector2(-425, -227.5)
+
+[node name="ArbustoRedondo1" parent="." instance=ExtResource("p_arbusto_redondo")]
+position = Vector2(-680, -250)
+
+[node name="MatoAlto2" parent="." instance=ExtResource("p_mato_alto")]
+position = Vector2(-265, -247.5)
+
+[node name="Capim3" parent="." instance=ExtResource("p_capim")]
+position = Vector2(-740, -150)
+
+[node name="MatoFino2" parent="." instance=ExtResource("p_mato_fino")]
+position = Vector2(-200, -250)
+
+[node name="ArbustoLargo2" parent="." instance=ExtResource("p_arbusto_largo")]
+position = Vector2(-780, -230)
+
 [node name="CasaAbandonada" parent="." instance=ExtResource("c_casa_abandonada")]
-position = Vector2(-270, -75)
+position = Vector2(-575, -162.5)
