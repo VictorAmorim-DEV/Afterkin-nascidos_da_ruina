@@ -6,14 +6,15 @@ extends CharacterBody2D
 const FRAMES := {
 	"zombie": "res://resources/sprite_frames/zumbi.tres",
 	"rat": "res://resources/sprite_frames/rato_gigante.tres",
+	"vampire": "res://resources/sprite_frames/vampiro.tres",
 }
-const NOMES := {"zombie": "Zumbi", "rat": "Rato gigante"}
+const NOMES := {"zombie": "Zumbi", "rat": "Rato gigante", "vampire": "Vampiro"}
 const M := IsoMath.METRO
 const DIRECOES: Array[String] = ["frente", "lado", "costas"]
 
-@export_enum("zombie", "rat") var raca: String = "zombie"
+@export_enum("zombie", "rat", "vampire") var raca: String = "zombie"
 @export var dorme: bool = true
-var casa: Edificio = null          ## casa onde mora (a V13 só usa para vampiros; aqui guarda a origem)
+var casa: Edificio = null          ## casa onde mora; o vampiro volta para ela de dia e dorme
 
 var hp: float = 45.0
 var hp_max: float = 45.0
@@ -79,7 +80,7 @@ func _physics_process(delta: float) -> void:
 		if d < ouve:
 			dorme = false
 			alerta = 4.0
-		elif _noite() and raca == "rat" and not saiu:
+		elif _noite() and (raca == "rat" or raca == "vampire") and not saiu:
 			dorme = false
 			passeio = true
 			saiu = true
@@ -91,11 +92,26 @@ func _physics_process(delta: float) -> void:
 		alerta = 4.0
 
 	var vel := 62.0 if raca == "rat" else 46.0
+	var noite := _noite()
+	if raca == "vampire" and noite:
+		vel *= 1.35
 	var alvo := Vector2.ZERO
 	var tem_alvo := false
 	if alerta > 0.0 and d < 28.0 * M:
 		alvo = pm
 		tem_alvo = true
+	elif casa != null and raca == "vampire" and not noite:
+		# de dia o vampiro volta para o primeiro cômodo da casa e volta a dormir
+		var s: Dictionary = casa.salas[0]
+		alvo = Vector2((s.x0 + s.x1) / 2.0 * Edificio.TILE, (s.y0 + s.y1) / 2.0 * Edificio.TILE) \
+			+ IsoMath.tela_para_mundo(casa.global_position)
+		tem_alvo = true
+		vel *= 0.8
+		if eb == casa and em.distance_to(alvo) < 1.2 * M:
+			dorme = true
+			saiu = false
+			passeio = false
+			return
 	elif passeio:
 		_t_alvo += delta
 		if _alvo_passeio == Vector2.ZERO or em.distance_to(_alvo_passeio) < 30.0 or _t_alvo > 12.0:
@@ -146,7 +162,9 @@ func _physics_process(delta: float) -> void:
 	if d < 24.0 and ataque_t <= 0.0 and eb == pb:
 		ataque_t = 1.3
 		golpe_t = 0.25
-		j.receber_dano(8.0 if raca == "zombie" else 6.0, NOMES[raca])
+		j.receber_dano(8.0 if raca == "zombie" else 6.0, raca)
+		if randf() < 0.12:
+			j.infectar(raca)
 	_animar(dir if dir != Vector2.ZERO else (pm - em), dir != Vector2.ZERO)
 
 

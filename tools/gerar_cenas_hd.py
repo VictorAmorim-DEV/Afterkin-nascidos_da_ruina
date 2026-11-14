@@ -91,6 +91,7 @@ INIMIGOS = [
     ("Zumbi1", "zombie", -520, -330, True), ("Zumbi2", "zombie", 760, 330, True),
     ("Rato1", "rat", 330, -560, True), ("Rato2", "rat", -380, 560, True),
     ("Zumbi3", "zombie", -1000, 820, False),
+    ("Vampiro1", "vampire", 620, -380, True), ("Vampiro2", "vampire", -250, 760, True),
 ]
 
 

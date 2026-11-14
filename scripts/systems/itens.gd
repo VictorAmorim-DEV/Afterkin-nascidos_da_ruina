@@ -49,17 +49,19 @@ static func stack_max(id: String) -> int:
 	return DB[id].stack
 
 
-static func custo_receita(id: String, nivel: int = 1) -> Array:
-	## Jogador humano: ferramentas custam 80% (arredondado para cima), como na V13.
+static func custo_receita(id: String, nivel: int = 1, raca: String = "human") -> Array:
+	## Humano: ferramentas custam 80% (arredondado ao inteiro mais próximo; a V13 arredonda para cima e o desconto some) e o totem sai mais barato (V13: recipeCost).
 	for r in RECEITAS:
 		if r.id == id:
 			var out: Array = []
 			for c in r.custo:
-				out.append([c[0], ceili(c[1] * 0.8)])
+				out.append([c[0], roundi(c[1] * 0.8) if raca == "human" else c[1]])
 			return out
 	if id == "totem":
 		var t := int((nivel - 1) / 5.0)
-		return [["madeira", 8 + t * 4], ["sucata", 4 + t * 3]]
+		if raca == "human":
+			return [["madeira", 8 + t * 4], ["sucata", 4 + t * 3]]
+		return [["madeira", 10 + t * 5], ["sucata", 5 + t * 3]]
 	return []
 
 

@@ -59,6 +59,10 @@ var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
 var morto: bool = false
+var raca: String = "human"               ## human, rat, vampire ou zombie (V13: player.race)
+var forma: String = "human"              ## só o rato alterna: "human" ou "rat" (V13: player.form)
+var doenca: Dictionary = {}              ## vazio = saudável; {tipo, horas, estagio, origem}
+var sol: float = 0.0                     ## exposição solar do vampiro (0 a 60; acima disso queima)
 
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
@@ -95,6 +99,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			stamina -= gasto_pulo
 	elif event.is_action_pressed("attack"):
 		atacar()
+	elif event.is_action_pressed("transform"):
+		transformar()
 	elif event.is_action_pressed("flashlight"):
 		lanterna_ligada = not lanterna_ligada
 
@@ -200,6 +206,10 @@ func velocidade_atual() -> float:
 		v = prone_speed
 	if exausto:
 		v *= 0.85
+	if raca == "zombie":
+		v *= 0.85
+	if forma_rato():
+		v *= 1.25
 	return v
 
 
@@ -350,6 +360,8 @@ func _atualizar_vitais(delta: float) -> void:
 	fome = maxf(0.0, fome - delta * 0.13)
 	if fome <= 0.0:
 		vida = maxf(0.0, vida - delta * 0.7)
+	_atualizar_sol(delta)
+	_atualizar_doenca(delta)
 	if vida <= 0.0 and not morto:
 		_morrer()
 
@@ -376,11 +388,6 @@ func comer() -> bool:
 	vida = minf(vida_max, vida + 8.0)
 	aviso("Você comeu e recuperou energia.")
 	return true
-
-
-## Doenças ainda não foram migradas (V13: player.disease): sem doença ativa, o remédio não é gasto.
-func usar_antibiotico() -> void:
-	aviso("Você não possui uma doença ativa.")
 
 
 ## Larga 'qtd' (0 = tudo) do slot no chão, à frente do jogador.
@@ -437,16 +444,27 @@ func atacar() -> void:
 		aviso("Nada ao alcance.")
 		ataque_cd = 0.35
 		return
-	var dano: float = 16.0 * 1.1 * BONUS_ARMA.get(inventario.id_equipado(), 1.0)
-	ataque_cd = 0.6
+	var dano: float = 16.0 if raca == "human" else (23.0 if raca == "zombie" else (19.0 if forma_rato() else 18.0))
+	if raca == "human":
+		dano *= 1.1
+	if raca == "vampire" and _eh_noite():
+		dano *= 1.3
+	if forma_rato():
+		dano *= 1.3
+	dano *= BONUS_ARMA.get(inventario.id_equipado(), 1.0)
+	ataque_cd = 0.42 if forma_rato() else 0.6
 	golpe_t = 0.2
 	aviso("Você acertou um %s (%d de dano)." % [Inimigo.NOMES[alvo.raca], roundi(dano)])
 	alvo.receber_dano(dano)
+	if not alvo.morto and alvo.raca != "zombie" and randf() < 0.18:
+		infectar(alvo.raca)
 
 
-func receber_dano(n: float, _quem: String = "") -> void:
+func receber_dano(n: float, quem: String = "") -> void:
 	if morto:
 		return
+	if raca == "zombie" and quem == "rat":
+		return                                   # zumbi não sente a mordida do rato (V13)
 	vida = maxf(0.0, vida - n)
 	sprite.modulate = Color(1.0, 0.4, 0.4)
 	create_tween().tween_property(sprite, "modulate", Color.WHITE, 0.25)
@@ -454,9 +472,182 @@ func receber_dano(n: float, _quem: String = "") -> void:
 
 func _morrer() -> void:
 	morto = true
+	SelecaoRaca.titulo_proximo = "Você não sobreviveu"
 	aviso("Você morreu. O mundo continua sem você.")
 	set_physics_process(false)
 	sprite.animation = &"caido"
 	sprite.frame = 0
 	await get_tree().create_timer(3.0).timeout
 	get_tree().reload_current_scene()
+
+
+# =====================================================================
+# RAÇAS, SOL DO VAMPIRO E DOENÇAS (V13: start, transform, maxLife, infectPlayer, useMed, step)
+# =====================================================================
+const NOMES_RACA := {"human": "Humano", "rat": "Rato", "vampire": "Vampiro", "zombie": "Zumbi"}
+
+
+func forma_rato() -> bool:
+	return raca == "rat" and forma == "rat"
+
+
+func vida_max_atual() -> float:
+	return 60.0 if forma_rato() else 100.0
+
+
+## Escolhe a raça. 'reiniciar' = começo de partida (zera vida, fome, XP, nível, doença e mochila).
+func definir_raca(r: String, reiniciar: bool = true) -> void:
+	raca = r
+	forma = "rat" if r == "rat" else "human"
+	vida_max = vida_max_atual()
+	if reiniciar:
+		vida = vida_max
+		fome = 100.0
+		xp = 0
+		nivel = 1
+		sol = 0.0
+		doenca = {}
+		inventario.inicial()
+	else:
+		vida = minf(vida, vida_max)
+	_aplicar_frames()
+
+
+func _aplicar_frames() -> void:
+	var nome := "humano"
+	match raca:
+		"rat":
+			nome = "rato_gigante" if forma_rato() else "homem_rato"
+		"vampire":
+			nome = "vampiro"
+		"zombie":
+			nome = "zumbi"
+	sprite.sprite_frames = load("res://resources/sprite_frames/%s.tres" % nome)
+
+
+func transformar() -> void:
+	if raca != "rat":
+		aviso("Apenas ratos alternam entre forma humana e rato.")
+		return
+	forma = "human" if forma == "rat" else "rat"
+	vida_max = vida_max_atual()
+	vida = minf(vida, vida_max)
+	_aplicar_frames()
+	aviso("Você assumiu a forma de %s." % ("rato" if forma_rato() else "humano"))
+
+
+func _eh_noite() -> bool:
+	if _ciclo == null:
+		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
+	return _ciclo != null and _ciclo.eh_noite()
+
+
+## Quanto tempo de jogo passa por segundo real (minutos), para as doenças acompanharem o relógio.
+func _min_por_s() -> float:
+	if _ciclo == null:
+		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
+	if _ciclo == null:
+		return 24.0
+	return 0.0 if _ciclo.pausado else _ciclo.minutos_por_segundo
+
+
+func _dentro_de_casa() -> bool:
+	for e in get_tree().get_nodes_in_group("edificio"):
+		if e.jogador_dentro():
+			return true
+	return false
+
+
+## Vampiro de dia, a céu aberto. (A V13 só protege com totem/abrigo, que ainda não existem aqui;
+## por isso entrar numa casa também abriga do sol.)
+func exposto_ao_sol() -> bool:
+	return raca == "vampire" and not _eh_noite() and not _dentro_de_casa()
+
+
+func _atualizar_sol(delta: float) -> void:
+	if raca == "vampire" and not _eh_noite():
+		if exposto_ao_sol():
+			sol += delta * _min_por_s() / 60.0
+			if sol > 60.0:
+				vida = maxf(0.0, vida - delta * 3.0)
+		else:
+			sol = maxf(0.0, sol - delta * 0.2)
+	elif _eh_noite():
+		sol = maxf(0.0, sol - delta)
+
+
+## Mordida/golpe de inimigo (V13: infectPlayer). Cada origem causa uma doença diferente.
+func infectar(origem: String) -> void:
+	if raca == "zombie" and origem == "rat":
+		return
+	if raca == origem and origem != "rat":
+		return                                   # já é dessa raça: a mutação não faria nada
+	var chance := 0.4 if origem == "rat" else (0.45 if origem == "vampire" else 0.5)
+	if raca == "human":
+		chance += 0.1
+	if randf() >= chance:
+		return
+	match origem:
+		"rat":
+			doenca = {"tipo": "Leptospirose", "horas": 48.0, "estagio": 0.0, "origem": "rat"}
+			aviso("Mordida contaminada! Leptospirose contraída. Procure antibióticos.")
+		"vampire":
+			doenca = {"tipo": "Mutação vampírica", "horas": 24.0, "estagio": 0.0, "origem": "vampire"}
+			aviso("Você foi mordido. A mutação começou: encontre um antídoto em ninhos de morcegos.")
+		_:
+			doenca = {"tipo": "Infecção zumbi", "horas": 24.0, "estagio": 0.0, "origem": "zombie"}
+			aviso("Infecção zumbi contraída. A transformação ou morte pode ocorrer em 24h.")
+
+
+func _atualizar_doenca(delta: float) -> void:
+	if doenca.is_empty():
+		return
+	# a V13 tira 24 "horas" por segundo real (esgota em 2 s); aqui a doença corre com o relógio do jogo
+	doenca.horas -= delta * _min_por_s() / 60.0
+	doenca.estagio = minf(3.0, (48.0 - doenca.horas) / 12.0)
+	if doenca.horas > 0.0:
+		return
+	if doenca.tipo == "Leptospirose":
+		if randf() < 0.7:
+			vida = 0.0
+			aviso("A leptospirose foi fatal.")
+		else:
+			aviso("Seu organismo resistiu à leptospirose.")
+	elif randf() < 0.5:
+		var nova: String = doenca.origem
+		doenca = {}
+		definir_raca(nova, false)
+		aviso("A mutação completou: você agora é %s." % NOMES_RACA[nova])
+	else:
+		vida = 0.0
+		aviso("A infecção foi fatal.")
+	doenca = {}
+
+
+func texto_doenca() -> String:
+	if doenca.is_empty():
+		return "Saudável"
+	return "%s · estágio %d · %dh restantes" % [doenca.tipo, int(doenca.estagio), maxi(0, ceili(doenca.horas))]
+
+
+## Antibiótico (V13: useMed): sem doença não é gasto. Leptospirose pede 2 para curar; 1 só alivia.
+func usar_antibiotico() -> void:
+	if doenca.is_empty():
+		aviso("Você não possui uma doença ativa.")
+		return
+	if inventario.contar("antibiotico") <= 0:
+		aviso("Você não tem antibióticos ou antídoto.")
+		return
+	inventario.remover("antibiotico", 1)
+	if doenca.tipo == "Leptospirose":
+		if inventario.contar("antibiotico") > 0:
+			inventario.remover("antibiotico", 1)
+			doenca = {}
+			aviso("Dois antibióticos eliminaram a leptospirose.")
+		else:
+			doenca.horas += 12.0
+			doenca.estagio = maxf(0.0, doenca.estagio - 1.0)
+			aviso("Um antibiótico reduziu os sintomas e prolongou o prazo em 12h.")
+	else:
+		doenca = {}
+		aviso("O tratamento interrompeu a mutação.")

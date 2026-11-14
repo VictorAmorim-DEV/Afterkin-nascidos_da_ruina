@@ -285,3 +285,13 @@ dorme = true
 position = Vector2(-910, -45)
 raca = "zombie"
 dorme = false
+
+[node name="Vampiro1" parent="." instance=ExtResource("e_inimigo")]
+position = Vector2(500, 60)
+raca = "vampire"
+dorme = true
+
+[node name="Vampiro2" parent="." instance=ExtResource("e_inimigo")]
+position = Vector2(-505, 127.5)
+raca = "vampire"
+dorme = true

@@ -15,6 +15,8 @@ var _preenchimento := StyleBoxFlat.new()
 var _vida_barra := ProgressBar.new()
 var _fome_barra := ProgressBar.new()
 var _vida_texto := Label.new()
+var _saude_texto := Label.new()
+var _sol_tela := TextureRect.new()
 var _toast := Label.new()
 var _toast_tween: Tween
 
@@ -81,8 +83,16 @@ func _process(_delta: float) -> void:
 	_vida_barra.max_value = _jogador.vida_max
 	_vida_barra.value = _jogador.vida
 	_fome_barra.value = _jogador.fome
-	_vida_texto.text = "VIDA %d/%d · FOME %d%% · NÍVEL %d (XP %d/%d)" % [ceili(_jogador.vida), int(_jogador.vida_max),
-		int(_jogador.fome), _jogador.nivel, _jogador.xp, _jogador.nivel * 100]
+	var forma: String = " · FORMA RATO" if _jogador.forma_rato() else ""
+	_vida_texto.text = "%s%s · NÍVEL %d (XP %d/%d)\nVIDA %d/%d · FOME %d%%" % [_jogador.NOMES_RACA[_jogador.raca].to_upper(), forma,
+		_jogador.nivel, _jogador.xp, _jogador.nivel * 100, ceili(_jogador.vida), int(_jogador.vida_max), int(_jogador.fome)]
+	var doente: bool = not _jogador.doenca.is_empty()
+	_saude_texto.text = "SAÚDE: " + _jogador.texto_doenca()
+	if _jogador.raca == "vampire":
+		_saude_texto.text += "\nSOL %d/60%s" % [int(_jogador.sol), " · QUEIMANDO" if _jogador.sol > 60.0 else ""]
+	_saude_texto.modulate = Color(1.0, 0.45, 0.4) if doente else Color(0.7, 1.0, 0.7)
+	_sol_tela.visible = _jogador.exposto_ao_sol()
+	_sol_tela.modulate.a = clampf(_jogador.sol / 30.0 + 0.35, 0.35, 1.0)
 
 
 func _barra(b: ProgressBar, cor: Color) -> void:
@@ -107,10 +117,32 @@ func _montar_vitais() -> void:
 	_barra(_vida_barra, Color(0.78, 0.25, 0.22))
 	_barra(_fome_barra, Color(0.85, 0.62, 0.25))
 	_fome_barra.max_value = 100.0
-	for n in [_vida_texto, _vida_barra, _fome_barra]:
+	_saude_texto.add_theme_font_size_override("font_size", 13)
+	_saude_texto.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_saude_texto.add_theme_constant_override("outline_size", 4)
+	# vinheta escura do sol (V13: gradiente radial quando o vampiro está exposto)
+	var g := Gradient.new()
+	g.offsets = PackedFloat32Array([0.35, 1.0])
+	g.colors = PackedColorArray([Color(0, 0, 0, 0), Color(0, 0, 0, 0.75)])
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 256
+	tex.height = 256
+	_sol_tela.texture = tex
+	_sol_tela.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_sol_tela.stretch_mode = TextureRect.STRETCH_SCALE
+	_sol_tela.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_sol_tela.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sol_tela.visible = false
+	add_child(_sol_tela)
+	move_child(_sol_tela, 0)
+	for n in [_vida_texto, _vida_barra, _fome_barra, _saude_texto]:
 		painel.add_child(n)
 		painel.move_child(n, painel.get_child_count() - 2)     # antes da linha de ajuda
-	ajuda.text += " · I mochila · botão esquerdo atacar/colher"
+	ajuda.text += " · I mochila · botão esquerdo atacar/colher · Q forma (rato) · F9 trocar raça"
 
 
 func _montar_toast() -> void:

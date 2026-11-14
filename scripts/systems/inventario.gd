@@ -177,7 +177,7 @@ func usar(i: int) -> void:
 
 
 func fabricar(id: String) -> void:
-	var custo := Itens.custo_receita(id)
+	var custo := Itens.custo_receita(id, jogador.nivel, jogador.raca)
 	for c in custo:
 		if contar(c[0]) < c[1]:
 			aviso.emit("Materiais insuficientes.")

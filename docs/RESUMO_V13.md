@@ -16,18 +16,20 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 
 ## Combate e inimigos
 - ✅ `attack` (l.1415), `nearestEnemy` (l.1397) → `Player.atacar`; ✅ morte do jogador (`step`, l.1848)
-- ⬜ `infectPlayer` (l.1436), `useMed` (doenças)
+- ✅ `infectPlayer` (l.1436), `useMed` (l.1452) → `Player.infectar` / `usar_antibiotico`
 - ✅ `atualizarInimigos` (l.1358), `rota`, `proxPorta` (l.1346-1357) → `Inimigo` + `Edificio.rota_*`; zumbi arromba porta, rato abre
-- ⬜ vampiro (dorme de dia, sai à noite), `cortes` (l.1342, só desenho de parede)
-- ✅ `povoarEdificios` (l.1160) só zumbi/rato (`Edificio.moradores`); ⬜ prédios altos e vampiros
+- ✅ vampiro inimigo (dorme de dia, sai à noite ×1,35, volta para casa); ⬜ `cortes` (l.1342, só desenho de parede)
+- ✅ `povoarEdificios` (l.1160): zumbi 58% / vampiro 22% / rato 20% (`Edificio.moradores`); ⬜ prédios altos
 - ⬜ inimigos pelo mundo aberto (hoje só os da cena de teste)
-- ✅ sprites HD de zumbi e rato gigante (`SpriteFrames`); ⬜ vampiro/homem-rato jogáveis
+- ✅ sprites HD das 4 raças (`SpriteFrames`: humano, homem_rato, rato_gigante, vampiro, zumbi)
 
 ## Raças e formas
-- ⬜ `race()`, `formRat()`, `transform` (l.1446), `maxLife` (l.153), `speed`
-- ⬜ vampiro: `player.sun` e exposição (l.1845), antídoto; zumbi; rato (forma rato/humano)
-- ⬜ `player.disease` (Leptospirose, Mutação vampírica, Infecção zumbi, l.1846)
-- ⬜ fome: `player.food` decai 0,13/s (l.1844) → feito junto do inventário
+- ✅ `race()`, `formRat()`, `transform` (l.1446), `maxLife` (l.153), `speed` (l.152) → `Player.definir_raca` etc.
+- ✅ tela de seleção (`start`, `descriptions`, l.23-24, 1384-1389) → `SelecaoRaca` (F9 troca nos testes)
+- ✅ ataque por raça (l.1419-1420), `recipeCost` humano (l.107-108)
+- ✅ vampiro jogável: `player.sun`, vinheta e dano do sol (l.1745, 1845); ⬜ antídoto de ninho de morcegos, totem/abrigo como proteção
+- ✅ `player.disease` (Leptospirose, Mutação vampírica, Infecção zumbi, l.1846), mutação de raça ao fim; ⬜ efeitos do estágio (a V13 não tem)
+- ✅ fome: `player.food` decai 0,13/s (l.1844) → feito junto do inventário
 
 ## Veículos / cenário (objetos `COD`, l.691-727)
 - ⬜ `COD`, `codObj`, `codBox`, `estacionamento` (l.728), `SPR_CAR` (l.984)

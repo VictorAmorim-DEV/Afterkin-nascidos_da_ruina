@@ -116,6 +116,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func alternar() -> void:
+	if not visible and get_tree().paused:
+		return                                   # a seleção de raça está aberta
 	visible = not visible
 	get_tree().paused = visible
 	if visible:
@@ -179,7 +181,7 @@ func _montar_receitas() -> void:
 	for c in _receitas.get_children():
 		c.queue_free()
 	for r in Itens.RECEITAS:
-		var custo := Itens.custo_receita(r.id)
+		var custo := Itens.custo_receita(r.id, _jogador.nivel, _jogador.raca)
 		var linha := HBoxContainer.new()
 		var txt := Label.new()
 		txt.size_flags_horizontal = Control.SIZE_EXPAND_FILL

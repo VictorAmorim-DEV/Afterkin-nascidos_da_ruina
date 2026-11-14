@@ -733,7 +733,8 @@ func _porta_perto(p: Vector2):
 func _povoar() -> void:
 	var cena: PackedScene = load("res://scenes/enemies/inimigo.tscn")
 	for k in moradores:
-		var raca := "zombie" if _rng.randf() < 0.72 else "rat"
+		var sorteio := _rng.randf()
+		var raca := "zombie" if sorteio < 0.58 else ("vampire" if sorteio < 0.8 else "rat")
 		var s: Dictionary = _pick(salas)
 		for t in 10:
 			var x: float = (s.x0 + 0.5 + _rng.randf() * (s.x1 - s.x0 - 1)) * TILE
