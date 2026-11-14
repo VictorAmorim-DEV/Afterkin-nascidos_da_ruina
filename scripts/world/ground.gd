@@ -1,28 +1,29 @@
 extends Node2D
-## Chão de teste: desenha os tiles (quadrados, 128 px) projetados em isométrico 2:1,
-## como o protótipo fazia. Provisório — será trocado pelo mapa real nas próximas fases.
+## Chão da cena de teste: grama e estrada HD (texturas vistas de cima) projetadas
+## em isométrico 2:1. As texturas vêm de tools/preparar_chao_hd.py e se repetem sem emenda.
+## Provisório — será trocado pelo mapa real nas próximas fases.
 
-@export var tiles: Texture2D
-@export var raio: int = 14                 ## tamanho do chão, em tiles, para cada lado
-
-const ORIGEM := 128.0                      ## tamanho de cada tile na imagem
-const GRAMA := [Vector2i(0, 0), Vector2i(1, 0), Vector2i(2, 0), Vector2i(3, 0)]
-const ASFALTO := [Vector2i(6, 1), Vector2i(6, 1), Vector2i(7, 1)]
-const CALCADA := [Vector2i(5, 1), Vector2i(4, 1)]
+@export var grama: Texture2D
+@export var estrada: Texture2D
+@export var raio: float = 1500.0              ## alcance do chão, em unidades de mundo, para cada lado
+@export var unidades_por_px: float = 2.0      ## tamanho no mundo de cada px da textura
+@export var estrada_x: float = 30.0           ## x de mundo da borda esquerda da faixa da estrada (ela corre no eixo Y)
 
 
 func _draw() -> void:
-	if tiles == null:
-		return
 	draw_set_transform_matrix(IsoMath.ISO)
-	var t := IsoMath.TILE
-	for y in range(-raio, raio):
-		for x in range(-raio, raio):
-			var lista := GRAMA
-			if x >= 3 and x <= 5:
-				lista = ASFALTO
-			elif x == 2 or x == 6:
-				lista = CALCADA
-			var c: Vector2i = lista[absi(x * 73 + y * 151 + x * y * 7) % lista.size()]
-			var origem := Rect2(c.x * ORIGEM + 0.5, c.y * ORIGEM + 0.5, ORIGEM - 1.0, ORIGEM - 1.0)
-			draw_texture_rect_region(tiles, Rect2(x * t, y * t, t + 0.5, t + 0.5), origem)
+	if grama:
+		var t := grama.get_size() * unidades_por_px
+		var x := -ceilf(raio / t.x) * t.x
+		while x < raio:
+			var y := -ceilf(raio / t.y) * t.y
+			while y < raio:
+				draw_texture_rect(grama, Rect2(x, y, t.x, t.y), false)
+				y += t.y
+			x += t.x
+	if estrada:
+		var e := estrada.get_size() * unidades_por_px
+		var ye := -ceilf(raio / e.y) * e.y
+		while ye < raio:
+			draw_texture_rect(estrada, Rect2(estrada_x, ye, e.x, e.y), false)
+			ye += e.y

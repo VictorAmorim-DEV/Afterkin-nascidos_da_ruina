@@ -1,0 +1,74 @@
+[gd_resource type="SpriteFrames" load_steps=11 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/personagens/rato_feral.png" id="1_atlas"]
+
+[sub_resource type="AtlasTexture" id="q_5_0"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_1"]
+atlas = ExtResource("1_atlas")
+region = Rect2(160, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_2"]
+atlas = ExtResource("1_atlas")
+region = Rect2(320, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_3"]
+atlas = ExtResource("1_atlas")
+region = Rect2(480, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_4"]
+atlas = ExtResource("1_atlas")
+region = Rect2(640, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_5"]
+atlas = ExtResource("1_atlas")
+region = Rect2(800, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_6"]
+atlas = ExtResource("1_atlas")
+region = Rect2(960, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_7"]
+atlas = ExtResource("1_atlas")
+region = Rect2(1120, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_5_8"]
+atlas = ExtResource("1_atlas")
+region = Rect2(1280, 0, 160, 168)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_5_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_7")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_5_8")
+}],
+"loop": true,
+"name": &"correr",
+"speed": 14.0
+}]

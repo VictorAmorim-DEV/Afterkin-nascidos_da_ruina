@@ -1,0 +1,172 @@
+[gd_resource type="SpriteFrames" load_steps=17 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/personagens/homem_rato.png" id="1_atlas"]
+
+[sub_resource type="AtlasTexture" id="q_0_0"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_0_1"]
+atlas = ExtResource("1_atlas")
+region = Rect2(160, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_0_2"]
+atlas = ExtResource("1_atlas")
+region = Rect2(320, 0, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_1_0"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 168, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_1_1"]
+atlas = ExtResource("1_atlas")
+region = Rect2(160, 168, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_1_2"]
+atlas = ExtResource("1_atlas")
+region = Rect2(320, 168, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_2_0"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 336, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_2_1"]
+atlas = ExtResource("1_atlas")
+region = Rect2(160, 336, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_2_2"]
+atlas = ExtResource("1_atlas")
+region = Rect2(320, 336, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_3_0"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 504, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_4_0"]
+atlas = ExtResource("1_atlas")
+region = Rect2(0, 672, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_3_1"]
+atlas = ExtResource("1_atlas")
+region = Rect2(160, 504, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_4_1"]
+atlas = ExtResource("1_atlas")
+region = Rect2(160, 672, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_3_2"]
+atlas = ExtResource("1_atlas")
+region = Rect2(320, 504, 160, 168)
+
+[sub_resource type="AtlasTexture" id="q_4_2"]
+atlas = ExtResource("1_atlas")
+region = Rect2(320, 672, 160, 168)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_4_0")
+}],
+"loop": false,
+"name": &"agachar_costas",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_4_0")
+}],
+"loop": false,
+"name": &"agachar_frente",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_4_1")
+}],
+"loop": false,
+"name": &"agachar_lado",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_2_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_2_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_2_2")
+}],
+"loop": true,
+"name": &"andar_costas",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_0_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_0_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_0_2")
+}],
+"loop": true,
+"name": &"andar_frente",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_1_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_1_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("q_1_2")
+}],
+"loop": true,
+"name": &"andar_lado",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_3_0")
+}],
+"loop": false,
+"name": &"atacar_costas",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_3_0")
+}],
+"loop": false,
+"name": &"atacar_frente",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_3_1")
+}],
+"loop": false,
+"name": &"atacar_lado",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_3_2")
+}],
+"loop": false,
+"name": &"caido",
+"speed": 1.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("q_4_2")
+}],
+"loop": false,
+"name": &"deitado",
+"speed": 1.0
+}]

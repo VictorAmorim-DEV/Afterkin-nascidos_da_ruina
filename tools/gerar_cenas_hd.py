@@ -47,16 +47,17 @@ PROPS = {
 }
 
 # cenário de teste: (cena, x, y) com a posição do PIVÔ em unidades de mundo.
-# A estrada ocupa x de 192 a 384 e corre ao longo do eixo Y (ver scripts/world/ground.gd).
+# A estrada HD corre ao longo do eixo Y; o asfalto vai de x = 134 a 440, com a faixa
+# amarela em x = 287 (ver scripts/world/ground.gd e tools/preparar_chao_hd.py).
 CENARIO = [
-    ("kombi", 345, 60), ("sedan_enferrujado", 335, -330), ("picape", 350, 470),
-    ("sedan_amarelo", 300, 800), ("carro_capo_aberto", -260, 330), ("jipe", -120, -400),
-    ("barreira_longa", 262, 205), ("barreira_curta", 372, 208), ("barreira_listrada", 250, -600),
-    ("barreira_destruida", 385, -590), ("sacos_areia_b", 120, 150), ("sacos_areia_a", 470, 250),
+    ("kombi", 425, 60), ("sedan_enferrujado", 270, -330), ("picape", 430, 470),
+    ("sedan_amarelo", 275, 800), ("carro_capo_aberto", -260, 330), ("jipe", -120, -400),
+    ("barreira_longa", 250, 215), ("barreira_curta", 300, 190), ("barreira_listrada", 300, -620),
+    ("barreira_destruida", 440, -600), ("sacos_areia_b", 100, 150), ("sacos_areia_a", 560, 250),
     ("arvore_frondosa", -220, -160), ("arvore_outono", -520, -40), ("arvore_fina", -140, -640),
-    ("arvore_jovem", -560, 330), ("palmeira", -300, 640), ("arvore_morta", 640, -200),
-    ("arvore_frondosa", 660, 330), ("arvore_fina", 560, 720), ("arvore_outono", 720, -560),
-    ("arvore_jovem", 60, -260),
+    ("arvore_jovem", -560, 330), ("palmeira", -300, 640), ("arvore_morta", 780, -200),
+    ("arvore_frondosa", 940, 330), ("arvore_fina", 900, 780), ("arvore_outono", 900, -620),
+    ("arvore_jovem", -90, -280),
 ]
 
 
@@ -128,10 +129,11 @@ def cena_teste():
         no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
         tela = ((x - y) * 0.5, (x + y) * 0.25)          # projeção isométrica 2:1
         nos += f'[node name="{no}" parent="." instance=ExtResource("p_{nome}")]\nposition = {vec(tela)}\n\n'
-    return f'''[gd_scene load_steps={len(usados) + 4} format=3]
+    return f'''[gd_scene load_steps={len(usados) + 5} format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
-[ext_resource type="Texture2D" path="res://assets/tilesets/terrain_tiles.jpg" id="2_tiles"]
+[ext_resource type="Texture2D" path="res://{REC}/chao/grama.png" id="2_grama"]
+[ext_resource type="Texture2D" path="res://{REC}/chao/estrada.png" id="4_estrada"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
 {ext}
 [node name="TestLevel" type="Node2D"]
@@ -139,8 +141,10 @@ y_sort_enabled = true
 
 [node name="Ground" type="Node2D" parent="."]
 z_index = -1
+texture_filter = 2
 script = ExtResource("1_ground")
-tiles = ExtResource("2_tiles")
+grama = ExtResource("2_grama")
+estrada = ExtResource("4_estrada")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 

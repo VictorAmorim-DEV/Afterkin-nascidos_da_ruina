@@ -1,0 +1,116 @@
+{
+ "celula": [
+  160,
+  168
+ ],
+ "pivo": [
+  80,
+  160
+ ],
+ "altura_humano_px": 144,
+ "escala_sugerida": 0.3681,
+ "racas": {
+  "humano": {
+   "atlas": "assets/sprites_hd_recortados/personagens/humano.png",
+   "linhas": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "colunas": {
+    "0": 4,
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 9
+   }
+  },
+  "homem_rato": {
+   "atlas": "assets/sprites_hd_recortados/personagens/homem_rato.png",
+   "linhas": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "colunas": {
+    "0": 3,
+    "1": 3,
+    "2": 3,
+    "3": 3,
+    "4": 3
+   }
+  },
+  "rato_gigante": {
+   "atlas": "assets/sprites_hd_recortados/personagens/rato_gigante.png",
+   "linhas": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "colunas": {
+    "0": 4,
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 9
+   }
+  },
+  "vampiro": {
+   "atlas": "assets/sprites_hd_recortados/personagens/vampiro.png",
+   "linhas": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "colunas": {
+    "0": 4,
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 9
+   }
+  },
+  "zumbi": {
+   "atlas": "assets/sprites_hd_recortados/personagens/zumbi.png",
+   "linhas": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "colunas": {
+    "0": 4,
+    "1": 4,
+    "2": 4,
+    "3": 4,
+    "4": 4,
+    "5": 9
+   }
+  },
+  "rato_feral": {
+   "atlas": "assets/sprites_hd_recortados/personagens/rato_feral.png",
+   "linhas": [
+    5
+   ],
+   "colunas": {
+    "5": 9
+   }
+  }
+ }
+}
