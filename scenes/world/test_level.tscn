@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3]
+[gd_scene load_steps=39 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/chao/grama.png" id="2_grama"]
@@ -17,6 +17,8 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_destruida.tscn" id="p_barreira_destruida"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_listrada.tscn" id="p_barreira_listrada"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_longa.tscn" id="p_barreira_longa"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/caixa_madeira.tscn" id="p_caixa_madeira"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/caixote.tscn" id="p_caixote"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/capim.tscn" id="p_capim"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/capim_alto.tscn" id="p_capim_alto"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/carro_capo_aberto.tscn" id="p_carro_capo_aberto"]
@@ -35,6 +37,7 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_amarelo.tscn" id="p_sedan_amarelo"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_enferrujado.tscn" id="p_sedan_enferrujado"]
 [ext_resource type="Script" path="res://scripts/world/edificio.gd" id="s_edificio"]
+[ext_resource type="Script" path="res://scripts/items/lootavel.gd" id="s_lootavel"]
 
 [node name="TestLevel" type="Node2D"]
 y_sort_enabled = true
@@ -114,6 +117,22 @@ position = Vector2(760, 70)
 [node name="ArvoreJovem2" parent="." instance=ExtResource("p_arvore_jovem")]
 position = Vector2(95, -92.5)
 
+[node name="Caixote1" parent="." instance=ExtResource("p_caixote")]
+position = Vector2(-95, -27.5)
+
+[node name="Loot" type="Node2D" parent="Caixote1"]
+position = Vector2(0, -8)
+script = ExtResource("s_lootavel")
+tipo = "caixa"
+
+[node name="CaixaMadeira1" parent="." instance=ExtResource("p_caixa_madeira")]
+position = Vector2(-730, 55)
+
+[node name="Loot" type="Node2D" parent="CaixaMadeira1"]
+position = Vector2(0, -8)
+script = ExtResource("s_lootavel")
+tipo = "caixa"
+
 [node name="CapimAlto1" parent="." instance=ExtResource("p_capim_alto")]
 position = Vector2(-902.5, -83.75)
 
@@ -134,6 +153,11 @@ position = Vector2(-602.5, 66.25)
 
 [node name="EntulhoPedras1" parent="." instance=ExtResource("p_entulho_pedras")]
 position = Vector2(-850, -25)
+
+[node name="Loot" type="Node2D" parent="EntulhoPedras1"]
+position = Vector2(0, -8)
+script = ExtResource("s_lootavel")
+tipo = "scrap"
 
 [node name="ArbustoLargo1" parent="." instance=ExtResource("p_arbusto_largo")]
 position = Vector2(-325, -42.5)
@@ -164,6 +188,11 @@ position = Vector2(-460, -150)
 
 [node name="EntulhoLaje1" parent="." instance=ExtResource("p_entulho_laje")]
 position = Vector2(-360, -100)
+
+[node name="Loot" type="Node2D" parent="EntulhoLaje1"]
+position = Vector2(0, -8)
+script = ExtResource("s_lootavel")
+tipo = "scrap"
 
 [node name="CapimAlto3" parent="." instance=ExtResource("p_capim_alto")]
 position = Vector2(-580, 90)

@@ -12,6 +12,11 @@ const COR_EXAUSTO := Color(0.84, 0.33, 0.29)
 var _jogador: Node
 var _ciclo: Node
 var _preenchimento := StyleBoxFlat.new()
+var _vida_barra := ProgressBar.new()
+var _fome_barra := ProgressBar.new()
+var _vida_texto := Label.new()
+var _toast := Label.new()
+var _toast_tween: Tween
 
 @onready var relogio: Label = $Painel/Relogio
 @onready var folego_texto: Label = $Painel/FolegoTexto
@@ -22,6 +27,7 @@ var _preenchimento := StyleBoxFlat.new()
 
 
 func _ready() -> void:
+	add_to_group("hud")
 	_jogador = get_node_or_null(jogador_path)
 	_ciclo = get_node_or_null(ciclo_path)
 	var fundo := StyleBoxFlat.new()
@@ -39,16 +45,21 @@ func _ready() -> void:
 	ajuda.add_theme_font_size_override("font_size", 12)
 	ajuda.modulate = Color(1.0, 1.0, 1.0, 0.7)
 	dica.add_theme_font_size_override("font_size", 18)
+	_montar_vitais()
+	_montar_toast()
 
 
 func _process(_delta: float) -> void:
 	# dica de interação: primeiro objeto do grupo "interativo" que tiver algo a dizer
 	var texto := ""
+	var melhor := -1
 	for no in get_tree().get_nodes_in_group("interativo"):
 		if no.has_method("texto_interacao"):
-			texto = no.texto_interacao()
-			if texto != "":
-				break
+			var t: String = no.texto_interacao()
+			var pr: int = no.prioridade_interacao() if no.has_method("prioridade_interacao") else 0
+			if t != "" and pr > melhor:
+				texto = t
+				melhor = pr
 	dica.text = texto
 	dica.visible = texto != ""
 	if _ciclo != null:
@@ -64,4 +75,64 @@ func _process(_delta: float) -> void:
 		_preenchimento.bg_color = COR_CORRENDO
 	else:
 		_preenchimento.bg_color = COR_FOLEGO
-	estado.text = "%s · Lanterna %s" % [_jogador.nome_postura(), "ligada" if _jogador.lanterna_ligada else "desligada"]
+	var eq: String = _jogador.inventario.id_equipado()
+	estado.text = "%s · Lanterna %s · %s" % [_jogador.nome_postura(), "ligada" if _jogador.lanterna_ligada else "desligada",
+		Itens.nome(eq) if eq != "" else "mãos livres"]
+	_vida_barra.max_value = _jogador.vida_max
+	_vida_barra.value = _jogador.vida
+	_fome_barra.value = _jogador.fome
+	_vida_texto.text = "VIDA %d/%d · FOME %d%% · NÍVEL %d (XP %d/%d)" % [ceili(_jogador.vida), int(_jogador.vida_max),
+		int(_jogador.fome), _jogador.nivel, _jogador.xp, _jogador.nivel * 100]
+
+
+func _barra(b: ProgressBar, cor: Color) -> void:
+	b.custom_minimum_size = Vector2(240, 8)
+	b.show_percentage = false
+	b.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var fundo := StyleBoxFlat.new()
+	fundo.bg_color = Color(0, 0, 0, 0.5)
+	fundo.set_corner_radius_all(3)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = cor
+	fill.set_corner_radius_all(3)
+	b.add_theme_stylebox_override("background", fundo)
+	b.add_theme_stylebox_override("fill", fill)
+
+
+func _montar_vitais() -> void:
+	var painel: Node = $Painel
+	_vida_texto.add_theme_font_size_override("font_size", 13)
+	_vida_texto.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_vida_texto.add_theme_constant_override("outline_size", 4)
+	_barra(_vida_barra, Color(0.78, 0.25, 0.22))
+	_barra(_fome_barra, Color(0.85, 0.62, 0.25))
+	_fome_barra.max_value = 100.0
+	for n in [_vida_texto, _vida_barra, _fome_barra]:
+		painel.add_child(n)
+		painel.move_child(n, painel.get_child_count() - 2)     # antes da linha de ajuda
+	ajuda.text += " · I mochila"
+
+
+func _montar_toast() -> void:
+	_toast.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_toast.offset_left = -300
+	_toast.offset_right = 300
+	_toast.offset_top = 70
+	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_toast.add_theme_font_size_override("font_size", 17)
+	_toast.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+	_toast.add_theme_constant_override("outline_size", 5)
+	_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_toast.modulate.a = 0.0
+	add_child(_toast)
+
+
+## Mensagem passageira no topo da tela (V13: toast/log).
+func aviso(texto: String) -> void:
+	_toast.text = texto
+	_toast.modulate.a = 1.0
+	if _toast_tween != null:
+		_toast_tween.kill()
+	_toast_tween = create_tween()
+	_toast_tween.tween_interval(3.0)
+	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.8)

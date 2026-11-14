@@ -49,6 +49,14 @@ var pulo_v: float = 0.0
 var lanterna_ligada: bool = true
 var ruido: float = 110.0                 ## barulho que o jogador faz (para os inimigos, fase de combate)
 
+## --- sobrevivência e mochila (V13) ---
+var vida_max: float = 100.0
+var vida: float = 100.0
+var fome: float = 100.0                  ## 100 = saciado; cai 0,13/s e, em 0, tira vida
+var xp: int = 0
+var nivel: int = 1
+var inventario: Inventario
+
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
 var _ciclo: Node = null
@@ -63,6 +71,12 @@ var _altura_luz: float = 31.0
 func _ready() -> void:
 	add_to_group("jogador")
 	stamina = stamina_max
+	inventario = Inventario.new()
+	inventario.name = "Inventario"
+	inventario.jogador = self
+	add_child(inventario)
+	inventario.aviso.connect(aviso)
+	inventario.inicial()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -169,6 +183,7 @@ func _physics_process(delta: float) -> void:
 	_inclinacao += (clampf(world_vel.x / 128.0 * 0.12, -0.14, 0.14) - _inclinacao) * minf(1.0, delta * 8.0)
 	_animar(olhar, rapidez)
 	_atualizar_lanterna(olhar, delta)
+	_atualizar_vitais(delta)
 
 
 ## Velocidade máxima do estado atual (u/s).
@@ -316,3 +331,52 @@ func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 	lanterna_objetos.energy = energia
 	lanterna_objetos.height = _altura_luz
 	lanterna_objetos.transform = Transform2D(frente * k_obj, lado * k_obj, mao + Vector2(0.0, -_altura_luz - pulo_z))
+
+
+# =====================================================================
+# SOBREVIVÊNCIA, XP E ITENS (portado da V13: eat, useMed, xpGain, step)
+# =====================================================================
+func _atualizar_vitais(delta: float) -> void:
+	fome = maxf(0.0, fome - delta * 0.13)
+	if fome <= 0.0:
+		vida = maxf(0.0, vida - delta * 0.7)
+
+
+## Mensagem curta na tela (toast do HUD).
+func aviso(texto: String) -> void:
+	get_tree().call_group("hud", "aviso", texto)
+
+
+func ganhar_xp(n: int) -> void:
+	xp += n
+	while nivel < 20 and xp >= nivel * 100:
+		xp -= nivel * 100
+		nivel += 1
+		aviso("Você alcançou o nível %d." % nivel)
+
+
+## Come uma comida: +35 de fome e +8 de vida. Devolve false se não pôde (nada a consumir é feito aqui).
+func comer() -> bool:
+	if inventario.contar("comida") <= 0:
+		aviso("Você não tem comida.")
+		return false
+	fome = minf(100.0, fome + 35.0)
+	vida = minf(vida_max, vida + 8.0)
+	aviso("Você comeu e recuperou energia.")
+	return true
+
+
+## Doenças ainda não foram migradas (V13: player.disease): sem doença ativa, o remédio não é gasto.
+func usar_antibiotico() -> void:
+	aviso("Você não possui uma doença ativa.")
+
+
+## Larga 'qtd' (0 = tudo) do slot no chão, à frente do jogador.
+func largar_slot(i: int, qtd: int = 0) -> void:
+	var r := inventario.retirar(i, qtd)
+	if r.is_empty():
+		return
+	var frente := Vector2.from_angle(face) * (0.9 * IsoMath.METRO)
+	var pos := global_position + IsoMath.mundo_para_tela(frente)
+	ItemNoChao.largar(get_parent(), pos, r.id, r.quantidade, r.extra)
+	aviso("Você largou %d %s." % [r.quantidade, Itens.nome(r.id).to_lower()])

@@ -72,12 +72,14 @@ var _cor_porta: Color
 var _R: float = 40.0
 var _corpo: StaticBody2D
 var _sujo: bool = true
+var _rng_loot := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
 	y_sort_enabled = true
 	add_to_group("interativo")
 	_rng.seed = semente
+	_rng_loot.randomize()
 	_gerar_planta()
 	_construir()
 	_recalcular()
@@ -294,7 +296,7 @@ func _mobiliar(i: int) -> void:
 					ok = false
 			if ok:
 				moveis.append({"x0": r.position.x, "y0": r.position.y, "x1": r.end.x, "y1": r.end.y, "tipo": tipo,
-					"h": MOV[tipo][2] * VPM, "sala": i, "cor": _pick(CORES_MOV.get(tipo, [Color8(107, 74, 51)]))})
+					"h": MOV[tipo][2] * VPM, "sala": i, "usado": false, "cor": _pick(CORES_MOV.get(tipo, [Color8(107, 74, 51)]))})
 				break
 
 
@@ -717,6 +719,32 @@ func _porta_perto(p: Vector2):
 	return melhor
 
 
+## Móvel vasculhável (V13: movelPerto): só dentro da casa, ainda não vasculhado, a até 0,95 m.
+func _movel_perto(p: Vector2):
+	if not jogador_dentro():
+		return null
+	var melhor = null
+	var dist := 0.95 * METRO
+	for m in moveis:
+		if m.usado or not Itens.CONTEM.has(m.tipo):
+			continue
+		var dx := maxf(maxf(m.x0 - p.x, 0.0), p.x - m.x1)
+		var dy := maxf(maxf(m.y0 - p.y, 0.0), p.y - m.y1)
+		var dd := Vector2(dx, dy).length()
+		if dd < dist:
+			dist = dd
+			melhor = m
+	return melhor
+
+
+func prioridade_interacao() -> int:
+	return 1
+
+
+func _item_no_chao_perto() -> bool:
+	return get_tree().get_nodes_in_group("item_chao").any(func(i): return i.texto_interacao() != "")
+
+
 func _janela_perto(p: Vector2):
 	var melhor = null
 	var dist := 0.95 * METRO
@@ -731,6 +759,9 @@ func _janela_perto(p: Vector2):
 ## Texto que o HUD mostra quando há algo para interagir (vazio = nada).
 func texto_interacao() -> String:
 	var p := _pos_jogador()
+	var mv = _movel_perto(p)
+	if mv != null:
+		return "E — vasculhar " + Itens.CONTEM[mv.tipo]
 	var d = _porta_perto(p)
 	if d != null:
 		if d.quebrada:
@@ -750,6 +781,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not interagir and not pular:
 		return
 	var p := _pos_jogador()
+	if interagir and _item_no_chao_perto():
+		return                                  # pegar do chão tem prioridade
+	var mv = _movel_perto(p)
+	if interagir and mv != null:
+		var jog := _jogador()
+		if jog != null and "inventario" in jog:
+			Loot.vasculhar(jog, mv.tipo, _rng_loot, func(): mv.usado = true)
+			get_viewport().set_input_as_handled()
+		return
 	var d = _porta_perto(p)
 	var j = _janela_perto(p)
 	if interagir and d != null:

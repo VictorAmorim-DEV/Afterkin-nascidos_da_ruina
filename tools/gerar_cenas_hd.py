@@ -73,7 +73,11 @@ CENARIO = [
     ("arvore_jovem", -300, 420), ("palmeira", -300, 640), ("arvore_morta", 780, -200),
     ("arvore_frondosa", 940, 330), ("arvore_fina", 900, 780), ("arvore_outono", 900, -620),
     ("arvore_jovem", -90, -280),
+    ("caixote", -150, 40), ("caixa_madeira", -620, 840),
 ]
+
+# recipientes vasculháveis (scripts/items/lootavel.gd): nó do cenário -> tabela de loot da V13
+LOOTAVEIS = {"Caixote1": "caixa", "CaixaMadeira1": "caixa", "EntulhoPedras1": "scrap", "EntulhoLaje1": "scrap"}
 
 
 # objetos só de enfeite: sem colisão e sem bloquear a luz (o jogador passa por cima)
@@ -190,12 +194,16 @@ def cena_teste():
         no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
         tela = ((x - y) * 0.5, (x + y) * 0.25)          # projeção isométrica 2:1
         nos += f'[node name="{no}" parent="." instance=ExtResource("p_{nome}")]\nposition = {vec(tela)}\n\n'
+        if no in LOOTAVEIS:
+            nos += (f'[node name="Loot" type="Node2D" parent="{no}"]\nposition = Vector2(0, -8)\n'
+                    f'script = ExtResource("s_lootavel")\ntipo = "{LOOTAVEIS[no]}"\n\n')
     ext += '[ext_resource type="Script" path="res://scripts/world/edificio.gd" id="s_edificio"]\n'
+    ext += '[ext_resource type="Script" path="res://scripts/items/lootavel.gd" id="s_lootavel"]\n'
     for nome, tx, ty, larg, alt, frente, semente in EDIFICIOS:
         nos += (f'[node name="{nome}" type="Node2D" parent="."]\nposition = {vec(((tx - ty) * 32.0, (tx + ty) * 16.0))}\n'
                 f'script = ExtResource("s_edificio")\nlargura_tiles = {larg}\naltura_tiles = {alt}\n'
                 f'frente = "{frente}"\nsemente = {semente}\n\n')
-    return f'''[gd_scene load_steps={len(usados) + 6} format=3]
+    return f'''[gd_scene load_steps={len(usados) + 7} format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://{REC}/chao/grama.png" id="2_grama"]
