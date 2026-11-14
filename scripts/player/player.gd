@@ -52,6 +52,7 @@ var ruido: float = 110.0                 ## barulho que o jogador faz (para os i
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
 var _ciclo: Node = null
+var _saltando: bool = false               ## no meio de um salto guiado (ex.: pulando uma janela)
 var _altura_luz: float = 31.0
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
@@ -72,11 +73,28 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("jump"):
 		if postura != Postura.EM_PE:
 			postura = Postura.EM_PE          # o pulo primeiro levanta o personagem
-		elif pulo_z <= 0.0 and stamina >= gasto_pulo:
+		elif pulo_z <= 0.0 and stamina >= gasto_pulo and not _saltando:
 			pulo_v = impulso_pulo
 			stamina -= gasto_pulo
 	elif event.is_action_pressed("flashlight"):
 		lanterna_ligada = not lanterna_ligada
+
+
+## Salto guiado até 'destino' (px globais), ignorando colisões no caminho.
+## Usado pelas janelas abertas: o jogador não anda através delas, ele pula.
+func saltar_para(destino: Vector2, tempo: float = 0.42) -> void:
+	if _saltando:
+		return
+	_saltando = true
+	postura = Postura.EM_PE
+	world_vel = Vector2.ZERO
+	velocity = Vector2.ZERO
+	pulo_v = gravidade * tempo * 0.5          # sobe e desce exatamente durante o salto
+	pulo_z = 0.01
+	var t := create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(self, "global_position", destino, tempo)
+	await t.finished
+	_saltando = false
 
 
 func _physics_process(delta: float) -> void:
@@ -87,6 +105,10 @@ func _physics_process(delta: float) -> void:
 		if pulo_z <= 0.0:
 			pulo_z = 0.0
 			pulo_v = 0.0
+
+	if _saltando:                             # o Tween move o corpo; aqui só a animação do pulo
+		sprite.position.y = -pulo_z
+		return
 
 	# --- direção pedida pelas teclas (na tela) convertida para o mundo ---
 	var tecla := Input.get_vector("move_left", "move_right", "move_up", "move_down")

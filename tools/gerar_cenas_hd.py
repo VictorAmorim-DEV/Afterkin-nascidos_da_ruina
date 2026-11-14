@@ -70,7 +70,7 @@ CENARIO = [
     ("barreira_longa", 250, 215), ("barreira_curta", 300, 190), ("barreira_listrada", 300, -620),
     ("barreira_destruida", 440, -600), ("sacos_areia_b", 100, 150), ("sacos_areia_a", 560, 250),
     ("arvore_frondosa", -220, -160), ("arvore_outono", -780, -280), ("arvore_fina", -140, -640),
-    ("arvore_jovem", -560, 330), ("palmeira", -300, 640), ("arvore_morta", 780, -200),
+    ("arvore_jovem", -300, 420), ("palmeira", -300, 640), ("arvore_morta", 780, -200),
     ("arvore_frondosa", 940, 330), ("arvore_fina", 900, 780), ("arvore_outono", 900, -620),
     ("arvore_jovem", -90, -280),
 ]
@@ -83,17 +83,16 @@ DECORATIVOS = {"mato_alto", "mato_fino", "mato_seco", "mato_rasteiro", "capim", 
 
 # construções (scenes/world/buildings, geradas por tools/gerar_construcao.py): (cena, x, y do pivô)
 CONSTRUCOES = [
-    ("casa_abandonada", -900, 250),
+    ("casa_abandonada", -1100, 180),     # canto norte da casa; ela ocupa x de -1100 a -508 e y de 180 a 476
 ]
 
-# vegetação, mato e entulho em volta da base da casa, para ela não ficar "colada" no chão
+# mato, arbustos e entulho em volta da casa (sem colisão), longe da porta (x de -804 a -656, y = 476)
 ENTORNO = [
-    ("capim_alto", -1120, 340), ("mato_alto", -1110, 250), ("arbusto_largo", -1000, 280),
-    ("capim", -900, 300), ("mato_fino", -860, 220), ("arbusto_baixo", -900, 190),
-    ("mato_rasteiro", -1300, 200), ("capim_alto", -700, -420), ("arbusto_folhudo", -780, -140),
-    ("mato_seco", -1100, 420), ("capim", -820, 300), ("entulho_pedras", -960, 380),
-    ("entulho_laje", -880, -30), ("arbusto_redondo", -1180, 180), ("mato_alto", -760, -230),
-    ("capim", -1040, 440), ("mato_fino", -700, -300), ("arbusto_largo", -1240, 320),
+    ("capim_alto", -1085, 500), ("mato_alto", -1010, 515), ("arbusto_baixo", -930, 500), ("capim", -870, 520),
+    ("mato_fino", -610, 505), ("capim_alto", -545, 520), ("entulho_pedras", -960, 560),
+    ("arbusto_largo", -470, 215), ("mato_seco", -480, 310), ("capim", -470, 400), ("mato_rasteiro", -485, 470),
+    ("arbusto_redondo", -1140, 230), ("mato_alto", -1135, 340), ("capim", -1130, 440),
+    ("arbusto_folhudo", -1000, 150), ("mato_fino", -800, 150), ("entulho_laje", -600, 150), ("capim_alto", -430, 520),
 ]
 
 

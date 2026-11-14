@@ -1,52 +1,76 @@
 extends Node2D
 class_name Abertura
-## Porta ou janela que abre e fecha na tecla de interação (E).
+## Porta ou janela encaixada no vão de uma parede modular.
 ##
-## Ao abrir: troca o sprite pelo da peça aberta (com um giro na dobradiça),
-## desliga a colisão do vão e deixa a luz da lanterna passar.
-## Quem escuta o sinal "mudou" é a construção, que revela o cômodo.
+## PORTA:  E abre/fecha (gira na dobradiça). Aberta, libera a colisão do vão.
+## JANELA: E abre/fecha. A parede continua sólida: para passar por uma janela ABERTA
+##         o jogador precisa estar encostado nela e apertar Espaço (pular).
+## Fechadas, as duas bloqueiam a luz da lanterna; abertas, deixam passar.
 
 signal mudou
 
+@export_enum("porta", "janela") var tipo: String = "porta"
 @export var aberta: bool = false
-@export var rotulo: String = "a porta"          ## texto mostrado no HUD
-@export var alcance: float = 30.0               ## distância (px de tela) para usar
-@export var comodos: PackedStringArray = []     ## cômodos que esta abertura revela
-@export var textura_fechada: Texture2D
-@export var textura_aberta: Texture2D
-@export var sprites: Array[NodePath] = []       ## sprites que desenham esta abertura
-@export var colisao: NodePath                   ## CollisionPolygon2D do vão
-@export var oclusor: NodePath                   ## LightOccluder2D do vão
+@export var rotulo: String = "a porta"
+@export var alcance: float = 30.0                ## distância (px) para usar com E / Espaço
+@export var comodos: PackedStringArray = []      ## cômodos dos dois lados desta abertura
+@export var no_fechada: NodePath                 ## sprite da peça fechada
+@export var no_aberta: NodePath                  ## sprite da peça aberta
+@export var colisao: NodePath                    ## colisão do vão (só porta)
+@export var oclusor: NodePath                    ## oclusor de luz do vão
+@export var lado_a: Vector2 = Vector2.ZERO       ## ponto de pouso de um lado da parede (local)
+@export var lado_b: Vector2 = Vector2.ZERO       ## ponto de pouso do outro lado
 @export var duracao: float = 0.28
 
 var _girando: bool = false
-var _escalas: Array[float] = []
+var _fechada: Sprite2D
+var _aberta: Sprite2D
+var _escala_fechada: float = 1.0
+var _escala_aberta: float = 1.0
 
 
 func _ready() -> void:
 	add_to_group("interativo")
-	for p in sprites:
-		var s := get_node_or_null(p) as Sprite2D
-		_escalas.append(s.scale.x if s != null else 1.0)
+	_fechada = get_node_or_null(no_fechada) as Sprite2D
+	_aberta = get_node_or_null(no_aberta) as Sprite2D
+	if _fechada != null:
+		_escala_fechada = _fechada.scale.x
+	if _aberta != null:
+		_escala_aberta = _aberta.scale.x
 	_aplicar()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact") and not _girando and perto():
+	if _girando or not perto():
+		return
+	if event.is_action_pressed("interact"):
 		alternar()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("jump") and tipo == "janela" and aberta:
+		_pular_janela()
 		get_viewport().set_input_as_handled()
 
 
-func perto() -> bool:
-	var jogador := get_tree().get_first_node_in_group("jogador") as Node2D
-	return jogador != null and jogador.global_position.distance_to(global_position) <= alcance
+func _jogador() -> Node2D:
+	return get_tree().get_first_node_in_group("jogador") as Node2D
+
+
+func perto(raio: float = -1.0) -> bool:
+	var jogador := _jogador()
+	if jogador == null:
+		return false
+	return jogador.global_position.distance_to(global_position) <= (alcance if raio < 0.0 else raio)
 
 
 ## Texto que o HUD mostra quando há algo para interagir (vazio = nada).
 func texto_interacao() -> String:
 	if not perto():
 		return ""
-	return "E — fechar %s" % rotulo if aberta else "E — abrir %s" % rotulo
+	if not aberta:
+		return "E — abrir %s" % rotulo
+	if tipo == "janela":
+		return "Espaço — pular a janela · E — fechar"
+	return "E — fechar %s" % rotulo
 
 
 func alternar() -> void:
@@ -55,30 +79,43 @@ func alternar() -> void:
 	_girar()
 
 
-## Gira a folha na dobradiça: encolhe até a quina, troca a arte e abre de novo.
+## Salta para o outro lado da parede (o lado mais longe de onde o jogador está).
+func _pular_janela() -> void:
+	var jogador := _jogador()
+	if jogador == null or not jogador.has_method("saltar_para"):
+		return
+	var a := to_global(lado_a)
+	var b := to_global(lado_b)
+	var destino := a if jogador.global_position.distance_squared_to(a) > jogador.global_position.distance_squared_to(b) else b
+	jogador.saltar_para(destino)
+
+
+## Gira a folha na dobradiça: a peça atual encolhe até a quina, troca, e a outra abre.
 func _girar() -> void:
 	_girando = true
-	var t := create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE)
-	for i in sprites.size():
-		var s := get_node_or_null(sprites[i]) as Sprite2D
-		if s != null:
-			t.tween_property(s, "scale:x", _escalas[i] * 0.12, duracao * 0.5)
-	await t.finished
+	var sai := _fechada if aberta else _aberta         # 'aberta' já tem o estado novo
+	var entra := _aberta if aberta else _fechada
+	var esc_sai := _escala_fechada if aberta else _escala_aberta
+	var esc_entra := _escala_aberta if aberta else _escala_fechada
+	if sai != null:
+		var t := create_tween().set_trans(Tween.TRANS_SINE)
+		t.tween_property(sai, "scale:x", esc_sai * 0.12, duracao * 0.5)
+		await t.finished
+		sai.scale.x = esc_sai
 	_aplicar()
-	var v := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	for i in sprites.size():
-		var s := get_node_or_null(sprites[i]) as Sprite2D
-		if s != null:
-			v.tween_property(s, "scale:x", _escalas[i], duracao * 0.5)
-	await v.finished
+	if entra != null:
+		entra.scale.x = esc_entra * 0.12
+		var v := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		v.tween_property(entra, "scale:x", esc_entra, duracao * 0.5)
+		await v.finished
 	_girando = false
 
 
 func _aplicar() -> void:
-	for i in sprites.size():
-		var s := get_node_or_null(sprites[i]) as Sprite2D
-		if s != null:
-			s.texture = textura_aberta if aberta else textura_fechada
+	if _fechada != null:
+		_fechada.visible = not aberta
+	if _aberta != null:
+		_aberta.visible = aberta
 	var c := get_node_or_null(colisao) as CollisionPolygon2D
 	if c != null:
 		c.set_deferred("disabled", aberta)

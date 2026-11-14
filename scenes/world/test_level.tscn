@@ -94,7 +94,7 @@ position = Vector2(-250, -265)
 position = Vector2(250, -195)
 
 [node name="ArvoreJovem1" parent="." instance=ExtResource("p_arvore_jovem")]
-position = Vector2(-445, -57.5)
+position = Vector2(-360, 30)
 
 [node name="Palmeira1" parent="." instance=ExtResource("p_palmeira")]
 position = Vector2(-470, 85)
@@ -115,58 +115,58 @@ position = Vector2(760, 70)
 position = Vector2(95, -92.5)
 
 [node name="CapimAlto1" parent="." instance=ExtResource("p_capim_alto")]
-position = Vector2(-730, -195)
+position = Vector2(-792.5, -146.25)
 
 [node name="MatoAlto1" parent="." instance=ExtResource("p_mato_alto")]
-position = Vector2(-680, -215)
-
-[node name="ArbustoLargo1" parent="." instance=ExtResource("p_arbusto_largo")]
-position = Vector2(-640, -180)
-
-[node name="Capim1" parent="." instance=ExtResource("p_capim")]
-position = Vector2(-600, -150)
-
-[node name="MatoFino1" parent="." instance=ExtResource("p_mato_fino")]
-position = Vector2(-540, -160)
+position = Vector2(-762.5, -123.75)
 
 [node name="ArbustoBaixo1" parent="." instance=ExtResource("p_arbusto_baixo")]
-position = Vector2(-545, -177.5)
+position = Vector2(-715, -107.5)
 
-[node name="MatoRasteiro1" parent="." instance=ExtResource("p_mato_rasteiro")]
-position = Vector2(-750, -275)
+[node name="Capim1" parent="." instance=ExtResource("p_capim")]
+position = Vector2(-695, -87.5)
+
+[node name="MatoFino1" parent="." instance=ExtResource("p_mato_fino")]
+position = Vector2(-557.5, -26.25)
 
 [node name="CapimAlto2" parent="." instance=ExtResource("p_capim_alto")]
-position = Vector2(-140, -280)
-
-[node name="ArbustoFolhudo1" parent="." instance=ExtResource("p_arbusto_folhudo")]
-position = Vector2(-320, -230)
-
-[node name="MatoSeco1" parent="." instance=ExtResource("p_mato_seco")]
-position = Vector2(-760, -170)
-
-[node name="Capim2" parent="." instance=ExtResource("p_capim")]
-position = Vector2(-560, -130)
+position = Vector2(-532.5, -6.25)
 
 [node name="EntulhoPedras1" parent="." instance=ExtResource("p_entulho_pedras")]
-position = Vector2(-670, -145)
+position = Vector2(-760, -100)
 
-[node name="EntulhoLaje1" parent="." instance=ExtResource("p_entulho_laje")]
-position = Vector2(-425, -227.5)
+[node name="ArbustoLargo1" parent="." instance=ExtResource("p_arbusto_largo")]
+position = Vector2(-342.5, -63.75)
+
+[node name="MatoSeco1" parent="." instance=ExtResource("p_mato_seco")]
+position = Vector2(-395, -42.5)
+
+[node name="Capim2" parent="." instance=ExtResource("p_capim")]
+position = Vector2(-435, -17.5)
+
+[node name="MatoRasteiro1" parent="." instance=ExtResource("p_mato_rasteiro")]
+position = Vector2(-477.5, -3.75)
 
 [node name="ArbustoRedondo1" parent="." instance=ExtResource("p_arbusto_redondo")]
-position = Vector2(-680, -250)
+position = Vector2(-685, -227.5)
 
 [node name="MatoAlto2" parent="." instance=ExtResource("p_mato_alto")]
-position = Vector2(-265, -247.5)
+position = Vector2(-737.5, -198.75)
 
 [node name="Capim3" parent="." instance=ExtResource("p_capim")]
-position = Vector2(-740, -150)
+position = Vector2(-785, -172.5)
+
+[node name="ArbustoFolhudo1" parent="." instance=ExtResource("p_arbusto_folhudo")]
+position = Vector2(-575, -212.5)
 
 [node name="MatoFino2" parent="." instance=ExtResource("p_mato_fino")]
-position = Vector2(-200, -250)
+position = Vector2(-475, -162.5)
 
-[node name="ArbustoLargo2" parent="." instance=ExtResource("p_arbusto_largo")]
-position = Vector2(-780, -230)
+[node name="EntulhoLaje1" parent="." instance=ExtResource("p_entulho_laje")]
+position = Vector2(-375, -112.5)
+
+[node name="CapimAlto3" parent="." instance=ExtResource("p_capim_alto")]
+position = Vector2(-475, 22.5)
 
 [node name="CasaAbandonada" parent="." instance=ExtResource("c_casa_abandonada")]
-position = Vector2(-575, -162.5)
+position = Vector2(-640, -230)
