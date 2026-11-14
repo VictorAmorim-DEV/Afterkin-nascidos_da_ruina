@@ -1,57 +1,263 @@
 extends CharacterBody2D
-## Jogador — movimentação migrada do protótipo V13.
-## As teclas indicam a direção NA TELA; a velocidade é calculada em unidades de
-## mundo (como no protótipo) e depois projetada em isométrico 2:1.
-## Animações: SpriteFrames da raça (resources/sprite_frames/), com andar_frente,
-## andar_lado, andar_costas e correr (só de lado).
+## Jogador — movimentação, posturas, fôlego, mira e lanterna migrados do protótipo V13.
+##
+## As teclas indicam a direção NA TELA; a velocidade é calculada em unidades de mundo
+## (como no protótipo) e depois projetada em isométrico 2:1.
+## O corpo vira para o cursor do mouse; andar contra a mira mostra a caminhada de ré
+## e andar de lado em relação à mira mostra o passo lateral.
 
-@export var walk_speed: float = 78.0     ## u/s andando (protótipo: 78)
-@export var run_speed: float = 128.0     ## u/s correndo (protótipo: 128)
+enum Postura { EM_PE, AGACHADO, DEITADO }
+
+const DIRECOES: Array[String] = ["frente", "lado", "costas"]
+
+@export_group("Velocidade (u/s)")
+@export var walk_speed: float = 78.0
+@export var run_speed: float = 128.0
+@export var crouch_speed: float = 42.0
+@export var prone_speed: float = 19.0
 @export var aceleracao: float = 300.0    ## u/s² ao acelerar
 @export var frenagem: float = 420.0      ## u/s² ao parar
 
+@export_group("Fôlego")
+@export var stamina_max: float = 100.0
+@export var gasto_correr: float = 20.0   ## por segundo correndo
+@export var gasto_pulo: float = 10.0     ## por pulo
+@export var limite_exaustao: float = 30.0  ## fôlego para deixar de estar exausto
+
+@export_group("Pulo")
+@export var impulso_pulo: float = 260.0
+@export var gravidade: float = 900.0
+
+@export_group("Mira e lanterna")
+@export var mirar_com_mouse: bool = true
+@export var alcance_lanterna: float = 742.0   ## unidades de mundo (15 m no protótipo)
+@export var energia_lanterna: float = 1.1
+
 var world_vel := Vector2.ZERO            ## velocidade em unidades de mundo
-var _direcao := "frente"                 ## frente, lado ou costas
+var postura: Postura = Postura.EM_PE
+var stamina: float = 100.0
+var exausto: bool = false
+var correndo: bool = false
+var face: float = PI / 2.0               ## direção do olhar, em radianos, no MUNDO
+var pulo_z: float = 0.0                  ## altura do pulo (px de tela)
+var pulo_v: float = 0.0
+var lanterna_ligada: bool = true
+var ruido: float = 110.0                 ## barulho que o jogador faz (para os inimigos, fase de combate)
+
+var _passo: float = 0.0
+var _inclinacao: float = 0.0
+var _ciclo: Node = null
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var lanterna: PointLight2D = $Lanterna
+
+
+func _ready() -> void:
+	add_to_group("jogador")
+	stamina = stamina_max
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("crouch"):
+		postura = Postura.EM_PE if postura == Postura.AGACHADO else Postura.AGACHADO
+	elif event.is_action_pressed("prone"):
+		postura = Postura.EM_PE if postura == Postura.DEITADO else Postura.DEITADO
+	elif event.is_action_pressed("jump"):
+		if postura != Postura.EM_PE:
+			postura = Postura.EM_PE          # o pulo primeiro levanta o personagem
+		elif pulo_z <= 0.0 and stamina >= gasto_pulo:
+			pulo_v = impulso_pulo
+			stamina -= gasto_pulo
+	elif event.is_action_pressed("flashlight"):
+		lanterna_ligada = not lanterna_ligada
 
 
 func _physics_process(delta: float) -> void:
+	# --- pulo (só visual, como no protótipo) ---
+	if pulo_v != 0.0 or pulo_z > 0.0:
+		pulo_z += pulo_v * delta
+		pulo_v -= gravidade * delta
+		if pulo_z <= 0.0:
+			pulo_z = 0.0
+			pulo_v = 0.0
+
+	# --- direção pedida pelas teclas (na tela) convertida para o mundo ---
 	var tecla := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var dir := IsoMath.tela_para_mundo(tecla)
-	var movendo := dir != Vector2.ZERO
+	var movendo := dir.length_squared() > 0.0001
 	if movendo:
 		dir = dir.normalized()
-	var correndo := Input.is_action_pressed("run")
-	var alvo := run_speed if correndo else walk_speed
-	world_vel = world_vel.move_toward(dir * alvo, (aceleracao if movendo else frenagem) * delta)
+
+	# --- mira: o corpo vira para o cursor ---
+	var alvo_face := face
+	var tem_mira := false
+	if mirar_com_mouse:
+		var ate_cursor := IsoMath.tela_para_mundo(get_global_mouse_position() - global_position)
+		if ate_cursor.length() > 14.0:
+			alvo_face = ate_cursor.angle()
+			tem_mira = true
+	elif movendo:
+		alvo_face = dir.angle()
+		tem_mira = true
+
+	var olhar := Vector2.from_angle(face)
+	var cos_a := dir.dot(olhar) if movendo else 0.0
+
+	# --- correr: só para a frente da mira, em pé e com fôlego ---
+	var quer_correr := Input.is_action_pressed("run") and movendo and cos_a > 0.05
+	if quer_correr and not exausto and stamina > 8.0 and postura != Postura.EM_PE:
+		postura = Postura.EM_PE
+	correndo = quer_correr and not exausto and stamina > 0.0 and postura == Postura.EM_PE
+
+	if tem_mira:
+		var taxa := 14.0
+		if postura == Postura.DEITADO:
+			taxa = 5.0
+		elif postura == Postura.AGACHADO:
+			taxa = 9.0
+		elif correndo:
+			taxa = 7.0
+		face += wrapf(alvo_face - face, -PI, PI) * minf(1.0, delta * taxa)
+		face = wrapf(face, -PI, PI)
+		olhar = Vector2.from_angle(face)
+
+	# --- velocidade: andar de ré ou de lado é um pouco mais lento ---
+	var fator := 0.88 + (0.12 if cos_a >= 0.0 else 0.16) * cos_a
+	var alvo := Vector2.ZERO
+	if movendo:
+		alvo = dir * velocidade_atual() * fator
+	world_vel = world_vel.move_toward(alvo, (aceleracao if movendo else frenagem) * delta)
 
 	velocity = IsoMath.mundo_para_tela(world_vel)
 	move_and_slide()
 	# se bateu em algo, a velocidade real mudou: mantém a de mundo em sincronia
 	world_vel = IsoMath.tela_para_mundo(velocity)
-	_animar(correndo)
-
-
-func _animar(correndo: bool) -> void:
 	var rapidez := world_vel.length()
-	if rapidez <= 10.0:
-		# parado: primeiro quadro da caminhada na última direção
-		sprite.animation = "andar_" + _direcao
-		sprite.stop()
+	_passo += rapidez * delta * 0.09
+
+	_atualizar_folego(delta, rapidez)
+	_atualizar_ruido(delta, rapidez)
+	_inclinacao += (clampf(world_vel.x / 128.0 * 0.12, -0.14, 0.14) - _inclinacao) * minf(1.0, delta * 8.0)
+	_animar(olhar, rapidez)
+	_atualizar_lanterna(olhar)
+
+
+## Velocidade máxima do estado atual (u/s).
+func velocidade_atual() -> float:
+	var v := run_speed if correndo else walk_speed
+	if postura == Postura.AGACHADO:
+		v = crouch_speed
+	elif postura == Postura.DEITADO:
+		v = prone_speed
+	if exausto:
+		v *= 0.85
+	return v
+
+
+func nome_postura() -> String:
+	match postura:
+		Postura.AGACHADO:
+			return "Agachado"
+		Postura.DEITADO:
+			return "Deitado"
+	return "Correndo" if correndo else "Em pé"
+
+
+func _atualizar_folego(delta: float, rapidez: float) -> void:
+	if correndo:
+		stamina = maxf(0.0, stamina - gasto_correr * delta)
+		if stamina <= 0.0:
+			exausto = true
 		return
-	if absf(velocity.x) >= absf(velocity.y) * 0.9:
-		_direcao = "lado"
-		sprite.flip_h = velocity.x < 0.0
-	else:
-		_direcao = "frente" if velocity.y > 0.0 else "costas"
-		sprite.flip_h = false
-	var anim := "andar_" + _direcao
-	var referencia := walk_speed
-	if correndo and _direcao == "lado" and rapidez > walk_speed * 1.15 \
-			and sprite.sprite_frames.has_animation("correr"):
+	var regen := 8.0 if rapidez > 12.0 else 13.0     # andando / parado
+	if postura == Postura.DEITADO:
+		regen = 24.0
+	elif postura == Postura.AGACHADO:
+		regen = 18.0
+	if exausto:
+		regen *= 0.8
+	stamina = minf(stamina_max, stamina + regen * delta)
+	if exausto and stamina >= limite_exaustao:
+		exausto = false
+
+
+func _atualizar_ruido(delta: float, rapidez: float) -> void:
+	var andando := rapidez > 12.0
+	var alvo := 210.0 if andando else 110.0
+	if postura == Postura.DEITADO:
+		alvo = 50.0 if andando else 28.0
+	elif postura == Postura.AGACHADO:
+		alvo = 100.0 if andando else 55.0
+	elif correndo and rapidez > 90.0:
+		alvo = 340.0
+	if pulo_z > 0.0:
+		alvo = maxf(alvo, 260.0)
+	ruido += (alvo - ruido) * minf(1.0, delta * 5.0)
+
+
+func _animar(olhar: Vector2, rapidez: float) -> void:
+	# direção do olhar na tela -> linha da folha (0 frente, 1 lado, 2 costas)
+	var tela := Vector2(olhar.x - olhar.y, olhar.x + olhar.y)
+	var linha_olhar := 1
+	var flip_olhar := tela.x < 0.0
+	if absf(tela.x) <= absf(tela.y):
+		linha_olhar = 0 if tela.y > 0.0 else 2
+		flip_olhar = false
+	var linha := linha_olhar
+	var flip := flip_olhar
+	var reverso := false
+	if rapidez > 10.0:
+		var alinhamento := world_vel.dot(olhar) / rapidez
+		if alinhamento < -0.35:
+			reverso = true                     # andando de ré
+		if absf(alinhamento) < 0.55:           # andando de lado em relação à mira
+			var vel_tela := Vector2(world_vel.x - world_vel.y, world_vel.x + world_vel.y)
+			if linha != 1:
+				linha = 1
+				flip = vel_tela.x < 0.0
+			else:
+				linha = 0 if vel_tela.y > 0.0 else 2
+				flip = false
+
+	var quadros := sprite.sprite_frames
+	var anim := "andar_" + DIRECOES[linha]
+	var quadro := 0
+	if postura == Postura.DEITADO:
+		anim = "deitado"
+		flip = tela.x < 0.0
+	elif postura == Postura.AGACHADO:
+		anim = "agachar_" + DIRECOES[linha_olhar]
+		flip = flip_olhar
+	elif correndo and linha == 1 and not reverso and rapidez > walk_speed * 1.1 \
+			and quadros.has_animation("correr"):
 		anim = "correr"
-		referencia = run_speed
-	if sprite.animation != anim or not sprite.is_playing():
-		sprite.play(anim)
-	sprite.speed_scale = rapidez / referencia
+		quadro = int(_passo * 1.2) % quadros.get_frame_count("correr")
+	elif rapidez > 10.0:
+		var total := quadros.get_frame_count(anim)
+		quadro = int(_passo * 0.7) % total
+		if reverso:
+			quadro = total - 1 - quadro
+	if not quadros.has_animation(anim):
+		anim = "andar_frente"
+		quadro = 0
+	if sprite.animation != anim:
+		sprite.animation = anim
+	sprite.frame = quadro
+	sprite.flip_h = flip
+	sprite.position.y = -pulo_z
+	sprite.rotation = _inclinacao if postura == Postura.EM_PE else 0.0
+
+
+func _atualizar_lanterna(olhar: Vector2) -> void:
+	if _ciclo == null:
+		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
+	var escuro := 1.0
+	if _ciclo != null and _ciclo.has_method("escuridao"):
+		escuro = _ciclo.escuridao()
+	lanterna.enabled = lanterna_ligada and escuro > 0.03
+	lanterna.energy = energia_lanterna * clampf(escuro * 1.8, 0.0, 1.0)
+	# o cone é definido no chão do mundo e projetado em isométrico:
+	# o eixo X da textura aponta para onde o jogador olha
+	var k := alcance_lanterna / 256.0
+	var lado := Vector2(-olhar.y, olhar.x)
+	lanterna.transform = Transform2D(IsoMath.mundo_para_tela(olhar) * k, IsoMath.mundo_para_tela(lado) * k, Vector2.ZERO)
