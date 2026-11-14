@@ -52,6 +52,18 @@ PAREDES = [
     ("InternaA",      (830, 370), (885, 390), -16),
     ("InternaB",      (975, 424), (1040, 448), -16),
 ]
+# --- blocos: colisão do CORPO da casa visto de fora (sem oclusão de luz) ---
+# As paredes acima ficam na borda do piso. Por fora, a parede desenhada desce até o
+# chão; estes polígonos fecham essa faixa para o jogador não andar "por dentro" da
+# fachada. A varanda (degraus até a porta) fica livre entre as duas colunas.
+BLOCOS = [
+    ("CorpoSalaEsq",   [(500, 460), (824, 578), (824, 800), (700, 828), (250, 668)]),
+    ("CorpoSalaDir",   [(927, 616), (1020, 650), (1040, 752), (927, 777)]),
+    ("CorpoEntradaEsq", [(1020, 650), (1130, 633), (1130, 760), (1040, 752)]),
+    ("ColunaDireita",  [(1300, 612), (1350, 606), (1350, 665), (1300, 668)]),
+    ("CorpoCanteiro",  [(1310, 610), (1570, 520), (1690, 600), (1350, 720)]),
+    ("MuroDoQuintal",  [(55, 540), (190, 470), (250, 560), (250, 668), (60, 610)]),
+]
 # --- aberturas: porta/janela que abrem na tecla E ---
 # vao: trecho da parede que elas fecham | sprites: (camada, x0,y0,x1,y1, espelhado)
 ABERTURAS = [
@@ -60,9 +72,10 @@ ABERTURAS = [
          vao=((1250, 618), (1130, 633)), espessura=24, ponto=(1190, 640),
          sprites=[("fachada_cozinha", 1120, 440, 1265, 665, False),
                   ("interior_cozinha", 1128, 488, 1252, 652, False)]),
-    dict(nome="JanelaSala", rotulo="a janela", comodos=["sala"], alcance=95,
+    dict(nome="JanelaSala", rotulo="a janela", comodos=["sala"], alcance=150,
          fechada="janela_postigo_fechada", aberta="janela_postigo_aberta",
-         vao=((927, 616), (824, 578)), espessura=24, ponto=(876, 597),
+         vao=((927, 616), (824, 578)), espessura=24, ponto=(876, 700),
+         corredor=[(824, 578), (927, 616), (927, 777), (824, 800)],
          sprites=[("fachada_sala", 782, 448, 979, 598, True),
                   ("interior_sala", 777, 585, 987, 697, True)]),
     dict(nome="PortaInterna", rotulo="a porta do cômodo", comodos=["sala", "cozinha"], alcance=95,
@@ -140,6 +153,8 @@ def main():
     for nome, p0, p1, esp in PAREDES:
         nos.append('[node name="%s" type="CollisionPolygon2D" parent="Paredes"]\npolygon = %s'
                    % (nome, pts(faixa(p0, p1, esp))))
+    for nome, poli in BLOCOS:
+        nos.append('[node name="%s" type="CollisionPolygon2D" parent="Paredes"]\npolygon = %s' % (nome, pts(poli)))
     nos.append('[node name="Oclusores" type="Node2D" parent="."]')
     for nome, p0, p1, esp in PAREDES:
         sub.append('[sub_resource type="OccluderPolygon2D" id="oc_%s"]\npolygon = %s'
@@ -166,11 +181,11 @@ def main():
             nos.append('[node name="%s" type="Sprite2D" parent="."]\nlight_mask = 2\ntexture_filter = 2\n'
                        'position = %s\nscale = Vector2(%s, %s)\ntexture = ExtResource("pj_%s")\n'
                        'centered = false\noffset = Vector2(0, %s)'
-                       % (sn, vec((px, a["ponto"][1])), n(-sx if esp else sx), n(sy),
-                          a["fechada"], n((y0 - a["ponto"][1]) / sy)))
+                       % (sn, vec((px, y1)), n(-sx if esp else sx), n(sy),
+                          a["fechada"], n((y0 - y1) / sy)))
             caminhos.append('NodePath("../%s")' % sn)
         nos.append('[node name="Vao%s" type="CollisionPolygon2D" parent="Paredes"]\npolygon = %s'
-                   % (a["nome"], pts(faixa(a["vao"][0], a["vao"][1], a["espessura"]))))
+                   % (a["nome"], pts(a.get("corredor") or faixa(a["vao"][0], a["vao"][1], a["espessura"]))))
         sub.append('[sub_resource type="OccluderPolygon2D" id="oc_Vao%s"]\npolygon = %s'
                    % (a["nome"], pts(faixa(a["vao"][0], a["vao"][1], a["espessura"]))))
         nos.append('[node name="Vao%s" type="LightOccluder2D" parent="Oclusores"]\noccluder = SubResource("oc_Vao%s")'

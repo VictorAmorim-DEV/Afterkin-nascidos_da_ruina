@@ -76,6 +76,11 @@ CENARIO = [
 ]
 
 
+# objetos só de enfeite: sem colisão e sem bloquear a luz (o jogador passa por cima)
+DECORATIVOS = {"mato_alto", "mato_fino", "mato_seco", "mato_rasteiro", "capim", "capim_alto",
+               "arbusto_largo", "arbusto_redondo", "arbusto_baixo", "arbusto_folhudo",
+               "entulho_pedras", "entulho_laje"}
+
 # construções (scenes/world/buildings, geradas por tools/gerar_construcao.py): (cena, x, y do pivô)
 CONSTRUCOES = [
     ("casa_abandonada", -900, 250),
@@ -84,8 +89,8 @@ CONSTRUCOES = [
 # vegetação, mato e entulho em volta da base da casa, para ela não ficar "colada" no chão
 ENTORNO = [
     ("capim_alto", -1120, 340), ("mato_alto", -1110, 250), ("arbusto_largo", -1000, 280),
-    ("capim", -900, 300), ("mato_fino", -860, 220), ("arbusto_baixo", -860, 120),
-    ("mato_rasteiro", -830, 30), ("capim_alto", -800, -60), ("arbusto_folhudo", -780, -140),
+    ("capim", -900, 300), ("mato_fino", -860, 220), ("arbusto_baixo", -900, 190),
+    ("mato_rasteiro", -1300, 200), ("capim_alto", -700, -420), ("arbusto_folhudo", -780, -140),
     ("mato_seco", -1100, 420), ("capim", -820, 300), ("entulho_pedras", -960, 380),
     ("entulho_laje", -880, -30), ("arbusto_redondo", -1180, 180), ("mato_alto", -760, -230),
     ("capim", -1040, 440), ("mato_fino", -700, -300), ("arbusto_largo", -1240, 320),
@@ -129,6 +134,24 @@ def cena_prop(nome, rec, escala, base):
     cd = ((d[0] - p[0]) * escala, (d[1] - p[1]) * escala)
     pts = [(0, 0), ce, (ce[0] + cd[0], ce[1] + cd[1]), cd]
     no = "".join(t.capitalize() for t in nome.split("_"))
+    if nome in DECORATIVOS:
+        return f'''[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]
+[ext_resource type="Texture2D" path="res://{REC}/{rec}.png" id="2_tex"]
+
+[node name="{no}" type="StaticBody2D"]
+y_sort_enabled = true
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("1_prop")
+textura = ExtResource("2_tex")
+escala = {n(escala)}
+base_esq = {vec(e)}
+pivo = {vec(p)}
+base_dir = {vec(d)}
+luz_checar_obstaculos = false
+'''
     return f'''[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]

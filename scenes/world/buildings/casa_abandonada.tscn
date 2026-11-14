@@ -159,6 +159,24 @@ polygon = PackedVector2Array(130, -475, 185, -455, 185, -471, 130, -491)
 [node name="InternaB" type="CollisionPolygon2D" parent="Paredes"]
 polygon = PackedVector2Array(275, -421, 340, -397, 340, -413, 275, -437)
 
+[node name="CorpoSalaEsq" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(-200, -385, 124, -267, 124, -45, 0, -17, -450, -177)
+
+[node name="CorpoSalaDir" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(227, -229, 320, -195, 340, -93, 227, -68)
+
+[node name="CorpoEntradaEsq" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(320, -195, 430, -212, 430, -85, 340, -93)
+
+[node name="ColunaDireita" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(600, -233, 650, -239, 650, -180, 600, -177)
+
+[node name="CorpoCanteiro" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(610, -235, 870, -325, 990, -245, 650, -125)
+
+[node name="MuroDoQuintal" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(-645, -305, -510, -375, -450, -285, -450, -177, -640, -235)
+
 [node name="Oclusores" type="Node2D" parent="."]
 
 [node name="FundoSala" type="LightOccluder2D" parent="Oclusores"]
@@ -208,20 +226,20 @@ polygon = PackedVector2Array(130, -475, 330, -525, 870, -325, 610, -235, 340, -2
 [node name="PortaEntrada_fachada_cozinha" type="Sprite2D" parent="."]
 light_mask = 2
 texture_filter = 2
-position = Vector2(420, -205)
+position = Vector2(420, -180)
 scale = Vector2(1.13, 0.9)
 texture = ExtResource("pj_porta_tabuas_fechada")
 centered = false
-offset = Vector2(0, -222.22)
+offset = Vector2(0, -250)
 
 [node name="PortaEntrada_interior_cozinha" type="Sprite2D" parent="."]
 light_mask = 2
 texture_filter = 2
-position = Vector2(428, -205)
+position = Vector2(428, -193)
 scale = Vector2(0.97, 0.66)
 texture = ExtResource("pj_porta_tabuas_fechada")
 centered = false
-offset = Vector2(0, -231.71)
+offset = Vector2(0, -250)
 
 [node name="VaoPortaEntrada" type="CollisionPolygon2D" parent="Paredes"]
 polygon = PackedVector2Array(550, -227, 430, -212, 430, -188, 550, -203)
@@ -244,32 +262,32 @@ oclusor = NodePath("../Oclusores/VaoPortaEntrada")
 [node name="JanelaSala_fachada_sala" type="Sprite2D" parent="."]
 light_mask = 2
 texture_filter = 2
-position = Vector2(279, -248)
+position = Vector2(279, -247)
 scale = Vector2(-1.58, 0.72)
 texture = ExtResource("pj_janela_postigo_fechada")
 centered = false
-offset = Vector2(0, -205.62)
+offset = Vector2(0, -207)
 
 [node name="JanelaSala_interior_sala" type="Sprite2D" parent="."]
 light_mask = 2
 texture_filter = 2
-position = Vector2(287, -248)
+position = Vector2(287, -148)
 scale = Vector2(-1.68, 0.54)
 texture = ExtResource("pj_janela_postigo_fechada")
 centered = false
-offset = Vector2(0, -22.18)
+offset = Vector2(0, -207)
 
 [node name="VaoJanelaSala" type="CollisionPolygon2D" parent="Paredes"]
-polygon = PackedVector2Array(227, -229, 124, -267, 124, -243, 227, -205)
+polygon = PackedVector2Array(124, -267, 227, -229, 227, -68, 124, -45)
 
 [node name="VaoJanelaSala" type="LightOccluder2D" parent="Oclusores"]
 occluder = SubResource("oc_VaoJanelaSala")
 
 [node name="JanelaSala" type="Node2D" parent="."]
-position = Vector2(176, -248)
+position = Vector2(176, -145)
 script = ExtResource("3_abre")
 rotulo = "a janela"
-alcance = 27.55
+alcance = 43.5
 comodos = PackedStringArray("sala")
 textura_fechada = ExtResource("pj_janela_postigo_fechada")
 textura_aberta = ExtResource("pj_janela_postigo_aberta")
@@ -280,11 +298,11 @@ oclusor = NodePath("../Oclusores/VaoJanelaSala")
 [node name="PortaInterna_interior_sala" type="Sprite2D" parent="."]
 light_mask = 2
 texture_filter = 2
-position = Vector2(278, -438)
+position = Vector2(278, -413)
 scale = Vector2(-0.8, 0.83)
 texture = ExtResource("pj_porta_almofadada_fechada")
 centered = false
-offset = Vector2(0, -222.88)
+offset = Vector2(0, -253)
 
 [node name="VaoPortaInterna" type="CollisionPolygon2D" parent="Paredes"]
 polygon = PackedVector2Array(185, -455, 275, -421, 275, -437, 185, -471)

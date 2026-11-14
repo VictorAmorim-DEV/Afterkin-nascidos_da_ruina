@@ -130,13 +130,13 @@ position = Vector2(-600, -150)
 position = Vector2(-540, -160)
 
 [node name="ArbustoBaixo1" parent="." instance=ExtResource("p_arbusto_baixo")]
-position = Vector2(-490, -185)
+position = Vector2(-545, -177.5)
 
 [node name="MatoRasteiro1" parent="." instance=ExtResource("p_mato_rasteiro")]
-position = Vector2(-430, -200)
+position = Vector2(-750, -275)
 
 [node name="CapimAlto2" parent="." instance=ExtResource("p_capim_alto")]
-position = Vector2(-370, -215)
+position = Vector2(-140, -280)
 
 [node name="ArbustoFolhudo1" parent="." instance=ExtResource("p_arbusto_folhudo")]
 position = Vector2(-320, -230)

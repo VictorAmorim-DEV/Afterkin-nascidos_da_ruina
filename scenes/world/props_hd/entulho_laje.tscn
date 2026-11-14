@@ -1,25 +1,16 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]
 [ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/objetos_natureza/pedra_03.png" id="2_tex"]
 
-[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
-points = PackedVector2Array(0, 0, -16.2, -1.35, -7.2, -2.7, 9, -1.35)
-
-[sub_resource type="OccluderPolygon2D" id="oclusor_base"]
-polygon = PackedVector2Array(0, 0, -16.2, -1.35, -7.2, -2.7, 9, -1.35)
-
 [node name="EntulhoLaje" type="StaticBody2D"]
 y_sort_enabled = true
+collision_layer = 0
+collision_mask = 0
 script = ExtResource("1_prop")
 textura = ExtResource("2_tex")
 escala = 0.45
 base_esq = Vector2(2, 19)
 pivo = Vector2(38, 22)
 base_dir = Vector2(58, 19)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("shape_base")
-
-[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
-occluder = SubResource("oclusor_base")
+luz_checar_obstaculos = false
