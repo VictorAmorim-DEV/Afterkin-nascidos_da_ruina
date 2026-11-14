@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/objetos_natureza/arvore_03.png" id="2_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(0, 0, -23.68, -11.84, 0, -23.68, 23.68, -11.84)
+
+[node name="ArvoreOutono" type="StaticBody2D"]
+y_sort_enabled = true
+script = ExtResource("1_prop")
+textura = ExtResource("2_tex")
+escala = 0.8
+base_esq = Vector2(99.4, 281.8)
+pivo = Vector2(129, 296.6)
+base_dir = Vector2(158.6, 281.8)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")

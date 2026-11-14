@@ -1,16 +1,26 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://assets/tilesets/terrain_tiles.jpg" id="2_tiles"]
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="3_player"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/barrier.tscn" id="p_barrier"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/boulder.tscn" id="p_boulder"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/bush.tscn" id="p_bush"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/car.tscn" id="p_car"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/deadtree.tscn" id="p_deadtree"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/lamp.tscn" id="p_lamp"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/tires.tscn" id="p_tires"]
-[ext_resource type="PackedScene" path="res://scenes/world/props/tree.tscn" id="p_tree"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_fina.tscn" id="p_arvore_fina"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_frondosa.tscn" id="p_arvore_frondosa"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_jovem.tscn" id="p_arvore_jovem"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_morta.tscn" id="p_arvore_morta"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/arvore_outono.tscn" id="p_arvore_outono"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_curta.tscn" id="p_barreira_curta"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_destruida.tscn" id="p_barreira_destruida"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_listrada.tscn" id="p_barreira_listrada"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/barreira_longa.tscn" id="p_barreira_longa"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/carro_capo_aberto.tscn" id="p_carro_capo_aberto"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/jipe.tscn" id="p_jipe"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/kombi.tscn" id="p_kombi"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/palmeira.tscn" id="p_palmeira"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/picape.tscn" id="p_picape"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/sacos_areia_a.tscn" id="p_sacos_areia_a"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/sacos_areia_b.tscn" id="p_sacos_areia_b"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_amarelo.tscn" id="p_sedan_amarelo"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_enferrujado.tscn" id="p_sedan_enferrujado"]
 
 [node name="TestLevel" type="Node2D"]
 y_sort_enabled = true
@@ -22,53 +32,68 @@ tiles = ExtResource("2_tiles")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 
-[node name="Tree1" parent="." instance=ExtResource("p_tree")]
-position = Vector2(-33.54, -117.12)
+[node name="Kombi1" parent="." instance=ExtResource("p_kombi")]
+position = Vector2(142.5, 101.25)
 
-[node name="Tree2" parent="." instance=ExtResource("p_tree")]
-position = Vector2(236.46, -52.12)
+[node name="SedanEnferrujado1" parent="." instance=ExtResource("p_sedan_enferrujado")]
+position = Vector2(332.5, 1.25)
 
-[node name="Tree3" parent="." instance=ExtResource("p_tree")]
-position = Vector2(246.46, 132.88)
+[node name="Picape1" parent="." instance=ExtResource("p_picape")]
+position = Vector2(-60, 205)
 
-[node name="Tree4" parent="." instance=ExtResource("p_tree")]
-position = Vector2(-3.54, -232.12)
+[node name="SedanAmarelo1" parent="." instance=ExtResource("p_sedan_amarelo")]
+position = Vector2(-250, 275)
 
-[node name="Deadtree1" parent="." instance=ExtResource("p_deadtree")]
-position = Vector2(-239.37, -93.89)
+[node name="CarroCapoAberto1" parent="." instance=ExtResource("p_carro_capo_aberto")]
+position = Vector2(-295, 17.5)
 
-[node name="Boulder1" parent="." instance=ExtResource("p_boulder")]
-position = Vector2(149.7, 12.93)
+[node name="Jipe1" parent="." instance=ExtResource("p_jipe")]
+position = Vector2(140, -130)
 
-[node name="Bush1" parent="." instance=ExtResource("p_bush")]
-position = Vector2(-19.58, 36.7)
+[node name="BarreiraLonga1" parent="." instance=ExtResource("p_barreira_longa")]
+position = Vector2(28.5, 116.75)
 
-[node name="Bush2" parent="." instance=ExtResource("p_bush")]
-position = Vector2(-44.58, -45.8)
+[node name="BarreiraCurta1" parent="." instance=ExtResource("p_barreira_curta")]
+position = Vector2(82, 145)
 
-[node name="Lamp1" parent="." instance=ExtResource("p_lamp")]
-position = Vector2(-90, 37)
+[node name="BarreiraListrada1" parent="." instance=ExtResource("p_barreira_listrada")]
+position = Vector2(425, -87.5)
 
-[node name="Lamp2" parent="." instance=ExtResource("p_lamp")]
-position = Vector2(-345, -90.5)
+[node name="BarreiraDestruida1" parent="." instance=ExtResource("p_barreira_destruida")]
+position = Vector2(487.5, -51.25)
 
-[node name="Car1" parent="." instance=ExtResource("p_car")]
-position = Vector2(-53.14, 135.92)
+[node name="SacosAreiaB1" parent="." instance=ExtResource("p_sacos_areia_b")]
+position = Vector2(-15, 67.5)
 
-[node name="Barrier1" parent="." instance=ExtResource("p_barrier")]
-position = Vector2(-215.52, 13.21)
+[node name="SacosAreiaA1" parent="." instance=ExtResource("p_sacos_areia_a")]
+position = Vector2(110, 180)
 
-[node name="Barrier2" parent="." instance=ExtResource("p_barrier")]
-position = Vector2(-243.52, 27.21)
+[node name="ArvoreFrondosa1" parent="." instance=ExtResource("p_arvore_frondosa")]
+position = Vector2(-30, -95)
 
-[node name="Barrier3" parent="." instance=ExtResource("p_barrier")]
-position = Vector2(-271.52, 41.21)
+[node name="ArvoreOutono1" parent="." instance=ExtResource("p_arvore_outono")]
+position = Vector2(-240, -140)
 
-[node name="Tires1" parent="." instance=ExtResource("p_tires")]
-position = Vector2(3, 212.8)
+[node name="ArvoreFina1" parent="." instance=ExtResource("p_arvore_fina")]
+position = Vector2(250, -195)
 
-[node name="Tree5" parent="." instance=ExtResource("p_tree")]
-position = Vector2(-343.54, 117.88)
+[node name="ArvoreJovem1" parent="." instance=ExtResource("p_arvore_jovem")]
+position = Vector2(-445, -57.5)
 
-[node name="Deadtree2" parent="." instance=ExtResource("p_deadtree")]
-position = Vector2(-164.37, 218.61)
+[node name="Palmeira1" parent="." instance=ExtResource("p_palmeira")]
+position = Vector2(-470, 85)
+
+[node name="ArvoreMorta1" parent="." instance=ExtResource("p_arvore_morta")]
+position = Vector2(420, 110)
+
+[node name="ArvoreFrondosa2" parent="." instance=ExtResource("p_arvore_frondosa")]
+position = Vector2(165, 247.5)
+
+[node name="ArvoreFina2" parent="." instance=ExtResource("p_arvore_fina")]
+position = Vector2(-80, 320)
+
+[node name="ArvoreOutono2" parent="." instance=ExtResource("p_arvore_outono")]
+position = Vector2(640, 40)
+
+[node name="ArvoreJovem2" parent="." instance=ExtResource("p_arvore_jovem")]
+position = Vector2(160, -50)

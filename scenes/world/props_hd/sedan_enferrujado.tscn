@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/objetos_natureza/veiculo_04.png" id="2_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(0, 0, -55.3, -17.5, 38.5, -52.5, 93.8, -35)
+
+[node name="SedanEnferrujado" type="StaticBody2D"]
+y_sort_enabled = true
+script = ExtResource("1_prop")
+textura = ExtResource("2_tex")
+escala = 0.7
+base_esq = Vector2(2, 85)
+pivo = Vector2(81, 110)
+base_dir = Vector2(215, 60)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")

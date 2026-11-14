@@ -1,0 +1,2939 @@
+[
+ {
+  "nome": "arvore_01",
+  "arquivo": "objetos_natureza/arvore_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1259,
+   13,
+   175,
+   210
+  ]
+ },
+ {
+  "nome": "arvore_02",
+  "arquivo": "objetos_natureza/arvore_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   13,
+   14,
+   278,
+   300
+  ]
+ },
+ {
+  "nome": "arvore_03",
+  "arquivo": "objetos_natureza/arvore_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   284,
+   9,
+   293,
+   307
+  ]
+ },
+ {
+  "nome": "arvore_04",
+  "arquivo": "objetos_natureza/arvore_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   567,
+   12,
+   173,
+   301
+  ]
+ },
+ {
+  "nome": "arvore_05",
+  "arquivo": "objetos_natureza/arvore_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   760,
+   19,
+   235,
+   276
+  ]
+ },
+ {
+  "nome": "arvore_06",
+  "arquivo": "objetos_natureza/arvore_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1035,
+   20,
+   205,
+   281
+  ]
+ },
+ {
+  "nome": "barricada_01",
+  "arquivo": "objetos_natureza/barricada_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   62,
+   787,
+   79,
+   61
+  ]
+ },
+ {
+  "nome": "barricada_02",
+  "arquivo": "objetos_natureza/barricada_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   148,
+   795,
+   110,
+   64
+  ]
+ },
+ {
+  "nome": "barricada_03",
+  "arquivo": "objetos_natureza/barricada_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   265,
+   798,
+   106,
+   66
+  ]
+ },
+ {
+  "nome": "barricada_04",
+  "arquivo": "objetos_natureza/barricada_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   509,
+   793,
+   74,
+   91
+  ]
+ },
+ {
+  "nome": "barricada_05",
+  "arquivo": "objetos_natureza/barricada_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   9,
+   833,
+   119,
+   75
+  ]
+ },
+ {
+  "nome": "barricada_06",
+  "arquivo": "objetos_natureza/barricada_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   146,
+   854,
+   119,
+   76
+  ]
+ },
+ {
+  "nome": "barricada_07",
+  "arquivo": "objetos_natureza/barricada_07.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   274,
+   854,
+   121,
+   72
+  ]
+ },
+ {
+  "nome": "barricada_08",
+  "arquivo": "objetos_natureza/barricada_08.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   383,
+   799,
+   121,
+   84
+  ]
+ },
+ {
+  "nome": "barricada_09",
+  "arquivo": "objetos_natureza/barricada_09.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   569,
+   799,
+   72,
+   95
+  ]
+ },
+ {
+  "nome": "barricada_10",
+  "arquivo": "objetos_natureza/barricada_10.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   400,
+   879,
+   20,
+   63
+  ]
+ },
+ {
+  "nome": "barricada_11",
+  "arquivo": "objetos_natureza/barricada_11.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   429,
+   895,
+   53,
+   57
+  ]
+ },
+ {
+  "nome": "cerca_01",
+  "arquivo": "objetos_natureza/cerca_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   649,
+   874,
+   127,
+   59
+  ]
+ },
+ {
+  "nome": "cerca_02",
+  "arquivo": "objetos_natureza/cerca_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   678,
+   792,
+   146,
+   96
+  ]
+ },
+ {
+  "nome": "cerca_03",
+  "arquivo": "objetos_natureza/cerca_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   844,
+   795,
+   105,
+   118
+  ]
+ },
+ {
+  "nome": "cerca_04",
+  "arquivo": "objetos_natureza/cerca_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   960,
+   840,
+   128,
+   79
+  ]
+ },
+ {
+  "nome": "cerca_05",
+  "arquivo": "objetos_natureza/cerca_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1093,
+   793,
+   29,
+   125
+  ]
+ },
+ {
+  "nome": "cerca_06",
+  "arquivo": "objetos_natureza/cerca_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1112,
+   792,
+   28,
+   125
+  ]
+ },
+ {
+  "nome": "cerca_07",
+  "arquivo": "objetos_natureza/cerca_07.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1165,
+   790,
+   21,
+   127
+  ]
+ },
+ {
+  "nome": "cerca_08",
+  "arquivo": "objetos_natureza/cerca_08.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1257,
+   789,
+   19,
+   129
+  ]
+ },
+ {
+  "nome": "cerca_09",
+  "arquivo": "objetos_natureza/cerca_09.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   788,
+   894,
+   47,
+   33
+  ]
+ },
+ {
+  "nome": "cerca_10",
+  "arquivo": "objetos_natureza/cerca_10.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   824,
+   900,
+   78,
+   32
+  ]
+ },
+ {
+  "nome": "objeto_01",
+  "arquivo": "objetos_natureza/objeto_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1275,
+   650,
+   52,
+   34
+  ]
+ },
+ {
+  "nome": "objeto_02",
+  "arquivo": "objetos_natureza/objeto_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1428,
+   652,
+   89,
+   74
+  ]
+ },
+ {
+  "nome": "objeto_03",
+  "arquivo": "objetos_natureza/objeto_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1298,
+   687,
+   112,
+   93
+  ]
+ },
+ {
+  "nome": "objeto_04",
+  "arquivo": "objetos_natureza/objeto_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   14,
+   929,
+   94,
+   80
+  ]
+ },
+ {
+  "nome": "objeto_05",
+  "arquivo": "objetos_natureza/objeto_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   114,
+   936,
+   48,
+   72
+  ]
+ },
+ {
+  "nome": "objeto_06",
+  "arquivo": "objetos_natureza/objeto_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   213,
+   942,
+   87,
+   72
+  ]
+ },
+ {
+  "nome": "objeto_07",
+  "arquivo": "objetos_natureza/objeto_07.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   310,
+   940,
+   37,
+   69
+  ]
+ },
+ {
+  "nome": "objeto_08",
+  "arquivo": "objetos_natureza/objeto_08.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   477,
+   908,
+   32,
+   50
+  ]
+ },
+ {
+  "nome": "objeto_09",
+  "arquivo": "objetos_natureza/objeto_09.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   516,
+   917,
+   39,
+   53
+  ]
+ },
+ {
+  "nome": "objeto_10",
+  "arquivo": "objetos_natureza/objeto_10.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   560,
+   929,
+   51,
+   55
+  ]
+ },
+ {
+  "nome": "objeto_11",
+  "arquivo": "objetos_natureza/objeto_11.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   617,
+   928,
+   64,
+   81
+  ]
+ },
+ {
+  "nome": "objeto_12",
+  "arquivo": "objetos_natureza/objeto_12.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   680,
+   938,
+   62,
+   71
+  ]
+ },
+ {
+  "nome": "objeto_13",
+  "arquivo": "objetos_natureza/objeto_13.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   749,
+   944,
+   59,
+   59
+  ]
+ },
+ {
+  "nome": "objeto_14",
+  "arquivo": "objetos_natureza/objeto_14.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   819,
+   945,
+   77,
+   63
+  ]
+ },
+ {
+  "nome": "objeto_15",
+  "arquivo": "objetos_natureza/objeto_15.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   895,
+   920,
+   42,
+   21
+  ]
+ },
+ {
+  "nome": "objeto_16",
+  "arquivo": "objetos_natureza/objeto_16.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   911,
+   950,
+   47,
+   58
+  ]
+ },
+ {
+  "nome": "objeto_17",
+  "arquivo": "objetos_natureza/objeto_17.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   962,
+   932,
+   84,
+   77
+  ]
+ },
+ {
+  "nome": "objeto_18",
+  "arquivo": "objetos_natureza/objeto_18.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1036,
+   936,
+   63,
+   68
+  ]
+ },
+ {
+  "nome": "objeto_19",
+  "arquivo": "objetos_natureza/objeto_19.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1102,
+   936,
+   114,
+   47
+  ]
+ },
+ {
+  "nome": "objeto_20",
+  "arquivo": "objetos_natureza/objeto_20.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1189,
+   957,
+   37,
+   30
+  ]
+ },
+ {
+  "nome": "objeto_21",
+  "arquivo": "objetos_natureza/objeto_21.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1211,
+   940,
+   102,
+   69
+  ]
+ },
+ {
+  "nome": "objeto_22",
+  "arquivo": "objetos_natureza/objeto_22.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1289,
+   944,
+   31,
+   27
+  ]
+ },
+ {
+  "nome": "objeto_23",
+  "arquivo": "objetos_natureza/objeto_23.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1315,
+   966,
+   24,
+   19
+  ]
+ },
+ {
+  "nome": "objeto_24",
+  "arquivo": "objetos_natureza/objeto_24.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   166,
+   956,
+   47,
+   52
+  ]
+ },
+ {
+  "nome": "objeto_25",
+  "arquivo": "objetos_natureza/objeto_25.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   350,
+   953,
+   42,
+   56
+  ]
+ },
+ {
+  "nome": "objeto_26",
+  "arquivo": "objetos_natureza/objeto_26.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   405,
+   963,
+   52,
+   44
+  ]
+ },
+ {
+  "nome": "objeto_27",
+  "arquivo": "objetos_natureza/objeto_27.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   481,
+   963,
+   34,
+   43
+  ]
+ },
+ {
+  "nome": "objeto_28",
+  "arquivo": "objetos_natureza/objeto_28.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   521,
+   977,
+   25,
+   32
+  ]
+ },
+ {
+  "nome": "objeto_29",
+  "arquivo": "objetos_natureza/objeto_29.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   559,
+   988,
+   23,
+   21
+  ]
+ },
+ {
+  "nome": "objeto_30",
+  "arquivo": "objetos_natureza/objeto_30.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1103,
+   983,
+   70,
+   30
+  ]
+ },
+ {
+  "nome": "objeto_31",
+  "arquivo": "objetos_natureza/objeto_31.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1179,
+   987,
+   23,
+   22
+  ]
+ },
+ {
+  "nome": "objeto_32",
+  "arquivo": "objetos_natureza/objeto_32.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1317,
+   986,
+   25,
+   22
+  ]
+ },
+ {
+  "nome": "objeto_33",
+  "arquivo": "objetos_natureza/objeto_33.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1350,
+   979,
+   33,
+   25
+  ]
+ },
+ {
+  "nome": "objeto_34",
+  "arquivo": "objetos_natureza/objeto_34.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1397,
+   965,
+   40,
+   42
+  ]
+ },
+ {
+  "nome": "objeto_35",
+  "arquivo": "objetos_natureza/objeto_35.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1452,
+   960,
+   68,
+   54
+  ]
+ },
+ {
+  "nome": "pedra_01",
+  "arquivo": "objetos_natureza/pedra_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   14,
+   480,
+   111,
+   59
+  ]
+ },
+ {
+  "nome": "pedra_02",
+  "arquivo": "objetos_natureza/pedra_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   131,
+   475,
+   112,
+   63
+  ]
+ },
+ {
+  "nome": "pedra_03",
+  "arquivo": "objetos_natureza/pedra_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   231,
+   536,
+   61,
+   25
+  ]
+ },
+ {
+  "nome": "pedra_04",
+  "arquivo": "objetos_natureza/pedra_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   248,
+   497,
+   30,
+   25
+  ]
+ },
+ {
+  "nome": "pedra_05",
+  "arquivo": "objetos_natureza/pedra_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   284,
+   476,
+   111,
+   67
+  ]
+ },
+ {
+  "nome": "pedra_06",
+  "arquivo": "objetos_natureza/pedra_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   311,
+   543,
+   21,
+   18
+  ]
+ },
+ {
+  "nome": "pedra_07",
+  "arquivo": "objetos_natureza/pedra_07.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   351,
+   548,
+   31,
+   19
+  ]
+ },
+ {
+  "nome": "pedra_08",
+  "arquivo": "objetos_natureza/pedra_08.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   402,
+   491,
+   51,
+   48
+  ]
+ },
+ {
+  "nome": "pedra_09",
+  "arquivo": "objetos_natureza/pedra_09.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   424,
+   539,
+   31,
+   19
+  ]
+ },
+ {
+  "nome": "pedra_10",
+  "arquivo": "objetos_natureza/pedra_10.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   457,
+   506,
+   29,
+   23
+  ]
+ },
+ {
+  "nome": "pedra_11",
+  "arquivo": "objetos_natureza/pedra_11.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   459,
+   537,
+   32,
+   27
+  ]
+ },
+ {
+  "nome": "poste_01",
+  "arquivo": "objetos_natureza/poste_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1278,
+   811,
+   32,
+   125
+  ]
+ },
+ {
+  "nome": "poste_02",
+  "arquivo": "objetos_natureza/poste_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1299,
+   784,
+   47,
+   154
+  ]
+ },
+ {
+  "nome": "poste_03",
+  "arquivo": "objetos_natureza/poste_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1352,
+   784,
+   36,
+   162
+  ]
+ },
+ {
+  "nome": "recipiente_01",
+  "arquivo": "objetos_natureza/recipiente_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   16,
+   702,
+   83,
+   83
+  ]
+ },
+ {
+  "nome": "recipiente_02",
+  "arquivo": "objetos_natureza/recipiente_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   110,
+   706,
+   63,
+   78
+  ]
+ },
+ {
+  "nome": "recipiente_03",
+  "arquivo": "objetos_natureza/recipiente_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   185,
+   718,
+   42,
+   67
+  ]
+ },
+ {
+  "nome": "recipiente_04",
+  "arquivo": "objetos_natureza/recipiente_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   234,
+   705,
+   45,
+   77
+  ]
+ },
+ {
+  "nome": "recipiente_05",
+  "arquivo": "objetos_natureza/recipiente_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   284,
+   723,
+   37,
+   54
+  ]
+ },
+ {
+  "nome": "recipiente_06",
+  "arquivo": "objetos_natureza/recipiente_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   329,
+   693,
+   71,
+   90
+  ]
+ },
+ {
+  "nome": "recipiente_07",
+  "arquivo": "objetos_natureza/recipiente_07.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   410,
+   704,
+   38,
+   76
+  ]
+ },
+ {
+  "nome": "recipiente_08",
+  "arquivo": "objetos_natureza/recipiente_08.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   453,
+   694,
+   61,
+   84
+  ]
+ },
+ {
+  "nome": "recipiente_09",
+  "arquivo": "objetos_natureza/recipiente_09.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   519,
+   714,
+   42,
+   58
+  ]
+ },
+ {
+  "nome": "recipiente_10",
+  "arquivo": "objetos_natureza/recipiente_10.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   579,
+   685,
+   126,
+   102
+  ]
+ },
+ {
+  "nome": "recipiente_11",
+  "arquivo": "objetos_natureza/recipiente_11.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   725,
+   708,
+   59,
+   65
+  ]
+ },
+ {
+  "nome": "recipiente_12",
+  "arquivo": "objetos_natureza/recipiente_12.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   786,
+   713,
+   47,
+   64
+  ]
+ },
+ {
+  "nome": "recipiente_13",
+  "arquivo": "objetos_natureza/recipiente_13.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   845,
+   704,
+   82,
+   81
+  ]
+ },
+ {
+  "nome": "recipiente_14",
+  "arquivo": "objetos_natureza/recipiente_14.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   938,
+   697,
+   47,
+   85
+  ]
+ },
+ {
+  "nome": "recipiente_15",
+  "arquivo": "objetos_natureza/recipiente_15.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   992,
+   694,
+   37,
+   84
+  ]
+ },
+ {
+  "nome": "recipiente_16",
+  "arquivo": "objetos_natureza/recipiente_16.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1043,
+   689,
+   50,
+   87
+  ]
+ },
+ {
+  "nome": "recipiente_17",
+  "arquivo": "objetos_natureza/recipiente_17.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1104,
+   699,
+   44,
+   76
+  ]
+ },
+ {
+  "nome": "recipiente_18",
+  "arquivo": "objetos_natureza/recipiente_18.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1162,
+   700,
+   82,
+   83
+  ]
+ },
+ {
+  "nome": "recipiente_19",
+  "arquivo": "objetos_natureza/recipiente_19.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1254,
+   725,
+   33,
+   55
+  ]
+ },
+ {
+  "nome": "torre_01",
+  "arquivo": "objetos_natureza/torre_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1398,
+   741,
+   106,
+   211
+  ]
+ },
+ {
+  "nome": "torre_02",
+  "arquivo": "objetos_natureza/torre_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1499,
+   783,
+   29,
+   164
+  ]
+ },
+ {
+  "nome": "tronco_01",
+  "arquivo": "objetos_natureza/tronco_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   499,
+   491,
+   163,
+   71
+  ]
+ },
+ {
+  "nome": "tronco_02",
+  "arquivo": "objetos_natureza/tronco_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   605,
+   472,
+   185,
+   63
+  ]
+ },
+ {
+  "nome": "tronco_03",
+  "arquivo": "objetos_natureza/tronco_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   720,
+   537,
+   104,
+   35
+  ]
+ },
+ {
+  "nome": "tronco_04",
+  "arquivo": "objetos_natureza/tronco_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   776,
+   471,
+   29,
+   39
+  ]
+ },
+ {
+  "nome": "tronco_05",
+  "arquivo": "objetos_natureza/tronco_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   818,
+   493,
+   30,
+   39
+  ]
+ },
+ {
+  "nome": "vegetacao_01",
+  "arquivo": "objetos_natureza/vegetacao_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1436,
+   76,
+   83,
+   123
+  ]
+ },
+ {
+  "nome": "vegetacao_02",
+  "arquivo": "objetos_natureza/vegetacao_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   681,
+   163,
+   153,
+   149
+  ]
+ },
+ {
+  "nome": "vegetacao_03",
+  "arquivo": "objetos_natureza/vegetacao_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   932,
+   170,
+   173,
+   138
+  ]
+ },
+ {
+  "nome": "vegetacao_04",
+  "arquivo": "objetos_natureza/vegetacao_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1351,
+   203,
+   105,
+   152
+  ]
+ },
+ {
+  "nome": "vegetacao_05",
+  "arquivo": "objetos_natureza/vegetacao_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1474,
+   203,
+   38,
+   131
+  ]
+ },
+ {
+  "nome": "vegetacao_06",
+  "arquivo": "objetos_natureza/vegetacao_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   13,
+   281,
+   149,
+   134
+  ]
+ },
+ {
+  "nome": "vegetacao_07",
+  "arquivo": "objetos_natureza/vegetacao_07.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   210,
+   296,
+   164,
+   94
+  ]
+ },
+ {
+  "nome": "vegetacao_08",
+  "arquivo": "objetos_natureza/vegetacao_08.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   552,
+   282,
+   99,
+   94
+  ]
+ },
+ {
+  "nome": "vegetacao_09",
+  "arquivo": "objetos_natureza/vegetacao_09.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1205,
+   243,
+   140,
+   95
+  ]
+ },
+ {
+  "nome": "vegetacao_10",
+  "arquivo": "objetos_natureza/vegetacao_10.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   145,
+   365,
+   85,
+   100
+  ]
+ },
+ {
+  "nome": "vegetacao_11",
+  "arquivo": "objetos_natureza/vegetacao_11.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   393,
+   314,
+   163,
+   89
+  ]
+ },
+ {
+  "nome": "vegetacao_12",
+  "arquivo": "objetos_natureza/vegetacao_12.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   646,
+   344,
+   82,
+   89
+  ]
+ },
+ {
+  "nome": "vegetacao_13",
+  "arquivo": "objetos_natureza/vegetacao_13.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   752,
+   334,
+   76,
+   101
+  ]
+ },
+ {
+  "nome": "vegetacao_14",
+  "arquivo": "objetos_natureza/vegetacao_14.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   860,
+   304,
+   73,
+   190
+  ]
+ },
+ {
+  "nome": "vegetacao_15",
+  "arquivo": "objetos_natureza/vegetacao_15.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1069,
+   315,
+   80,
+   89
+  ]
+ },
+ {
+  "nome": "vegetacao_16",
+  "arquivo": "objetos_natureza/vegetacao_16.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1157,
+   333,
+   56,
+   68
+  ]
+ },
+ {
+  "nome": "vegetacao_17",
+  "arquivo": "objetos_natureza/vegetacao_17.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1217,
+   373,
+   80,
+   70
+  ]
+ },
+ {
+  "nome": "vegetacao_18",
+  "arquivo": "objetos_natureza/vegetacao_18.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1302,
+   341,
+   95,
+   91
+  ]
+ },
+ {
+  "nome": "vegetacao_19",
+  "arquivo": "objetos_natureza/vegetacao_19.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1433,
+   355,
+   84,
+   88
+  ]
+ },
+ {
+  "nome": "vegetacao_20",
+  "arquivo": "objetos_natureza/vegetacao_20.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   44,
+   425,
+   103,
+   51
+  ]
+ },
+ {
+  "nome": "vegetacao_21",
+  "arquivo": "objetos_natureza/vegetacao_21.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   238,
+   394,
+   85,
+   80
+  ]
+ },
+ {
+  "nome": "vegetacao_22",
+  "arquivo": "objetos_natureza/vegetacao_22.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   334,
+   390,
+   88,
+   76
+  ]
+ },
+ {
+  "nome": "vegetacao_23",
+  "arquivo": "objetos_natureza/vegetacao_23.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   443,
+   423,
+   41,
+   66
+  ]
+ },
+ {
+  "nome": "vegetacao_24",
+  "arquivo": "objetos_natureza/vegetacao_24.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   485,
+   418,
+   39,
+   62
+  ]
+ },
+ {
+  "nome": "vegetacao_25",
+  "arquivo": "objetos_natureza/vegetacao_25.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   547,
+   379,
+   81,
+   96
+  ]
+ },
+ {
+  "nome": "vegetacao_26",
+  "arquivo": "objetos_natureza/vegetacao_26.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   682,
+   430,
+   82,
+   66
+  ]
+ },
+ {
+  "nome": "vegetacao_27",
+  "arquivo": "objetos_natureza/vegetacao_27.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   932,
+   346,
+   60,
+   150
+  ]
+ },
+ {
+  "nome": "vegetacao_28",
+  "arquivo": "objetos_natureza/vegetacao_28.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1008,
+   379,
+   81,
+   116
+  ]
+ },
+ {
+  "nome": "vegetacao_29",
+  "arquivo": "objetos_natureza/vegetacao_29.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1093,
+   430,
+   52,
+   65
+  ]
+ },
+ {
+  "nome": "vegetacao_30",
+  "arquivo": "objetos_natureza/vegetacao_30.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1161,
+   428,
+   63,
+   66
+  ]
+ },
+ {
+  "nome": "vegetacao_31",
+  "arquivo": "objetos_natureza/vegetacao_31.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1296,
+   424,
+   47,
+   73
+  ]
+ },
+ {
+  "nome": "vegetacao_32",
+  "arquivo": "objetos_natureza/vegetacao_32.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1360,
+   421,
+   88,
+   71
+  ]
+ },
+ {
+  "nome": "vegetacao_33",
+  "arquivo": "objetos_natureza/vegetacao_33.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   856,
+   507,
+   60,
+   47
+  ]
+ },
+ {
+  "nome": "vegetacao_34",
+  "arquivo": "objetos_natureza/vegetacao_34.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   928,
+   514,
+   40,
+   42
+  ]
+ },
+ {
+  "nome": "vegetacao_35",
+  "arquivo": "objetos_natureza/vegetacao_35.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   980,
+   500,
+   48,
+   57
+  ]
+ },
+ {
+  "nome": "vegetacao_36",
+  "arquivo": "objetos_natureza/vegetacao_36.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1051,
+   499,
+   59,
+   47
+  ]
+ },
+ {
+  "nome": "vegetacao_37",
+  "arquivo": "objetos_natureza/vegetacao_37.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1063,
+   531,
+   61,
+   43
+  ]
+ },
+ {
+  "nome": "vegetacao_38",
+  "arquivo": "objetos_natureza/vegetacao_38.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1138,
+   501,
+   42,
+   69
+  ]
+ },
+ {
+  "nome": "vegetacao_39",
+  "arquivo": "objetos_natureza/vegetacao_39.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1189,
+   531,
+   47,
+   38
+  ]
+ },
+ {
+  "nome": "vegetacao_40",
+  "arquivo": "objetos_natureza/vegetacao_40.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1233,
+   471,
+   41,
+   67
+  ]
+ },
+ {
+  "nome": "vegetacao_41",
+  "arquivo": "objetos_natureza/vegetacao_41.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1280,
+   513,
+   63,
+   45
+  ]
+ },
+ {
+  "nome": "vegetacao_42",
+  "arquivo": "objetos_natureza/vegetacao_42.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1355,
+   513,
+   40,
+   49
+  ]
+ },
+ {
+  "nome": "vegetacao_43",
+  "arquivo": "objetos_natureza/vegetacao_43.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1422,
+   520,
+   28,
+   37
+  ]
+ },
+ {
+  "nome": "vegetacao_44",
+  "arquivo": "objetos_natureza/vegetacao_44.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1452,
+   456,
+   52,
+   71
+  ]
+ },
+ {
+  "nome": "vegetacao_45",
+  "arquivo": "objetos_natureza/vegetacao_45.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1263,
+   565,
+   49,
+   56
+  ]
+ },
+ {
+  "nome": "vegetacao_46",
+  "arquivo": "objetos_natureza/vegetacao_46.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1315,
+   590,
+   66,
+   57
+  ]
+ },
+ {
+  "nome": "vegetacao_47",
+  "arquivo": "objetos_natureza/vegetacao_47.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1392,
+   570,
+   23,
+   31
+  ]
+ },
+ {
+  "nome": "vegetacao_48",
+  "arquivo": "objetos_natureza/vegetacao_48.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1431,
+   550,
+   79,
+   88
+  ]
+ },
+ {
+  "nome": "vegetacao_49",
+  "arquivo": "objetos_natureza/vegetacao_49.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1357,
+   614,
+   59,
+   62
+  ]
+ },
+ {
+  "nome": "veiculo_01",
+  "arquivo": "objetos_natureza/veiculo_01.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   492,
+   554,
+   177,
+   129
+  ]
+ },
+ {
+  "nome": "veiculo_02",
+  "arquivo": "objetos_natureza/veiculo_02.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   881,
+   576,
+   207,
+   105
+  ]
+ },
+ {
+  "nome": "veiculo_03",
+  "arquivo": "objetos_natureza/veiculo_03.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   12,
+   560,
+   254,
+   140
+  ]
+ },
+ {
+  "nome": "veiculo_04",
+  "arquivo": "objetos_natureza/veiculo_04.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   265,
+   574,
+   218,
+   114
+  ]
+ },
+ {
+  "nome": "veiculo_05",
+  "arquivo": "objetos_natureza/veiculo_05.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   664,
+   572,
+   212,
+   118
+  ]
+ },
+ {
+  "nome": "veiculo_06",
+  "arquivo": "objetos_natureza/veiculo_06.png",
+  "folha": "objetos_natureza_hd.png",
+  "origem": [
+   1091,
+   576,
+   165,
+   112
+  ]
+ },
+ {
+  "nome": "interior_01",
+  "arquivo": "construcoes/interior_01.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   7,
+   482,
+   238,
+   200
+  ]
+ },
+ {
+  "nome": "interior_02",
+  "arquivo": "construcoes/interior_02.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   271,
+   477,
+   251,
+   210
+  ]
+ },
+ {
+  "nome": "interior_03",
+  "arquivo": "construcoes/interior_03.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   538,
+   474,
+   285,
+   220
+  ]
+ },
+ {
+  "nome": "interior_04",
+  "arquivo": "construcoes/interior_04.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   834,
+   471,
+   236,
+   218
+  ]
+ },
+ {
+  "nome": "interior_05",
+  "arquivo": "construcoes/interior_05.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1089,
+   482,
+   252,
+   207
+  ]
+ },
+ {
+  "nome": "interior_06",
+  "arquivo": "construcoes/interior_06.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1361,
+   490,
+   169,
+   186
+  ]
+ },
+ {
+  "nome": "objeto_01",
+  "arquivo": "construcoes/objeto_01.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   989,
+   881,
+   49,
+   47
+  ]
+ },
+ {
+  "nome": "objeto_02",
+  "arquivo": "construcoes/objeto_02.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1046,
+   872,
+   23,
+   48
+  ]
+ },
+ {
+  "nome": "objeto_03",
+  "arquivo": "construcoes/objeto_03.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1084,
+   878,
+   44,
+   47
+  ]
+ },
+ {
+  "nome": "objeto_04",
+  "arquivo": "construcoes/objeto_04.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1138,
+   871,
+   46,
+   47
+  ]
+ },
+ {
+  "nome": "objeto_05",
+  "arquivo": "construcoes/objeto_05.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1185,
+   872,
+   37,
+   45
+  ]
+ },
+ {
+  "nome": "objeto_06",
+  "arquivo": "construcoes/objeto_06.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1219,
+   870,
+   39,
+   58
+  ]
+ },
+ {
+  "nome": "objeto_07",
+  "arquivo": "construcoes/objeto_07.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1264,
+   855,
+   21,
+   89
+  ]
+ },
+ {
+  "nome": "objeto_08",
+  "arquivo": "construcoes/objeto_08.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1290,
+   842,
+   35,
+   130
+  ]
+ },
+ {
+  "nome": "objeto_09",
+  "arquivo": "construcoes/objeto_09.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1338,
+   841,
+   49,
+   117
+  ]
+ },
+ {
+  "nome": "objeto_10",
+  "arquivo": "construcoes/objeto_10.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1389,
+   847,
+   56,
+   61
+  ]
+ },
+ {
+  "nome": "objeto_11",
+  "arquivo": "construcoes/objeto_11.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1454,
+   843,
+   20,
+   65
+  ]
+ },
+ {
+  "nome": "objeto_12",
+  "arquivo": "construcoes/objeto_12.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1486,
+   845,
+   30,
+   66
+  ]
+ },
+ {
+  "nome": "objeto_13",
+  "arquivo": "construcoes/objeto_13.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   842,
+   884,
+   84,
+   81
+  ]
+ },
+ {
+  "nome": "objeto_14",
+  "arquivo": "construcoes/objeto_14.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   898,
+   945,
+   48,
+   63
+  ]
+ },
+ {
+  "nome": "objeto_15",
+  "arquivo": "construcoes/objeto_15.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   941,
+   894,
+   44,
+   48
+  ]
+ },
+ {
+  "nome": "objeto_16",
+  "arquivo": "construcoes/objeto_16.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   980,
+   933,
+   45,
+   33
+  ]
+ },
+ {
+  "nome": "objeto_17",
+  "arquivo": "construcoes/objeto_17.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1042,
+   925,
+   52,
+   32
+  ]
+ },
+ {
+  "nome": "objeto_18",
+  "arquivo": "construcoes/objeto_18.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1114,
+   927,
+   66,
+   30
+  ]
+ },
+ {
+  "nome": "objeto_19",
+  "arquivo": "construcoes/objeto_19.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1190,
+   929,
+   42,
+   23
+  ]
+ },
+ {
+  "nome": "objeto_20",
+  "arquivo": "construcoes/objeto_20.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1239,
+   944,
+   38,
+   31
+  ]
+ },
+ {
+  "nome": "objeto_21",
+  "arquivo": "construcoes/objeto_21.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1398,
+   917,
+   22,
+   46
+  ]
+ },
+ {
+  "nome": "objeto_22",
+  "arquivo": "construcoes/objeto_22.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1432,
+   925,
+   39,
+   40
+  ]
+ },
+ {
+  "nome": "objeto_23",
+  "arquivo": "construcoes/objeto_23.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1480,
+   924,
+   36,
+   37
+  ]
+ },
+ {
+  "nome": "objeto_24",
+  "arquivo": "construcoes/objeto_24.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   615,
+   964,
+   87,
+   49
+  ]
+ },
+ {
+  "nome": "objeto_25",
+  "arquivo": "construcoes/objeto_25.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   717,
+   968,
+   89,
+   44
+  ]
+ },
+ {
+  "nome": "objeto_26",
+  "arquivo": "construcoes/objeto_26.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   820,
+   979,
+   73,
+   32
+  ]
+ },
+ {
+  "nome": "objeto_27",
+  "arquivo": "construcoes/objeto_27.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   953,
+   970,
+   68,
+   42
+  ]
+ },
+ {
+  "nome": "objeto_28",
+  "arquivo": "construcoes/objeto_28.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1031,
+   961,
+   67,
+   49
+  ]
+ },
+ {
+  "nome": "objeto_29",
+  "arquivo": "construcoes/objeto_29.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1108,
+   962,
+   61,
+   49
+  ]
+ },
+ {
+  "nome": "objeto_30",
+  "arquivo": "construcoes/objeto_30.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1177,
+   958,
+   53,
+   51
+  ]
+ },
+ {
+  "nome": "objeto_31",
+  "arquivo": "construcoes/objeto_31.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1240,
+   978,
+   30,
+   32
+  ]
+ },
+ {
+  "nome": "objeto_32",
+  "arquivo": "construcoes/objeto_32.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1279,
+   975,
+   57,
+   36
+  ]
+ },
+ {
+  "nome": "objeto_33",
+  "arquivo": "construcoes/objeto_33.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1349,
+   965,
+   29,
+   46
+  ]
+ },
+ {
+  "nome": "objeto_34",
+  "arquivo": "construcoes/objeto_34.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1390,
+   969,
+   37,
+   41
+  ]
+ },
+ {
+  "nome": "objeto_35",
+  "arquivo": "construcoes/objeto_35.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1437,
+   968,
+   81,
+   46
+  ]
+ },
+ {
+  "nome": "parede_01",
+  "arquivo": "construcoes/parede_01.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   587,
+   704,
+   84,
+   80
+  ]
+ },
+ {
+  "nome": "parede_02",
+  "arquivo": "construcoes/parede_02.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   681,
+   708,
+   132,
+   80
+  ]
+ },
+ {
+  "nome": "parede_03",
+  "arquivo": "construcoes/parede_03.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   823,
+   703,
+   74,
+   87
+  ]
+ },
+ {
+  "nome": "parede_04",
+  "arquivo": "construcoes/parede_04.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   910,
+   706,
+   64,
+   84
+  ]
+ },
+ {
+  "nome": "parede_05",
+  "arquivo": "construcoes/parede_05.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   987,
+   701,
+   73,
+   88
+  ]
+ },
+ {
+  "nome": "parede_06",
+  "arquivo": "construcoes/parede_06.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1074,
+   701,
+   88,
+   87
+  ]
+ },
+ {
+  "nome": "parede_07",
+  "arquivo": "construcoes/parede_07.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1173,
+   704,
+   68,
+   84
+  ]
+ },
+ {
+  "nome": "parede_08",
+  "arquivo": "construcoes/parede_08.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1254,
+   706,
+   29,
+   80
+  ]
+ },
+ {
+  "nome": "parede_09",
+  "arquivo": "construcoes/parede_09.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1296,
+   704,
+   63,
+   57
+  ]
+ },
+ {
+  "nome": "parede_10",
+  "arquivo": "construcoes/parede_10.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1391,
+   706,
+   34,
+   26
+  ]
+ },
+ {
+  "nome": "parede_11",
+  "arquivo": "construcoes/parede_11.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1391,
+   733,
+   34,
+   26
+  ]
+ },
+ {
+  "nome": "parede_12",
+  "arquivo": "construcoes/parede_12.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1447,
+   707,
+   71,
+   49
+  ]
+ },
+ {
+  "nome": "parede_13",
+  "arquivo": "construcoes/parede_13.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   589,
+   787,
+   147,
+   68
+  ]
+ },
+ {
+  "nome": "parede_14",
+  "arquivo": "construcoes/parede_14.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   754,
+   796,
+   83,
+   74
+  ]
+ },
+ {
+  "nome": "parede_15",
+  "arquivo": "construcoes/parede_15.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   847,
+   799,
+   72,
+   73
+  ]
+ },
+ {
+  "nome": "parede_16",
+  "arquivo": "construcoes/parede_16.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   932,
+   802,
+   53,
+   66
+  ]
+ },
+ {
+  "nome": "parede_17",
+  "arquivo": "construcoes/parede_17.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   997,
+   799,
+   57,
+   69
+  ]
+ },
+ {
+  "nome": "parede_18",
+  "arquivo": "construcoes/parede_18.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1066,
+   801,
+   55,
+   64
+  ]
+ },
+ {
+  "nome": "parede_19",
+  "arquivo": "construcoes/parede_19.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1130,
+   793,
+   92,
+   64
+  ]
+ },
+ {
+  "nome": "parede_20",
+  "arquivo": "construcoes/parede_20.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1235,
+   789,
+   41,
+   65
+  ]
+ },
+ {
+  "nome": "parede_21",
+  "arquivo": "construcoes/parede_21.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1296,
+   768,
+   54,
+   65
+  ]
+ },
+ {
+  "nome": "parede_22",
+  "arquivo": "construcoes/parede_22.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1358,
+   768,
+   77,
+   66
+  ]
+ },
+ {
+  "nome": "parede_23",
+  "arquivo": "construcoes/parede_23.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1449,
+   768,
+   74,
+   69
+  ]
+ },
+ {
+  "nome": "predio_01",
+  "arquivo": "construcoes/predio_01.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   765,
+   20,
+   243,
+   238
+  ]
+ },
+ {
+  "nome": "predio_02",
+  "arquivo": "construcoes/predio_02.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   7,
+   42,
+   268,
+   203
+  ]
+ },
+ {
+  "nome": "predio_03",
+  "arquivo": "construcoes/predio_03.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   279,
+   47,
+   243,
+   198
+  ]
+ },
+ {
+  "nome": "predio_04",
+  "arquivo": "construcoes/predio_04.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   525,
+   54,
+   239,
+   195
+  ]
+ },
+ {
+  "nome": "predio_05",
+  "arquivo": "construcoes/predio_05.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1010,
+   40,
+   266,
+   229
+  ]
+ },
+ {
+  "nome": "predio_06",
+  "arquivo": "construcoes/predio_06.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1278,
+   4,
+   246,
+   282
+  ]
+ },
+ {
+  "nome": "predio_07",
+  "arquivo": "construcoes/predio_07.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   6,
+   236,
+   251,
+   237
+  ]
+ },
+ {
+  "nome": "predio_08",
+  "arquivo": "construcoes/predio_08.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   265,
+   259,
+   266,
+   210
+  ]
+ },
+ {
+  "nome": "predio_09",
+  "arquivo": "construcoes/predio_09.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   533,
+   283,
+   336,
+   189
+  ]
+ },
+ {
+  "nome": "predio_10",
+  "arquivo": "construcoes/predio_10.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   862,
+   264,
+   135,
+   208
+  ]
+ },
+ {
+  "nome": "predio_11",
+  "arquivo": "construcoes/predio_11.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1000,
+   270,
+   349,
+   200
+  ]
+ },
+ {
+  "nome": "predio_12",
+  "arquivo": "construcoes/predio_12.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   1358,
+   324,
+   173,
+   120
+  ]
+ },
+ {
+  "nome": "telhado_01",
+  "arquivo": "construcoes/telhado_01.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   8,
+   683,
+   232,
+   136
+  ]
+ },
+ {
+  "nome": "telhado_02",
+  "arquivo": "construcoes/telhado_02.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   247,
+   700,
+   223,
+   122
+  ]
+ },
+ {
+  "nome": "telhado_03",
+  "arquivo": "construcoes/telhado_03.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   461,
+   702,
+   112,
+   133
+  ]
+ },
+ {
+  "nome": "tenda_01",
+  "arquivo": "construcoes/tenda_01.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   9,
+   826,
+   206,
+   113
+  ]
+ },
+ {
+  "nome": "tenda_02",
+  "arquivo": "construcoes/tenda_02.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   224,
+   826,
+   156,
+   113
+  ]
+ },
+ {
+  "nome": "tenda_03",
+  "arquivo": "construcoes/tenda_03.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   381,
+   830,
+   103,
+   83
+  ]
+ },
+ {
+  "nome": "tenda_04",
+  "arquivo": "construcoes/tenda_04.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   483,
+   835,
+   124,
+   100
+  ]
+ },
+ {
+  "nome": "tenda_05",
+  "arquivo": "construcoes/tenda_05.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   9,
+   925,
+   152,
+   89
+  ]
+ },
+ {
+  "nome": "tenda_06",
+  "arquivo": "construcoes/tenda_06.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   170,
+   943,
+   184,
+   73
+  ]
+ },
+ {
+  "nome": "tenda_07",
+  "arquivo": "construcoes/tenda_07.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   371,
+   910,
+   78,
+   95
+  ]
+ },
+ {
+  "nome": "tenda_08",
+  "arquivo": "construcoes/tenda_08.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   454,
+   938,
+   64,
+   74
+  ]
+ },
+ {
+  "nome": "tenda_09",
+  "arquivo": "construcoes/tenda_09.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   524,
+   942,
+   80,
+   69
+  ]
+ },
+ {
+  "nome": "tenda_10",
+  "arquivo": "construcoes/tenda_10.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   602,
+   874,
+   113,
+   96
+  ]
+ },
+ {
+  "nome": "tenda_11",
+  "arquivo": "construcoes/tenda_11.png",
+  "folha": "construcoes_hd.png",
+  "origem": [
+   712,
+   862,
+   122,
+   110
+  ]
+ },
+ {
+  "nome": "terreno_01",
+  "arquivo": "terrenos/terreno_01.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   8,
+   6,
+   319,
+   293
+  ]
+ },
+ {
+  "nome": "terreno_02",
+  "arquivo": "terrenos/terreno_02.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   343,
+   4,
+   280,
+   286
+  ]
+ },
+ {
+  "nome": "terreno_03",
+  "arquivo": "terrenos/terreno_03.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   625,
+   2,
+   269,
+   291
+  ]
+ },
+ {
+  "nome": "terreno_04",
+  "arquivo": "terrenos/terreno_04.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   905,
+   11,
+   309,
+   279
+  ]
+ },
+ {
+  "nome": "terreno_05",
+  "arquivo": "terrenos/terreno_05.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   1229,
+   8,
+   296,
+   286
+  ]
+ },
+ {
+  "nome": "terreno_06",
+  "arquivo": "terrenos/terreno_06.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   355,
+   287,
+   296,
+   257
+  ]
+ },
+ {
+  "nome": "terreno_07",
+  "arquivo": "terrenos/terreno_07.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   657,
+   294,
+   287,
+   238
+  ]
+ },
+ {
+  "nome": "terreno_08",
+  "arquivo": "terrenos/terreno_08.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   6,
+   286,
+   341,
+   273
+  ]
+ },
+ {
+  "nome": "terreno_09",
+  "arquivo": "terrenos/terreno_09.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   941,
+   293,
+   315,
+   259
+  ]
+ },
+ {
+  "nome": "terreno_10",
+  "arquivo": "terrenos/terreno_10.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   1224,
+   292,
+   305,
+   277
+  ]
+ },
+ {
+  "nome": "terreno_11",
+  "arquivo": "terrenos/terreno_11.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   5,
+   551,
+   332,
+   245
+  ]
+ },
+ {
+  "nome": "terreno_12",
+  "arquivo": "terrenos/terreno_12.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   338,
+   538,
+   298,
+   262
+  ]
+ },
+ {
+  "nome": "terreno_13",
+  "arquivo": "terrenos/terreno_13.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   632,
+   519,
+   325,
+   287
+  ]
+ },
+ {
+  "nome": "terreno_14",
+  "arquivo": "terrenos/terreno_14.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   940,
+   545,
+   314,
+   251
+  ]
+ },
+ {
+  "nome": "terreno_15",
+  "arquivo": "terrenos/terreno_15.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   1241,
+   556,
+   289,
+   244
+  ]
+ },
+ {
+  "nome": "terreno_16",
+  "arquivo": "terrenos/terreno_16.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   6,
+   794,
+   338,
+   229
+  ]
+ },
+ {
+  "nome": "terreno_17",
+  "arquivo": "terrenos/terreno_17.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   638,
+   791,
+   293,
+   228
+  ]
+ },
+ {
+  "nome": "terreno_18",
+  "arquivo": "terrenos/terreno_18.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   1242,
+   797,
+   290,
+   222
+  ]
+ },
+ {
+  "nome": "terreno_19",
+  "arquivo": "terrenos/terreno_19.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   337,
+   798,
+   307,
+   224
+  ]
+ },
+ {
+  "nome": "terreno_20",
+  "arquivo": "terrenos/terreno_20.png",
+  "folha": "terrenos_hd.png",
+  "origem": [
+   931,
+   797,
+   314,
+   227
+  ]
+ }
+]

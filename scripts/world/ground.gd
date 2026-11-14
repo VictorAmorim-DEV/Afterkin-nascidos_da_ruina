@@ -19,9 +19,9 @@ func _draw() -> void:
 	for y in range(-raio, raio):
 		for x in range(-raio, raio):
 			var lista := GRAMA
-			if y >= 3 and y <= 5:
+			if x >= 3 and x <= 5:
 				lista = ASFALTO
-			elif y == 2 or y == 6:
+			elif x == 2 or x == 6:
 				lista = CALCADA
 			var c: Vector2i = lista[absi(x * 73 + y * 151 + x * y * 7) % lista.size()]
 			var origem := Rect2(c.x * ORIGEM + 0.5, c.y * ORIGEM + 0.5, ORIGEM - 1.0, ORIGEM - 1.0)

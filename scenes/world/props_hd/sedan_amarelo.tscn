@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/objetos_natureza/veiculo_05.png" id="2_tex"]
+
+[sub_resource type="ConvexPolygonShape2D" id="shape_base"]
+points = PackedVector2Array(0, 0, -58.1, -19.6, 28.7, -63, 86.8, -43.4)
+
+[node name="SedanAmarelo" type="StaticBody2D"]
+y_sort_enabled = true
+script = ExtResource("1_prop")
+textura = ExtResource("2_tex")
+escala = 0.7
+base_esq = Vector2(2, 86)
+pivo = Vector2(85, 114)
+base_dir = Vector2(209, 52)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape_base")
