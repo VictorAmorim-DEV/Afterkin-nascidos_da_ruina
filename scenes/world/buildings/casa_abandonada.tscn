@@ -1,0 +1,135 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/construcao.gd" id="1_casa"]
+[ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="2_prop"]
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/construcoes/predio_03.png" id="3_fachada"]
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/construcoes/interior_01.png" id="4_interior"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/barril_azul.tscn" id="m_barril_azul"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/caixa_madeira.tscn" id="m_caixa_madeira"]
+[ext_resource type="PackedScene" path="res://scenes/world/props_hd/caixote.tscn" id="m_caixote"]
+
+[sub_resource type="OccluderPolygon2D" id="oc_ParedeFundo"]
+polygon = PackedVector2Array(-113.4, -93.8, 91, -42, 85.78, -39.59, -118.62, -91.39)
+
+[sub_resource type="OccluderPolygon2D" id="oc_ParedeEsquerda"]
+polygon = PackedVector2Array(-113.4, -93.8, -103.87, -91.38, -194.87, -49.38, -204.4, -51.8)
+
+[sub_resource type="OccluderPolygon2D" id="oc_ParedeDireita"]
+polygon = PackedVector2Array(81.47, -44.42, 91, -42, 0, -0, -9.53, -2.42)
+
+[sub_resource type="OccluderPolygon2D" id="oc_ParedeFrenteA"]
+polygon = PackedVector2Array(-199.18, -54.21, -114.46, -32.74, -119.67, -30.33, -204.4, -51.8)
+
+[sub_resource type="OccluderPolygon2D" id="oc_ParedeFrenteB"]
+polygon = PackedVector2Array(-87.98, -26.03, 5.22, -2.41, 0, -0, -93.2, -23.62)
+
+[sub_resource type="OccluderPolygon2D" id="oc_Porta"]
+polygon = PackedVector2Array(-114.46, -32.74, -87.98, -26.03, -93.2, -23.62, -119.67, -30.33)
+
+[node name="CasaAbandonada" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_casa")
+
+[node name="Chao" type="Sprite2D" parent="."]
+z_index = -1
+texture_filter = 2
+transform = Transform2D(1.05907, 0.26839, -0.57962, 0.26752, -127.046, -102.646)
+texture = ExtResource("4_interior")
+centered = false
+
+[node name="Interior" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="PortaFechada" type="Polygon2D" parent="Interior"]
+position = Vector2(-103.83, -28.18)
+light_mask = 2
+color = Color(0.36, 0.25, 0.16, 1)
+polygon = PackedVector2Array(-11.79, -4.02, 14.69, 2.69, 11.79, 4.02, -14.69, -2.69)
+
+[node name="PortaAberta" type="Polygon2D" parent="Interior"]
+visible = false
+position = Vector2(-103.83, -28.18)
+light_mask = 2
+color = Color(0.36, 0.25, 0.16, 1)
+polygon = PackedVector2Array(-16.71, -4.03, -10.35, -2.42, -27.16, 5.34, -33.51, 3.73)
+
+[node name="BarrilAzul1" parent="Interior" instance=ExtResource("m_barril_azul")]
+position = Vector2(-33.53, -64.03)
+
+[node name="Caixote1" parent="Interior" instance=ExtResource("m_caixote")]
+position = Vector2(-123.58, -60.33)
+
+[node name="CaixaMadeira1" parent="Interior" instance=ExtResource("m_caixa_madeira")]
+position = Vector2(-18.23, -37.77)
+
+[node name="Fachada" type="StaticBody2D" parent="."]
+y_sort_enabled = true
+collision_layer = 0
+collision_mask = 0
+script = ExtResource("2_prop")
+textura = ExtResource("3_fachada")
+escala = 1.4
+base_esq = Vector2(17, 141)
+pivo = Vector2(163, 178)
+base_dir = Vector2(228, 148)
+luz_checar_obstaculos = false
+
+[node name="VaoDaPorta" type="Polygon2D" parent="Fachada"]
+visible = false
+position = Vector2(0, -20.1)
+light_mask = 2
+color = Color(0.03, 0.03, 0.04, 0.92)
+polygon = PackedVector2Array(-117.6, -9.3, -92.4, -3, -92.4, -63.2, -117.6, -69.5)
+
+[node name="Paredes" type="StaticBody2D" parent="."]
+
+[node name="ParedeFundo" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(-113.4, -93.8, 91, -42, 85.78, -39.59, -118.62, -91.39)
+
+[node name="ParedeEsquerda" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(-113.4, -93.8, -103.87, -91.38, -194.87, -49.38, -204.4, -51.8)
+
+[node name="ParedeDireita" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(81.47, -44.42, 91, -42, 0, -0, -9.53, -2.42)
+
+[node name="ParedeFrenteA" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(-199.18, -54.21, -114.46, -32.74, -119.67, -30.33, -204.4, -51.8)
+
+[node name="ParedeFrenteB" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(-87.98, -26.03, 5.22, -2.41, 0, -0, -93.2, -23.62)
+
+[node name="Porta" type="CollisionPolygon2D" parent="Paredes"]
+polygon = PackedVector2Array(-114.46, -32.74, -87.98, -26.03, -93.2, -23.62, -119.67, -30.33)
+
+[node name="Oclusores" type="Node2D" parent="."]
+
+[node name="ParedeFundo" type="LightOccluder2D" parent="Oclusores"]
+occluder = SubResource("oc_ParedeFundo")
+
+[node name="ParedeEsquerda" type="LightOccluder2D" parent="Oclusores"]
+occluder = SubResource("oc_ParedeEsquerda")
+
+[node name="ParedeDireita" type="LightOccluder2D" parent="Oclusores"]
+occluder = SubResource("oc_ParedeDireita")
+
+[node name="ParedeFrenteA" type="LightOccluder2D" parent="Oclusores"]
+occluder = SubResource("oc_ParedeFrenteA")
+
+[node name="ParedeFrenteB" type="LightOccluder2D" parent="Oclusores"]
+occluder = SubResource("oc_ParedeFrenteB")
+
+[node name="Porta" type="LightOccluder2D" parent="Oclusores"]
+occluder = SubResource("oc_Porta")
+
+[node name="AreaInterior" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+
+[node name="Interior" type="CollisionPolygon2D" parent="AreaInterior"]
+polygon = PackedVector2Array(-113.4, -93.8, 91, -42, 0, -0, -204.4, -51.8)
+
+[node name="Soleira" type="CollisionPolygon2D" parent="AreaInterior"]
+polygon = PackedVector2Array(-128.15, -32.48, -84.73, -21.47, -94, -17.19, -137.42, -28.2)
+
+[node name="PontoDaPorta" type="Marker2D" parent="."]
+position = Vector2(-107.6, -26.44)

@@ -18,6 +18,7 @@ var _preenchimento := StyleBoxFlat.new()
 @onready var folego: ProgressBar = $Painel/Folego
 @onready var estado: Label = $Painel/Estado
 @onready var ajuda: Label = $Painel/Ajuda
+@onready var dica: Label = $Dica
 
 
 func _ready() -> void:
@@ -30,16 +31,26 @@ func _ready() -> void:
 	_preenchimento.set_corner_radius_all(4)
 	folego.add_theme_stylebox_override("background", fundo)
 	folego.add_theme_stylebox_override("fill", _preenchimento)
-	for rotulo: Label in [relogio, folego_texto, estado, ajuda]:
+	for rotulo: Label in [relogio, folego_texto, estado, ajuda, dica]:
 		rotulo.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.9))
 		rotulo.add_theme_constant_override("outline_size", 4)
 		rotulo.add_theme_font_size_override("font_size", 14)
 	relogio.add_theme_font_size_override("font_size", 17)
 	ajuda.add_theme_font_size_override("font_size", 12)
 	ajuda.modulate = Color(1.0, 1.0, 1.0, 0.7)
+	dica.add_theme_font_size_override("font_size", 18)
 
 
 func _process(_delta: float) -> void:
+	# dica de interação: primeiro objeto do grupo "interativo" que tiver algo a dizer
+	var texto := ""
+	for no in get_tree().get_nodes_in_group("interativo"):
+		if no.has_method("texto_interacao"):
+			texto = no.texto_interacao()
+			if texto != "":
+				break
+	dica.text = texto
+	dica.visible = texto != ""
 	if _ciclo != null:
 		relogio.text = _ciclo.texto_relogio()
 	if _jogador == null:

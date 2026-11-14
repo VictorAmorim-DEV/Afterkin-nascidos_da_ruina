@@ -32,6 +32,11 @@ const DIRECOES: Array[String] = ["frente", "lado", "costas"]
 @export var mirar_com_mouse: bool = true
 @export var alcance_lanterna: float = 742.0   ## unidades de mundo (15 m no protótipo)
 @export var energia_lanterna: float = 1.1
+## Altura da mão que segura a lanterna, em px de tela (30 px ≈ 1 m).
+@export var altura_mao_em_pe: float = 31.0
+@export var altura_mao_agachado: float = 17.0
+@export var altura_mao_deitado: float = 5.0
+@export var avanco_mao: float = 9.0           ## quanto a mão fica à frente do corpo (px de tela)
 
 var world_vel := Vector2.ZERO            ## velocidade em unidades de mundo
 var postura: Postura = Postura.EM_PE
@@ -47,9 +52,11 @@ var ruido: float = 110.0                 ## barulho que o jogador faz (para os i
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
 var _ciclo: Node = null
+var _altura_luz: float = 31.0
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
-@onready var lanterna: PointLight2D = $Lanterna
+@onready var lanterna_chao: PointLight2D = $LanternaChao
+@onready var lanterna_objetos: PointLight2D = $LanternaObjetos
 
 
 func _ready() -> void:
@@ -139,7 +146,7 @@ func _physics_process(delta: float) -> void:
 	_atualizar_ruido(delta, rapidez)
 	_inclinacao += (clampf(world_vel.x / 128.0 * 0.12, -0.14, 0.14) - _inclinacao) * minf(1.0, delta * 8.0)
 	_animar(olhar, rapidez)
-	_atualizar_lanterna(olhar)
+	_atualizar_lanterna(olhar, delta)
 
 
 ## Velocidade máxima do estado atual (u/s).
@@ -248,16 +255,42 @@ func _animar(olhar: Vector2, rapidez: float) -> void:
 	sprite.rotation = _inclinacao if postura == Postura.EM_PE else 0.0
 
 
-func _atualizar_lanterna(olhar: Vector2) -> void:
+func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 	if _ciclo == null:
 		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
 	var escuro := 1.0
 	if _ciclo != null and _ciclo.has_method("escuridao"):
 		escuro = _ciclo.escuridao()
-	lanterna.enabled = lanterna_ligada and escuro > 0.03
-	lanterna.energy = energia_lanterna * clampf(escuro * 1.8, 0.0, 1.0)
+	var ligada := lanterna_ligada and escuro > 0.03
+	var energia := energia_lanterna * clampf(escuro * 1.8, 0.0, 1.0)
+
+	# altura da mão conforme a postura (transição suave ao agachar/deitar)
+	var altura_alvo := altura_mao_em_pe
+	if postura == Postura.AGACHADO:
+		altura_alvo = altura_mao_agachado
+	elif postura == Postura.DEITADO:
+		altura_alvo = altura_mao_deitado
+	_altura_luz = lerpf(_altura_luz, altura_alvo, minf(1.0, delta * 10.0))
+	var fator_altura := clampf(_altura_luz / altura_mao_em_pe, 0.0, 1.0)
+
 	# o cone é definido no chão do mundo e projetado em isométrico:
 	# o eixo X da textura aponta para onde o jogador olha
-	var k := alcance_lanterna / 256.0
-	var lado := Vector2(-olhar.y, olhar.x)
-	lanterna.transform = Transform2D(IsoMath.mundo_para_tela(olhar) * k, IsoMath.mundo_para_tela(lado) * k, Vector2.ZERO)
+	var frente := IsoMath.mundo_para_tela(olhar)
+	var lado := IsoMath.mundo_para_tela(Vector2(-olhar.y, olhar.x))
+	var mao := frente.normalized() * avanco_mao
+
+	# LUZ DO CHÃO (com sombras): parte do ponto do chão embaixo da mão. Quanto mais
+	# baixa a lanterna, mais rasante o feixe: alcança menos e chega mais fraco ao chão.
+	var k_chao := alcance_lanterna * lerpf(0.55, 1.0, fator_altura) / 256.0
+	lanterna_chao.enabled = ligada
+	lanterna_chao.energy = energia * lerpf(0.75, 1.0, fator_altura)
+	lanterna_chao.height = _altura_luz
+	lanterna_chao.transform = Transform2D(frente * k_chao, lado * k_chao, mao)
+
+	# LUZ DOS OBJETOS EM PÉ (paredes, carros, árvores, personagens): sai da altura
+	# da mão, então ilumina mais baixo quando o jogador agacha ou deita.
+	var k_obj := alcance_lanterna / 256.0
+	lanterna_objetos.enabled = ligada
+	lanterna_objetos.energy = energia
+	lanterna_objetos.height = _altura_luz
+	lanterna_objetos.transform = Transform2D(frente * k_obj, lado * k_obj, mao + Vector2(0.0, -_altura_luz - pulo_z))

@@ -33,4 +33,20 @@ text = "Em pé · Lanterna ligada"
 
 [node name="Ajuda" type="Label" parent="Painel"]
 layout_mode = 2
-text = "Shift correr · Ctrl agachar · Z deitar · Espaço pular · F lanterna"
+text = "Shift correr · Ctrl agachar · Z deitar · Espaço pular · F lanterna · E interagir"
+
+[node name="Dica" type="Label" parent="."]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -90.0
+offset_right = 200.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "E — abrir a porta"
+horizontal_alignment = 1

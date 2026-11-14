@@ -17,6 +17,7 @@ color = Color(0, 0, 0, 0.34)
 polygon = PackedVector2Array(12, 0, 10.39, 3, 6, 5.2, 0, 6, -6, 5.2, -10.39, 3, -12, 0, -10.39, -3, -6, -5.2, -0, -6, 6, -5.2, 10.39, -3)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+light_mask = 2
 texture_filter = 2
 scale = Vector2(0.368, 0.368)
 sprite_frames = ExtResource("2_frames")
@@ -26,7 +27,19 @@ offset = Vector2(0, -76)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("shape_feet")
 
-[node name="Lanterna" type="PointLight2D" parent="."]
+[node name="LanternaChao" type="PointLight2D" parent="."]
 color = Color(1, 0.95, 0.84, 1)
 energy = 1.1
+range_item_cull_mask = 1
+shadow_enabled = true
+shadow_filter = 1
+shadow_item_cull_mask = 1
 texture = ExtResource("3_luz")
+height = 31.0
+
+[node name="LanternaObjetos" type="PointLight2D" parent="."]
+color = Color(1, 0.95, 0.84, 1)
+energy = 1.1
+range_item_cull_mask = 2
+texture = ExtResource("3_luz")
+height = 31.0

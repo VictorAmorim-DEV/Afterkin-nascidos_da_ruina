@@ -7,7 +7,7 @@ Uso (na raiz do projeto):
 
 assets/luzes/lanterna.png (512x512): o centro da imagem é o jogador; o cone aponta
 para a direita (+X), com meia-abertura de 0,42 rad (protótipo V13) e 256 px de alcance,
-mais um brilho curto em volta do jogador. Branco = luz, preto = sem luz.
+intensidade que cai com o quadrado da distância, mais um brilho curto em volta do jogador. Branco = luz, preto = sem luz.
 """
 import os
 import numpy as np
@@ -29,7 +29,9 @@ def main():
     x, y = x - N / 2 + 0.5, y - N / 2 + 0.5
     d = np.hypot(x, y) / R
     ang = np.abs(np.arctan2(y, x))
-    cone = (1.0 - suave(MEIA_ABERTURA * 0.55, MEIA_ABERTURA, ang)) * (1.0 - suave(0.25, 1.0, d)) ** 1.3
+    # atenuação: forte perto, cai com o quadrado da distância e some no fim do alcance
+    queda = 1.0 / (1.0 + (d / 0.42) ** 2) * (1.0 - suave(0.72, 1.0, d))
+    cone = (1.0 - suave(MEIA_ABERTURA * 0.5, MEIA_ABERTURA, ang)) * np.clip(queda * 1.15, 0.0, 1.0)
     brilho = BRILHO_FORCA * (1.0 - suave(0.0, BRILHO_RAIO, d))
     luz = np.clip(np.maximum(cone, brilho), 0.0, 1.0) * (d < 1.0)
     img = (luz * 255.0 + 0.5).astype(np.uint8)

@@ -38,6 +38,9 @@ PROPS = {
     "barreira_destruida":("objetos_natureza/barricada_06", 0.60, "caixa"),
     "sacos_areia_a":    ("objetos_natureza/barricada_07", 0.60, "caixa"),
     "sacos_areia_b":    ("objetos_natureza/barricada_08", 0.60, "caixa"),
+    "caixote":          ("objetos_natureza/recipiente_01", 0.60, "caixa"),
+    "caixa_madeira":    ("objetos_natureza/recipiente_02", 0.60, "caixa"),
+    "barril_azul":      ("objetos_natureza/recipiente_04", 0.60, "caixa"),
     "arvore_jovem":     ("objetos_natureza/arvore_01", 0.80, "tronco"),
     "arvore_frondosa":  ("objetos_natureza/arvore_02", 0.80, "tronco"),
     "arvore_outono":    ("objetos_natureza/arvore_03", 0.80, "tronco"),
@@ -54,10 +57,16 @@ CENARIO = [
     ("sedan_amarelo", 275, 800), ("carro_capo_aberto", -260, 330), ("jipe", -120, -400),
     ("barreira_longa", 250, 215), ("barreira_curta", 300, 190), ("barreira_listrada", 300, -620),
     ("barreira_destruida", 440, -600), ("sacos_areia_b", 100, 150), ("sacos_areia_a", 560, 250),
-    ("arvore_frondosa", -220, -160), ("arvore_outono", -520, -40), ("arvore_fina", -140, -640),
+    ("arvore_frondosa", -220, -160), ("arvore_outono", -780, -280), ("arvore_fina", -140, -640),
     ("arvore_jovem", -560, 330), ("palmeira", -300, 640), ("arvore_morta", 780, -200),
     ("arvore_frondosa", 940, 330), ("arvore_fina", 900, 780), ("arvore_outono", 900, -620),
     ("arvore_jovem", -90, -280),
+]
+
+
+# construções (scenes/world/buildings, geradas por tools/gerar_construcao.py): (cena, x, y do pivô)
+CONSTRUCOES = [
+    ("casa_abandonada", -420, 120),
 ]
 
 
@@ -98,13 +107,16 @@ def cena_prop(nome, rec, escala, base):
     cd = ((d[0] - p[0]) * escala, (d[1] - p[1]) * escala)
     pts = [(0, 0), ce, (ce[0] + cd[0], ce[1] + cd[1]), cd]
     no = "".join(t.capitalize() for t in nome.split("_"))
-    return f'''[gd_scene load_steps=4 format=3]
+    return f'''[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/iso_prop.gd" id="1_prop"]
 [ext_resource type="Texture2D" path="res://{REC}/{rec}.png" id="2_tex"]
 
 [sub_resource type="ConvexPolygonShape2D" id="shape_base"]
 points = PackedVector2Array({", ".join(n(c) for q in pts for c in q)})
+
+[sub_resource type="OccluderPolygon2D" id="oclusor_base"]
+polygon = PackedVector2Array({", ".join(n(c) for q in pts for c in q)})
 
 [node name="{no}" type="StaticBody2D"]
 y_sort_enabled = true
@@ -117,6 +129,9 @@ base_dir = {vec(d)}
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("shape_base")
+
+[node name="LightOccluder2D" type="LightOccluder2D" parent="."]
+occluder = SubResource("oclusor_base")
 '''
 
 
@@ -129,7 +144,11 @@ def cena_teste():
         no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
         tela = ((x - y) * 0.5, (x + y) * 0.25)          # projeção isométrica 2:1
         nos += f'[node name="{no}" parent="." instance=ExtResource("p_{nome}")]\nposition = {vec(tela)}\n\n'
-    return f'''[gd_scene load_steps={len(usados) + 5} format=3]
+    for nome, x, y in CONSTRUCOES:
+        ext += f'[ext_resource type="PackedScene" path="res://scenes/world/buildings/{nome}.tscn" id="c_{nome}"]\n'
+        no = "".join(t.capitalize() for t in nome.split("_"))
+        nos += f'[node name="{no}" parent="." instance=ExtResource("c_{nome}")]\nposition = {vec(((x - y) * 0.5, (x + y) * 0.25))}\n\n'
+    return f'''[gd_scene load_steps={len(usados) + len(CONSTRUCOES) + 5} format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://{REC}/chao/grama.png" id="2_grama"]
@@ -140,7 +159,7 @@ def cena_teste():
 y_sort_enabled = true
 
 [node name="Ground" type="Node2D" parent="."]
-z_index = -1
+z_index = -2
 texture_filter = 2
 script = ExtResource("1_ground")
 grama = ExtResource("2_grama")

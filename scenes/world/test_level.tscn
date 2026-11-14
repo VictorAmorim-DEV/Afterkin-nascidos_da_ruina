@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/chao/grama.png" id="2_grama"]
@@ -22,12 +22,13 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sacos_areia_b.tscn" id="p_sacos_areia_b"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_amarelo.tscn" id="p_sedan_amarelo"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_enferrujado.tscn" id="p_sedan_enferrujado"]
+[ext_resource type="PackedScene" path="res://scenes/world/buildings/casa_abandonada.tscn" id="c_casa_abandonada"]
 
 [node name="TestLevel" type="Node2D"]
 y_sort_enabled = true
 
 [node name="Ground" type="Node2D" parent="."]
-z_index = -1
+z_index = -2
 texture_filter = 2
 script = ExtResource("1_ground")
 grama = ExtResource("2_grama")
@@ -75,7 +76,7 @@ position = Vector2(155, 202.5)
 position = Vector2(-30, -95)
 
 [node name="ArvoreOutono1" parent="." instance=ExtResource("p_arvore_outono")]
-position = Vector2(-240, -140)
+position = Vector2(-250, -265)
 
 [node name="ArvoreFina1" parent="." instance=ExtResource("p_arvore_fina")]
 position = Vector2(250, -195)
@@ -100,3 +101,6 @@ position = Vector2(760, 70)
 
 [node name="ArvoreJovem2" parent="." instance=ExtResource("p_arvore_jovem")]
 position = Vector2(95, -92.5)
+
+[node name="CasaAbandonada" parent="." instance=ExtResource("c_casa_abandonada")]
+position = Vector2(-270, -75)

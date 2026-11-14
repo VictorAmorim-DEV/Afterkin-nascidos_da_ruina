@@ -45,11 +45,59 @@ extends StaticBody2D
 		folga = v
 		_agendar()
 
+@export_group("Luz da lanterna")
+## Objeto largo só recebe a luz quando a lanterna está do lado da frente da base
+## (as faces que a câmera vê). Árvores e postes ignoram isto.
+@export var luz_por_lado: bool = true
+## Não recebe a luz quando há uma parede ou outro objeto entre a lanterna e ele.
+@export var luz_checar_obstaculos: bool = true
+
+## Camada de luz dos objetos em pé (o chão usa a camada 1, com sombras).
+const MASCARA_LUZ_OBJETOS := 2
+const ALCANCE_LUZ := 520.0            ## px de tela; além disso não vale a pena checar
+
 var _fatias: Array[Sprite2D] = []
+var _largo: bool = false
+var _iluminado: bool = true
+var _espera_luz: float = 0.0
 
 
 func _ready() -> void:
+	_espera_luz = randf() * 0.12
 	_montar()
+
+
+func _physics_process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
+	_espera_luz -= delta
+	if _espera_luz > 0.0:
+		return
+	_espera_luz = 0.12
+	var iluminado := _recebe_luz()
+	if iluminado != _iluminado:
+		_iluminado = iluminado
+		for f in _fatias:
+			if is_instance_valid(f):
+				f.light_mask = MASCARA_LUZ_OBJETOS if _iluminado else 0
+
+
+## Decide se a lanterna do jogador alcança as faces visíveis deste objeto.
+func _recebe_luz() -> bool:
+	var jogador := get_tree().get_first_node_in_group("jogador") as Node2D
+	if jogador == null:
+		return true
+	var p := to_local(jogador.global_position)
+	if p.length() > ALCANCE_LUZ:
+		return true
+	if luz_por_lado and _largo and p.y < frente_em(p.x) - 2.0:
+		return false					   # lanterna atrás do objeto: a face visível fica no escuro
+	if luz_checar_obstaculos:
+		var centro := to_global((canto_esq() + canto_dir()) * 0.5)
+		var consulta := PhysicsRayQueryParameters2D.create(jogador.global_position, centro, 1, [get_rid()])
+		if not get_world_2d().direct_space_state.intersect_ray(consulta).is_empty():
+			return false				   # tem parede ou outro objeto no caminho
+	return true
 
 
 func _agendar() -> void:
@@ -92,7 +140,8 @@ func _montar() -> void:
 	var x_esq := clampf(base_esq.x, 0.0, tam.x)
 	var x_dir := clampf(base_dir.x, x_esq, tam.x)
 	var largura_base := (x_dir - x_esq) * escala
-	if largura_base < largura_fatia * 2.5:
+	_largo = largura_base >= largura_fatia * 2.5
+	if not _largo:
 		# base pequena (árvore, poste): um sprite só, ordenado pelo centro da base
 		_criar_fatia(0.0, tam.x, ((canto_esq() + canto_dir()) * 0.5).y, tam.y)
 		return
@@ -118,6 +167,7 @@ func _criar_fatia(c0: float, c1: float, y_ordem: float, altura: float) -> void:
 	s.region_enabled = true
 	s.region_rect = Rect2(c0, 0.0, c1 - c0, altura)
 	s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	s.light_mask = MASCARA_LUZ_OBJETOS if _iluminado else 0
 	s.scale = Vector2(escala, escala)
 	# a posição da fatia é o ponto de ordenação; o offset devolve a arte ao lugar
 	s.position = Vector2((c0 - pivo.x) * escala, y_ordem)
