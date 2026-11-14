@@ -81,18 +81,20 @@ DECORATIVOS = {"mato_alto", "mato_fino", "mato_seco", "mato_rasteiro", "capim", 
                "arbusto_largo", "arbusto_redondo", "arbusto_baixo", "arbusto_folhudo",
                "entulho_pedras", "entulho_laje"}
 
-# construções (scenes/world/buildings, geradas por tools/gerar_construcao.py): (cena, x, y do pivô)
-CONSTRUCOES = [
-    ("casa_abandonada", -1100, 180),     # canto norte da casa; ela ocupa x de -1100 a -508 e y de 180 a 476
+# edifícios procedurais (scripts/world/edificio.gd, portado da V13):
+#   (nome do nó, tile x, tile y do canto norte, largura e altura em tiles, frente, semente)
+# 1 tile = 64 u. A casa abaixo ocupa x de -1088 a -448 e y de 192 a 704, com a porta na face sul.
+EDIFICIOS = [
+    ("Casa1", -17, 3, 10, 8, "s", 3),
 ]
 
-# mato, arbustos e entulho em volta da casa (sem colisão), longe da porta (x de -804 a -656, y = 476)
+# mato, arbustos e entulho em volta da casa (sem colisão)
 ENTORNO = [
-    ("capim_alto", -1085, 500), ("mato_alto", -1010, 515), ("arbusto_baixo", -930, 500), ("capim", -870, 520),
-    ("mato_fino", -610, 505), ("capim_alto", -545, 520), ("entulho_pedras", -960, 560),
-    ("arbusto_largo", -470, 215), ("mato_seco", -480, 310), ("capim", -470, 400), ("mato_rasteiro", -485, 470),
-    ("arbusto_redondo", -1140, 230), ("mato_alto", -1135, 340), ("capim", -1130, 440),
-    ("arbusto_folhudo", -1000, 150), ("mato_fino", -800, 150), ("entulho_laje", -600, 150), ("capim_alto", -430, 520),
+    ("capim_alto", -1070, 735), ("mato_alto", -980, 750), ("arbusto_baixo", -880, 740), ("capim", -640, 745),
+    ("mato_fino", -560, 760), ("capim_alto", -470, 735), ("entulho_pedras", -900, 800),
+    ("arbusto_largo", -410, 240), ("mato_seco", -420, 380), ("capim", -415, 520), ("mato_rasteiro", -425, 660),
+    ("arbusto_redondo", -1125, 250), ("mato_alto", -1120, 420), ("capim", -1118, 600),
+    ("arbusto_folhudo", -1000, 160), ("mato_fino", -760, 160), ("entulho_laje", -560, 160), ("capim_alto", -400, 760),
 ]
 
 
@@ -188,11 +190,12 @@ def cena_teste():
         no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
         tela = ((x - y) * 0.5, (x + y) * 0.25)          # projeção isométrica 2:1
         nos += f'[node name="{no}" parent="." instance=ExtResource("p_{nome}")]\nposition = {vec(tela)}\n\n'
-    for nome, x, y in CONSTRUCOES:
-        ext += f'[ext_resource type="PackedScene" path="res://scenes/world/buildings/{nome}.tscn" id="c_{nome}"]\n'
-        no = "".join(t.capitalize() for t in nome.split("_"))
-        nos += f'[node name="{no}" parent="." instance=ExtResource("c_{nome}")]\nposition = {vec(((x - y) * 0.5, (x + y) * 0.25))}\n\n'
-    return f'''[gd_scene load_steps={len(usados) + len(CONSTRUCOES) + 5} format=3]
+    ext += '[ext_resource type="Script" path="res://scripts/world/edificio.gd" id="s_edificio"]\n'
+    for nome, tx, ty, larg, alt, frente, semente in EDIFICIOS:
+        nos += (f'[node name="{nome}" type="Node2D" parent="."]\nposition = {vec(((tx - ty) * 32.0, (tx + ty) * 16.0))}\n'
+                f'script = ExtResource("s_edificio")\nlargura_tiles = {larg}\naltura_tiles = {alt}\n'
+                f'frente = "{frente}"\nsemente = {semente}\n\n')
+    return f'''[gd_scene load_steps={len(usados) + 6} format=3]
 
 [ext_resource type="Script" path="res://scripts/world/ground.gd" id="1_ground"]
 [ext_resource type="Texture2D" path="res://{REC}/chao/grama.png" id="2_grama"]

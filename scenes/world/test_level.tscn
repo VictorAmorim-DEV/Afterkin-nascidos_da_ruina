@@ -34,7 +34,7 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sacos_areia_b.tscn" id="p_sacos_areia_b"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_amarelo.tscn" id="p_sedan_amarelo"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_enferrujado.tscn" id="p_sedan_enferrujado"]
-[ext_resource type="PackedScene" path="res://scenes/world/buildings/casa_abandonada.tscn" id="c_casa_abandonada"]
+[ext_resource type="Script" path="res://scripts/world/edificio.gd" id="s_edificio"]
 
 [node name="TestLevel" type="Node2D"]
 y_sort_enabled = true
@@ -115,58 +115,63 @@ position = Vector2(760, 70)
 position = Vector2(95, -92.5)
 
 [node name="CapimAlto1" parent="." instance=ExtResource("p_capim_alto")]
-position = Vector2(-792.5, -146.25)
+position = Vector2(-902.5, -83.75)
 
 [node name="MatoAlto1" parent="." instance=ExtResource("p_mato_alto")]
-position = Vector2(-762.5, -123.75)
+position = Vector2(-865, -57.5)
 
 [node name="ArbustoBaixo1" parent="." instance=ExtResource("p_arbusto_baixo")]
-position = Vector2(-715, -107.5)
+position = Vector2(-810, -35)
 
 [node name="Capim1" parent="." instance=ExtResource("p_capim")]
-position = Vector2(-695, -87.5)
+position = Vector2(-692.5, 26.25)
 
 [node name="MatoFino1" parent="." instance=ExtResource("p_mato_fino")]
-position = Vector2(-557.5, -26.25)
+position = Vector2(-660, 50)
 
 [node name="CapimAlto2" parent="." instance=ExtResource("p_capim_alto")]
-position = Vector2(-532.5, -6.25)
+position = Vector2(-602.5, 66.25)
 
 [node name="EntulhoPedras1" parent="." instance=ExtResource("p_entulho_pedras")]
-position = Vector2(-760, -100)
+position = Vector2(-850, -25)
 
 [node name="ArbustoLargo1" parent="." instance=ExtResource("p_arbusto_largo")]
-position = Vector2(-342.5, -63.75)
+position = Vector2(-325, -42.5)
 
 [node name="MatoSeco1" parent="." instance=ExtResource("p_mato_seco")]
-position = Vector2(-395, -42.5)
+position = Vector2(-400, -10)
 
 [node name="Capim2" parent="." instance=ExtResource("p_capim")]
-position = Vector2(-435, -17.5)
+position = Vector2(-467.5, 26.25)
 
 [node name="MatoRasteiro1" parent="." instance=ExtResource("p_mato_rasteiro")]
-position = Vector2(-477.5, -3.75)
+position = Vector2(-542.5, 58.75)
 
 [node name="ArbustoRedondo1" parent="." instance=ExtResource("p_arbusto_redondo")]
-position = Vector2(-685, -227.5)
+position = Vector2(-687.5, -218.75)
 
 [node name="MatoAlto2" parent="." instance=ExtResource("p_mato_alto")]
-position = Vector2(-737.5, -198.75)
+position = Vector2(-770, -175)
 
 [node name="Capim3" parent="." instance=ExtResource("p_capim")]
-position = Vector2(-785, -172.5)
+position = Vector2(-859, -129.5)
 
 [node name="ArbustoFolhudo1" parent="." instance=ExtResource("p_arbusto_folhudo")]
-position = Vector2(-575, -212.5)
+position = Vector2(-580, -210)
 
 [node name="MatoFino2" parent="." instance=ExtResource("p_mato_fino")]
-position = Vector2(-475, -162.5)
+position = Vector2(-460, -150)
 
 [node name="EntulhoLaje1" parent="." instance=ExtResource("p_entulho_laje")]
-position = Vector2(-375, -112.5)
+position = Vector2(-360, -100)
 
 [node name="CapimAlto3" parent="." instance=ExtResource("p_capim_alto")]
-position = Vector2(-475, 22.5)
+position = Vector2(-580, 90)
 
-[node name="CasaAbandonada" parent="." instance=ExtResource("c_casa_abandonada")]
-position = Vector2(-640, -230)
+[node name="Casa1" type="Node2D" parent="."]
+position = Vector2(-640, -224)
+script = ExtResource("s_edificio")
+largura_tiles = 10
+altura_tiles = 8
+frente = "s"
+semente = 3
