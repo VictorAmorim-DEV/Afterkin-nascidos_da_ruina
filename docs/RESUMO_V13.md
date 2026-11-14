@@ -9,7 +9,7 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ `useSlot`, `eat`, `useMed` (l.123, 1450, 1452) · `renderInventory` (l.124) → `InventarioUI`
 - ✅ `SAQUE`, `CONTEM`, `movelPerto`, `EDIF_interagir` (l.1054, 1169-1182) → `Edificio`
 - ✅ `loot` para objetos soltos: só `scrap` (l.1398)
-- ⬜ `craft`, `recipeCost`, `placeTotem`, `removeTotem`, `build` (l.106-122, 995, 1451): fabricação, totem, abrigo
+- ✅ `craft`, `recipeCost`, `placeTotem`, `removeTotem`, `build` (l.106-122, 995, 1451) → `Inventario.fabricar` + `Territorio` (totem, abrigo, receita do totem na UI)
 - ✅ `harvestHit`, `NODE` (árvore/pedra com machado/picareta, l.1427) → `Coletavel`
 - ⬜ `branch`/`pebble` (galho e pedra pequena pegos com E, l.1398-1403)
 - ✅ `xpGain` (l.154) · ⬜ `updateUI` completo (l.1460): falta raça/nível/exposição solar/doença/totem
@@ -27,12 +27,13 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ `race()`, `formRat()`, `transform` (l.1446), `maxLife` (l.153), `speed` (l.152) → `Player.definir_raca` etc.
 - ✅ tela de seleção (`start`, `descriptions`, l.23-24, 1384-1389) → `SelecaoRaca` (F9 troca nos testes)
 - ✅ ataque por raça (l.1419-1420), `recipeCost` humano (l.107-108)
-- ✅ vampiro jogável: `player.sun`, vinheta e dano do sol (l.1745, 1845); ⬜ antídoto de ninho de morcegos, totem/abrigo como proteção
+- ✅ vampiro jogável: `player.sun`, vinheta e dano do sol (l.1745, 1845); ✅ proteção pelo totem; ⬜ antídoto de ninho de morcegos
 - ✅ `player.disease` (Leptospirose, Mutação vampírica, Infecção zumbi, l.1846), mutação de raça ao fim; ⬜ efeitos do estágio (a V13 não tem)
 - ✅ fome: `player.food` decai 0,13/s (l.1844) → feito junto do inventário
 
 ## Veículos / cenário (objetos `COD`, l.691-727)
-- ⬜ `COD`, `codObj`, `codBox`, `estacionamento` (l.728), `SPR_CAR` (l.984)
+- ✅ carros dirigíveis: **a V13 não tem** (só cenário); `Veiculo` é recurso novo (5 veículos HD, sem combustível)
+- ⬜ `COD`, `codObj`, `codBox`, `estacionamento` (l.728), `SPR_CAR` (l.984): objetos de cenário do mundo aberto
 - ⬜ cercas e portões: `fseg`, `fenceRect`, `gate`, `toggleGate`, `nearGate` (l.272-291, 991)
 - ⬜ `LAMP`, `mobiliarioUrbano` (l.294, 324)
 - Na V13 carros NÃO são lootáveis (só `scrap`, `house`, `pharmacy`, `sewer`, `camp`)

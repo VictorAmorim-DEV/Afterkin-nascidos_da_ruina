@@ -51,7 +51,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().get_nodes_in_group("item_chao").any(func(i): return i.texto_interacao() != ""):
 		return                                   # item no chão tem prioridade
 	var j := _jogador()
-	if j == null or not "inventario" in j:
+	if j == null or not "inventario" in j or j.dirigindo != null:
 		return
 	get_viewport().set_input_as_handled()
 	Loot.vasculhar(j, tipo, _rng, func(): usado = true)

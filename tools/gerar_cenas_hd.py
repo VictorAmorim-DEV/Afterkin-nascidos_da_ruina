@@ -117,6 +117,21 @@ ENTORNO = [
 ]
 
 
+# veículos dirigíveis (scripts/world/veiculo.gd): cena -> nome exibido. Ficam em scenes/world/veiculos/.
+DIRIGIVEIS = {"kombi": "Kombi", "picape": "Picape", "jipe": "Jipe",
+              "sedan_amarelo": "Sedan amarelo", "sedan_enferrujado": "Sedan enferrujado"}
+DIMS = {}   # nome -> (largura em x, comprimento em y) em u de mundo, medidas pela base
+
+
+def dims_mundo(escala, base):
+    """Pegada da base no mundo: a arte dos veículos tem o comprimento no eixo Y."""
+    e, p, d = base
+    ce = ((e[0] - p[0]) * escala, (e[1] - p[1]) * escala)
+    cd = ((d[0] - p[0]) * escala, (d[1] - p[1]) * escala)
+    mundo = lambda q: (q[0] + 2 * q[1], 2 * q[1] - q[0])      # tela -> mundo
+    return abs(mundo(ce)[0]), abs(mundo(cd)[1])
+
+
 def medir_base(caminho, modo):
     """Devolve (esq, pivo, dir) em px da imagem."""
     a = np.array(Image.open(caminho).convert("RGBA"))[..., 3] > 128
@@ -200,13 +215,38 @@ occluder = SubResource("oclusor_base")
 '''
 
 
+def cena_veiculo(nome, rec, escala, base):
+    no = "".join(t.capitalize() for t in nome.split("_"))
+    larg, comp = DIMS[nome]
+    return f'''[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/veiculo.gd" id="1_veiculo"]
+[ext_resource type="Texture2D" path="res://{REC}/{rec}.png" id="2_tex"]
+
+[node name="{no}" type="CharacterBody2D"]
+y_sort_enabled = true
+motion_mode = 1
+script = ExtResource("1_veiculo")
+nome = "{DIRIGIVEIS[nome]}"
+textura = ExtResource("2_tex")
+escala = {n(escala)}
+pivo = {vec(base[1])}
+comprimento = {n(comp)}
+largura = {n(larg)}
+'''
+
+
 def cena_teste():
     usados = sorted({c[0] for c in CENARIO + ENTORNO})
-    ext = "".join(f'[ext_resource type="PackedScene" path="res://scenes/world/props_hd/{u}.tscn" id="p_{u}"]\n' for u in usados)
+    pasta = lambda u: "veiculos" if u in DIRIGIVEIS else "props_hd"
+    ext = "".join(f'[ext_resource type="PackedScene" path="res://scenes/world/{pasta(u)}/{u}.tscn" id="p_{u}"]\n' for u in usados)
     nos, cont = "", {}
     for nome, x, y in CENARIO + ENTORNO:
         cont[nome] = cont.get(nome, 0) + 1
         no = "".join(t.capitalize() for t in nome.split("_")) + str(cont[nome])
+        if nome in DIRIGIVEIS:                           # o veículo gira em torno do centro, não do pivô
+            larg, comp = DIMS[nome]
+            x, y = x - larg / 2, y - comp / 2
         tela = ((x - y) * 0.5, (x + y) * 0.25)          # projeção isométrica 2:1
         nos += f'[node name="{no}" parent="." instance=ExtResource("p_{nome}")]\nposition = {vec(tela)}\n\n'
         tc = tipo_coletavel(nome)
@@ -266,6 +306,10 @@ def main():
         if not os.path.isfile(cam):
             print("AVISO: recorte não encontrado:", cam); continue
         base = reg[3] if len(reg) > 3 else medir_base(cam, modo)
+        if nome in DIRIGIVEIS:
+            DIMS[nome] = dims_mundo(escala, base)
+            gravar(f"scenes/world/veiculos/{nome}.tscn", cena_veiculo(nome, rec, escala, base))
+            continue
         gravar(f"scenes/world/props_hd/{nome}.tscn", cena_prop(nome, rec, escala, base))
         print("%-20s escala %.2f  base %s" % (nome, escala, [tuple(round(v, 1) for v in q) for q in base]))
     if a.cenario:

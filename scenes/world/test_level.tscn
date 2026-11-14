@@ -24,18 +24,18 @@
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/carro_capo_aberto.tscn" id="p_carro_capo_aberto"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/entulho_laje.tscn" id="p_entulho_laje"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/entulho_pedras.tscn" id="p_entulho_pedras"]
-[ext_resource type="PackedScene" path="res://scenes/world/props_hd/jipe.tscn" id="p_jipe"]
-[ext_resource type="PackedScene" path="res://scenes/world/props_hd/kombi.tscn" id="p_kombi"]
+[ext_resource type="PackedScene" path="res://scenes/world/veiculos/jipe.tscn" id="p_jipe"]
+[ext_resource type="PackedScene" path="res://scenes/world/veiculos/kombi.tscn" id="p_kombi"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_alto.tscn" id="p_mato_alto"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_fino.tscn" id="p_mato_fino"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_rasteiro.tscn" id="p_mato_rasteiro"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/mato_seco.tscn" id="p_mato_seco"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/palmeira.tscn" id="p_palmeira"]
-[ext_resource type="PackedScene" path="res://scenes/world/props_hd/picape.tscn" id="p_picape"]
+[ext_resource type="PackedScene" path="res://scenes/world/veiculos/picape.tscn" id="p_picape"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sacos_areia_a.tscn" id="p_sacos_areia_a"]
 [ext_resource type="PackedScene" path="res://scenes/world/props_hd/sacos_areia_b.tscn" id="p_sacos_areia_b"]
-[ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_amarelo.tscn" id="p_sedan_amarelo"]
-[ext_resource type="PackedScene" path="res://scenes/world/props_hd/sedan_enferrujado.tscn" id="p_sedan_enferrujado"]
+[ext_resource type="PackedScene" path="res://scenes/world/veiculos/sedan_amarelo.tscn" id="p_sedan_amarelo"]
+[ext_resource type="PackedScene" path="res://scenes/world/veiculos/sedan_enferrujado.tscn" id="p_sedan_enferrujado"]
 [ext_resource type="Script" path="res://scripts/world/edificio.gd" id="s_edificio"]
 [ext_resource type="Script" path="res://scripts/items/lootavel.gd" id="s_lootavel"]
 [ext_resource type="Script" path="res://scripts/items/coletavel.gd" id="s_coletavel"]
@@ -54,22 +54,22 @@ estrada = ExtResource("4_estrada")
 [node name="Player" parent="." instance=ExtResource("3_player")]
 
 [node name="Kombi1" parent="." instance=ExtResource("p_kombi")]
-position = Vector2(182.5, 121.25)
+position = Vector2(201.7, 89.05)
 
 [node name="SedanEnferrujado1" parent="." instance=ExtResource("p_sedan_enferrujado")]
-position = Vector2(300, -15)
+position = Vector2(318.38, -46.76)
 
 [node name="Picape1" parent="." instance=ExtResource("p_picape")]
-position = Vector2(-20, 225)
+position = Vector2(8.17, 184.49)
 
 [node name="SedanAmarelo1" parent="." instance=ExtResource("p_sedan_amarelo")]
-position = Vector2(-262.5, 268.75)
+position = Vector2(-243.43, 234.89)
 
 [node name="CarroCapoAberto1" parent="." instance=ExtResource("p_carro_capo_aberto")]
 position = Vector2(-295, 17.5)
 
 [node name="Jipe1" parent="." instance=ExtResource("p_jipe")]
-position = Vector2(140, -130)
+position = Vector2(144.68, -161.78)
 
 [node name="BarreiraLonga1" parent="." instance=ExtResource("p_barreira_longa")]
 position = Vector2(17.5, 116.25)

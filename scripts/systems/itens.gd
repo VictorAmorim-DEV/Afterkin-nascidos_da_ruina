@@ -15,8 +15,9 @@ const DB := {
 	"totem": {"nome": "Totem de território", "stack": 1, "uso": true, "desc": "Use para posicionar seu totem aqui."},
 }
 
-## Receitas de fabricação (V13: RECIPES). O totem entra quando houver territórios.
+## Receitas de fabricação (V13: RECIPES).
 const RECEITAS := [
+	{"id": "totem", "desc": "Um por jogador. Fica no inventário até ser usado.", "custo": []},
 	{"id": "machado", "desc": "Madeira só se obtém de árvores com machado.", "custo": [["madeira", 4], ["pedra", 3]]},
 	{"id": "picareta", "desc": "Necessária para pedras grandes.", "custo": [["madeira", 4], ["pedra", 4]]},
 ]
@@ -50,18 +51,18 @@ static func stack_max(id: String) -> int:
 
 
 static func custo_receita(id: String, nivel: int = 1, raca: String = "human") -> Array:
-	## Humano: ferramentas custam 80% (arredondado ao inteiro mais próximo; a V13 arredonda para cima e o desconto some) e o totem sai mais barato (V13: recipeCost).
+	## Humano: ferramentas custam 80% (arredondado ao inteiro mais próximo; a V13 arredonda para cima e o desconto some)
+	if id == "totem":
+		var t := int((nivel - 1) / 5.0)
+		if raca == "human":
+			return [["madeira", 8 + t * 4], ["sucata", 4 + t * 3]]
+		return [["madeira", 10 + t * 5], ["sucata", 5 + t * 3]]
 	for r in RECEITAS:
 		if r.id == id:
 			var out: Array = []
 			for c in r.custo:
 				out.append([c[0], roundi(c[1] * 0.8) if raca == "human" else c[1]])
 			return out
-	if id == "totem":
-		var t := int((nivel - 1) / 5.0)
-		if raca == "human":
-			return [["madeira", 8 + t * 4], ["sucata", 4 + t * 3]]
-		return [["madeira", 10 + t * 5], ["sucata", 5 + t * 3]]
 	return []
 
 

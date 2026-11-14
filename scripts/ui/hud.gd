@@ -90,6 +90,11 @@ func _process(_delta: float) -> void:
 	_saude_texto.text = "SAÚDE: " + _jogador.texto_doenca()
 	if _jogador.raca == "vampire":
 		_saude_texto.text += "\nSOL %d/60%s" % [int(_jogador.sol), " · QUEIMANDO" if _jogador.sol > 60.0 else ""]
+	if _jogador.territorio.tem_totem():
+		_saude_texto.text += "\nTOTEM: " + _jogador.territorio.resumo()
+	if _jogador.dirigindo != null:
+		_saude_texto.text += "\n%s: %d km/h%s" % [_jogador.dirigindo.nome.to_upper(), _jogador.dirigindo.velocidade_kmh(),
+			"" if _jogador.dirigindo.farol_ligado else " · faróis apagados"]
 	_saude_texto.modulate = Color(1.0, 0.45, 0.4) if doente else Color(0.7, 1.0, 0.7)
 	_sol_tela.visible = _jogador.exposto_ao_sol()
 	_sol_tela.modulate.a = clampf(_jogador.sol / 30.0 + 0.35, 0.35, 1.0)
@@ -142,7 +147,7 @@ func _montar_vitais() -> void:
 	for n in [_vida_texto, _vida_barra, _fome_barra, _saude_texto]:
 		painel.add_child(n)
 		painel.move_child(n, painel.get_child_count() - 2)     # antes da linha de ajuda
-	ajuda.text += " · I mochila · botão esquerdo atacar/colher · Q forma (rato) · F9 trocar raça"
+	ajuda.text += " · E entrar em veículo · I mochila · botão esquerdo atacar/colher · Q forma (rato) · F9 trocar raça"
 
 
 func _montar_toast() -> void:

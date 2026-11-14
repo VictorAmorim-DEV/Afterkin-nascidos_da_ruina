@@ -913,6 +913,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	var pular := event.is_action_pressed("jump")
 	if not interagir and not pular:
 		return
+	var jg := _jogador()
+	if jg != null and "dirigindo" in jg and jg.dirigindo != null:
+		return
 	var p := _pos_jogador()
 	if interagir and _item_no_chao_perto():
 		return                                  # pegar do chão tem prioridade

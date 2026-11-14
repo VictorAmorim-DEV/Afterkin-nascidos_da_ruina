@@ -85,7 +85,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not event.is_action_pressed("interact") or not _e_o_alvo():
 		return
 	var j := _jogador()
-	if j == null or not "inventario" in j:
+	if j == null or not "inventario" in j or j.dirigindo != null:
 		return
 	get_viewport().set_input_as_handled()
 	var resto: int = j.inventario.adicionar_parcial(id, quantidade, extra)

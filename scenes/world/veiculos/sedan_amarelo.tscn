@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/veiculo.gd" id="1_veiculo"]
+[ext_resource type="Texture2D" path="res://assets/sprites_hd_recortados/objetos_natureza/veiculo_05.png" id="2_tex"]
+
+[node name="SedanAmarelo" type="CharacterBody2D"]
+y_sort_enabled = true
+motion_mode = 1
+script = ExtResource("1_veiculo")
+nome = "Sedan amarelo"
+textura = ExtResource("2_tex")
+escala = 0.7
+pivo = Vector2(85, 114)
+comprimento = 173.6
+largura = 97.3

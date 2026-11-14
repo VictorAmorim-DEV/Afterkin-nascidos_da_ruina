@@ -59,6 +59,8 @@ var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
 var morto: bool = false
+var dirigindo: Node2D = null             ## veículo que está dirigindo (o jogador fica escondido)
+var territorio: Territorio
 var raca: String = "human"               ## human, rat, vampire ou zombie (V13: player.race)
 var forma: String = "human"              ## só o rato alterna: "human" ou "rat" (V13: player.form)
 var doenca: Dictionary = {}              ## vazio = saudável; {tipo, horas, estagio, origem}
@@ -83,10 +85,16 @@ func _ready() -> void:
 	inventario.jogador = self
 	add_child(inventario)
 	inventario.aviso.connect(aviso)
+	territorio = Territorio.new()
+	territorio.name = "Territorio"
+	territorio.jogador = self
+	add_child(territorio)
 	inventario.inicial()
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if dirigindo != null:
+		return                                   # dirigindo: o veículo trata as teclas
 	if event.is_action_pressed("crouch"):
 		postura = Postura.EM_PE if postura == Postura.AGACHADO else Postura.AGACHADO
 	elif event.is_action_pressed("prone"):
@@ -123,6 +131,12 @@ func saltar_para(destino: Vector2, tempo: float = 0.42) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if dirigindo != null:
+		global_position = dirigindo.global_position
+		lanterna_chao.enabled = false
+		lanterna_objetos.enabled = false
+		_atualizar_vitais(delta)
+		return
 	# --- pulo (só visual, como no protótipo) ---
 	if pulo_v != 0.0 or pulo_z > 0.0:
 		pulo_z += pulo_v * delta
@@ -558,10 +572,10 @@ func _dentro_de_casa() -> bool:
 	return false
 
 
-## Vampiro de dia, a céu aberto. (A V13 só protege com totem/abrigo, que ainda não existem aqui;
-## por isso entrar numa casa também abriga do sol.)
+## Vampiro de dia, a céu aberto. Protegem: o alcance do totem (V13) e, por decisão desta
+## versão, estar dentro de uma casa.
 func exposto_ao_sol() -> bool:
-	return raca == "vampire" and not _eh_noite() and not _dentro_de_casa()
+	return raca == "vampire" and not _eh_noite() and not _dentro_de_casa() and not territorio.protege(global_position)
 
 
 func _atualizar_sol(delta: float) -> void:

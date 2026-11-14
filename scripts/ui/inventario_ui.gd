@@ -15,6 +15,8 @@ var _info := VBoxContainer.new()
 var _botoes := HBoxContainer.new()
 var _receitas := VBoxContainer.new()
 var _status := Label.new()
+var _terr_info := Label.new()
+var _terr_botoes := HBoxContainer.new()
 
 
 func _ready() -> void:
@@ -98,6 +100,16 @@ func _montar() -> void:
 	tr.add_theme_font_size_override("font_size", 14)
 	lado.add_child(tr)
 	lado.add_child(_receitas)
+	lado.add_child(HSeparator.new())
+	var tt := Label.new()
+	tt.text = "TERRITÓRIO"
+	tt.add_theme_font_size_override("font_size", 14)
+	lado.add_child(tt)
+	_terr_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_terr_info.custom_minimum_size = Vector2(300, 0)
+	_terr_info.add_theme_font_size_override("font_size", 12)
+	lado.add_child(_terr_info)
+	lado.add_child(_terr_botoes)
 
 	_status.text = "Arraste para reorganizar · I / Tab / Esc fecha"
 	_status.modulate = Color(1, 1, 1, 0.6)
@@ -141,6 +153,24 @@ func _atualizar() -> void:
 	_equip.text = ("Equipado: " + Itens.nome(e)) if e != "" else "Mãos livres"
 	_montar_info()
 	_montar_receitas()
+	_montar_territorio()
+
+
+func _montar_territorio() -> void:
+	var t: Territorio = _jogador.territorio
+	_terr_info.text = "Totem: %s\nAbrigo básico: requer totem, 8 madeira e 4 sucata." % t.resumo()
+	for c in _terr_botoes.get_children():
+		c.queue_free()
+	var b1 := Button.new()
+	b1.text = "Construir abrigo"
+	b1.disabled = not t.tem_totem() or t.abrigo
+	b1.pressed.connect(func(): t.construir_abrigo(); _atualizar())
+	_terr_botoes.add_child(b1)
+	var b2 := Button.new()
+	b2.text = "Remover totem"
+	b2.disabled = not t.tem_totem()
+	b2.pressed.connect(func(): t.remover_totem(); _atualizar())
+	_terr_botoes.add_child(b2)
 
 
 func _montar_info() -> void:

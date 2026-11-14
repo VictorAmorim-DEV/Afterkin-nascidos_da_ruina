@@ -13,6 +13,7 @@ var _zoom_alvo := 1.3
 
 
 func _ready() -> void:
+	add_to_group("camera_iso")
 	_alvo = get_node_or_null(target_path) as Node2D
 	_zoom_alvo = zoom.x
 	if _alvo:
@@ -24,6 +25,11 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	if _alvo:
 		global_position = _alvo.global_position
+
+
+## Troca quem a câmera acompanha (jogador a pé, veículo...).
+func seguir(no: Node2D) -> void:
+	_alvo = no
 
 
 func _process(delta: float) -> void:
