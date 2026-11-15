@@ -27,6 +27,7 @@ const CONTEM := {
 	"estante": "estante", "armario": "guarda-roupa", "comoda": "cômoda", "geladeira": "geladeira",
 	"balcao": "armário da cozinha", "armario_med": "armário de remédios", "prateleira": "prateleira",
 	"arquivo": "arquivo", "caixa": "caixa", "mesa_esc": "gaveta da mesa", "scrap": "sucata",
+	"esgoto": "acesso ao esgoto",
 }
 
 static var _cache: Dictionary = {}
@@ -92,6 +93,8 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 			l = [["sucata", rng.randi_range(0, 1)], ["antibiotico", 1 if rng.randf() < 0.04 else 0]]
 		"scrap":
 			l = [["sucata", rng.randi_range(1, 3)]]
+		"esgoto":
+			l = [["sucata", 2]]
 	return l.filter(func(x): return x[1] > 0)
 
 

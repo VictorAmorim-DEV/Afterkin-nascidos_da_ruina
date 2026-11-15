@@ -42,12 +42,16 @@ const ARV_TOLERANCIA := 60.0
 const ARV_RECUO := 88.0
 const POSTE_RECUO := 108.0
 const LIXO_ESQUINA := ["folhas", "folhas", "jornal", "papelao", "saco", "grama", "mato", "musgo", "entulho"]
+## V13: CL_LITTER (lixo junto ao meio-fio) e CL_SIDE (sujeira da calçada).
+const LIXO_VIA := ["jornal", "papelao", "saco", "folhas", "folhas"]
+const LIXO_CALCADA := ["grama", "mato", "folhas", "musgo", "mancha", "lixo", "entulho", "jornal"]
 
 static var _cache: Dictionary = {}
 static var _vias_pronto := false
 static var _vias_specs: Array = []           ## rotatória (estátua, árvores, bancos) e árvores de calçada
 static var _vias_chao: Array = []            ## detalhes pintados no chão (ver detalhes_no)
 static var _postes_cache := PackedVector2Array()
+static var _bueiros := PackedVector2Array()  ## centros dos bueiros (os ratos nascem perto deles)
 
 
 ## Estado da geração de um quarteirão.
@@ -755,6 +759,10 @@ static func _vias() -> void:
 	_rotatoria(rng)
 	_esquinas(rng)
 	_arvores_calcada(rng)
+	var trechos := _trechos()
+	_bueiros_vias(rng, trechos)
+	_lixo_vias(rng, trechos)
+	_mato_ruas(rng, trechos)
 
 
 static func _prop_via(nome: String, p: Vector2, extra: Dictionary = {}) -> void:
@@ -879,3 +887,101 @@ static func _folga_predio(p: Vector2, predios: Array) -> float:
 		if q.x + q.y > p.x + p.y:
 			menor = minf(menor, p.distance_to(q))
 	return menor
+
+
+# ═════════════════════════════════ ruas: bueiros, lixo e mato ao longo das vias ═════════════════════════════════
+
+## Trechos de rua entre dois cruzamentos: c = início no eixo da rua, dir = sentido, n = normal, comp = comprimento (u).
+static func _trechos() -> Array:
+	var C := MundoGen.CIDADE
+	var B := MundoGen.BLOCO
+	var R := MundoGen.RUA
+	var out: Array = []
+	for i in 4:
+		for j in 4:
+			out.append({"c": Vector2(C.position.x + i * B + R * 0.5, C.position.y + j * B + R), "dir": Vector2(0, 1),
+				"n": Vector2(1, 0), "comp": B - R})
+	for j in 5:
+		for i in 3:
+			out.append({"c": Vector2(C.position.x + i * B + R, C.position.y + j * B + R * 0.5), "dir": Vector2(1, 0),
+				"n": Vector2(0, 1), "comp": B - R})
+	return out
+
+
+## Centros dos bueiros dentro de r.
+static func bueiros_no(r: Rect2) -> Array:
+	_vias()
+	var out: Array = []
+	for b in _bueiros:
+		if r.has_point(b):
+			out.append(b)
+	return out
+
+
+## Bueiros no eixo da rua (V13: mobiliarioUrbano, 'sewer'): vasculháveis (acesso ao esgoto) e com ratos por perto.
+static func _bueiros_vias(rng: RandomNumberGenerator, trechos: Array) -> void:
+	for t in trechos:
+		var td: Dictionary = t
+		var comp: float = td["comp"]
+		var u := 14.0 * TILE
+		while u < comp - 6.0 * TILE:
+			var p: Vector2 = td["c"] + (td["dir"] as Vector2) * (u + rng.randf_range(-4.0, 4.0) * TILE)
+			if rng.randf() < 0.45 and not perto_rotatoria(p, 12.0):
+				_bueiros.append(p)
+				_vias_specs.append({"k": "urbano", "t": "bueiro", "r": Rect2(p - Vector2(22, 22), Vector2(44, 44)), "h": 0.0,
+					"s": false, "x": {}, "p": p, "loot": "esgoto"})
+			u += 19.0 * TILE
+
+
+## Lixo ao longo das vias (V13: mobiliarioUrbano, laço 'ev'): no asfalto junto ao meio-fio folhas, lixo, poça ou
+## óleo, cone, pneu ou mato na rachadura; na calçada (70%) sujeira, mato e entulho.
+static func _lixo_vias(rng: RandomNumberGenerator, trechos: Array) -> void:
+	var meia := MundoGen.RUA * 0.5 - MundoGen.CALCADA          # meia largura do asfalto
+	for t in trechos:
+		var td: Dictionary = t
+		var comp: float = td["comp"]
+		var dir: Vector2 = td["dir"]
+		var n: Vector2 = td["n"]
+		for k in int(comp / TILE * 0.6):
+			var u := rng.randf_range(140.0, comp - 140.0)
+			var lado := -1.0 if rng.randf() < 0.5 else 1.0
+			var base: Vector2 = td["c"] + dir * u
+			if perto_rotatoria(base, 13.0):
+				continue
+			var p := base + n * lado * (meia - 20.0)
+			var q := rng.randf()
+			if q < 0.3:
+				_aglomerado(rng, p, 40.0, 5, ["folhas", "folhas", "folhas", "jornal"])
+			elif q < 0.55:
+				_aglomerado(rng, p, 36.0, 4, LIXO_VIA)
+			elif q < 0.68:
+				_detalhe("poca" if rng.randf() < 0.5 else "oleo", p - n * lado * 20.0, rng)
+			elif q < 0.76:
+				_detalhe("cone", p, rng)
+			elif q < 0.82:
+				_detalhe("pneu", p, rng)
+			else:
+				_detalhe("mato", p, rng)
+			if rng.randf() < 0.7:
+				_aglomerado(rng, base + n * lado * (meia + MundoGen.CALCADA * 0.5), 40.0, 3, LIXO_CALCADA)
+
+
+## Mato invadindo as ruas (V13: matoNasRuas): quase sempre rente ao meio-fio, às vezes no meio do asfalto.
+static func _mato_ruas(rng: RandomNumberGenerator, trechos: Array) -> void:
+	var meia := MundoGen.RUA * 0.5 - MundoGen.CALCADA
+	for t in trechos:
+		var td: Dictionary = t
+		var comp: float = td["comp"]
+		for k in int(comp / TILE * 0.35):
+			var lado := -1.0 if rng.randf() < 0.5 else 1.0
+			var off := lado * (meia - 14.0) if rng.randf() < 0.7 else rng.randf_range(-meia, meia)
+			var p: Vector2 = td["c"] + (td["dir"] as Vector2) * rng.randf_range(100.0, comp - 100.0) + (td["n"] as Vector2) * off
+			if perto_rotatoria(p, 13.0):
+				continue
+			var r := rng.randf()
+			_detalhe("grama" if r < 0.35 else ("mato" if r < 0.6 else ("folhas" if r < 0.75 else ("entulho" if r < 0.85 else "musgo"))), p, rng)
+
+
+static func _aglomerado(rng: RandomNumberGenerator, p: Vector2, raio: float, n: int, tipos: Array) -> void:
+	for k in n:
+		_detalhe(tipos[rng.randi() % tipos.size()], p + Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(0.0, raio), rng)

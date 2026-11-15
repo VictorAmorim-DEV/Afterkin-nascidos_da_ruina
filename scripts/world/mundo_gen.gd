@@ -493,7 +493,7 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 
 	# ---- cidade: lotes (casas e prédios modulares), entulho, carros nas ruas ----
 	if CIDADE.intersects(r):
-		_planejar_cidade(c, r, rng, specs)
+		_planejar_cidade(c, r, rng, specs, vivos)
 	# ---- vilarejos ----
 	for a in _aldeias:
 		var ad: Dictionary = a
@@ -526,10 +526,15 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 	return specs
 
 
-static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, specs: Array) -> void:
+static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, specs: Array, vivos: int) -> void:
 	# quarteirões especiais (Quadras: escola, hospital, comércio, igreja, posto...) e postes nas calçadas
 	specs.append_array(Quadras.specs_no(r))
 	Quadras.postes_no(r, specs)
+	# ratos saindo dos bueiros (V13: 40%), só na primeira visita ao chunk
+	if vivos < 0:
+		for b in Quadras.bueiros_no(r):
+			if rng.randf() < 0.4:
+				specs.append({"k": "inimigo", "raca": "rat", "p": (b as Vector2) + Vector2(rng.randf_range(-80.0, 80.0), rng.randf_range(40.0, 120.0))})
 	# carros abandonados e entulho nas ruas
 	var faixas := ruas(r)
 	if faixas.is_empty():

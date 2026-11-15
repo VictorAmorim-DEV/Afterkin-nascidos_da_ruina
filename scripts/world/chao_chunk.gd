@@ -334,6 +334,26 @@ func _detalhes() -> void:
 					_dp(_mancha(p + Vector2.from_angle(a) * rng.randf_range(-16, 16) * s, 6.0 * s, rng, 6), Color(0.35, 0.5, 0.2, 0.85))
 			"rachadura":
 				_rachadura(p, a, s, rng, Color(0.1, 0.1, 0.1, 0.55))
+			"oleo":
+				_dp(_mancha(p, 22.0 * s, rng, 10), Color(0.05, 0.05, 0.06, 0.55))
+				_dp(_elipse(p + Vector2(-4, -3) * s, 8.0 * s, 3.0 * s, a), Color(0.35, 0.3, 0.45, 0.25))
+			"mancha":
+				_dp(_mancha(p, 18.0 * s, rng, 9), Color(0.3, 0.24, 0.16, 0.35))
+			"lixo":
+				for k in rng.randi_range(4, 6):
+					var q3 := p + Vector2.from_angle(rng.randf_range(0, TAU)) * rng.randf_range(0, 14.0 * s)
+					var cl: Color = [Color(0.75, 0.2, 0.15), Color(0.85, 0.85, 0.8), Color(0.2, 0.35, 0.6), Color(0.2, 0.5, 0.25), Color(0.9, 0.75, 0.2)][rng.randi() % 5]
+					_dp(_caixa(q3, Vector2(rng.randf_range(4, 9), rng.randf_range(3, 6)) * s, rng.randf_range(0, PI)), cl)
+			"cone":                                   # cone de trânsito tombado
+				var ponta := p + Vector2.from_angle(a) * 22.0
+				var n2 := Vector2.from_angle(a).orthogonal()
+				_dp(PackedVector2Array([p - n2 * 11.0, ponta, p + n2 * 11.0]), Color(0.9, 0.42, 0.1))
+				_dp(PackedVector2Array([p + Vector2.from_angle(a) * 9.0 - n2 * 6.5, p + Vector2.from_angle(a) * 13.0 - n2 * 4.5,
+					p + Vector2.from_angle(a) * 13.0 + n2 * 4.5, p + Vector2.from_angle(a) * 9.0 + n2 * 6.5]), Color(0.95, 0.95, 0.9))
+				_dp(_caixa(p - Vector2.from_angle(a) * 2.0, Vector2(6, 26), a), Color(0.2, 0.2, 0.2))
+			"pneu":                                   # pneu deitado
+				_dp(_elipse(p, 21.0, 21.0, 0.0), Color(0.07, 0.07, 0.08))
+				_dp(_elipse(p, 11.0, 11.0, 0.0), Color(0.2, 0.2, 0.21))
 
 
 ## Polígono em u de mundo no Desenho de detalhes (que fica em coordenadas de tela).

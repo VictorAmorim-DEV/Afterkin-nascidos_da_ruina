@@ -2,7 +2,7 @@ class_name ObjetoUrbano
 extends StaticBody2D
 ## Objetos urbanos desenhados em código (V13: codObj/COD, LAMP, caçamba e caixa de correio — l.294, 690-727):
 ## pilar, cobertura e bomba do posto, totem com placa, contêiner, lápide, estátua, cesta de basquete, banco de praça,
-## chaminé, caixa d'água, barricada, caçamba, caixa de correio e poste de luz.
+## chaminé, caixa d'água, barricada, caçamba, caixa de correio, poste de luz e bueiro (chato, no chão).
 ##
 ## 'fp' é a base no chão em u de mundo; 'h' a altura em px de tela. A origem do nó fica no canto da frente da base
 ## (fp.end), o ponto mais "à frente" na tela, para o Y-Sort acertar com quem passa em volta.
@@ -25,6 +25,9 @@ static var _tex_luz: GradientTexture2D = null
 func _ready() -> void:
 	light_mask = 2
 	position = IsoMath.mundo_para_tela(fp.end)
+	if tipo == "bueiro":                          # rente ao chão: abaixo de quem passa por cima, com a luz do chão
+		z_index = -1
+		light_mask = 1
 	if solido and fp.size.x > 0.0 and fp.size.y > 0.0:
 		var col := CollisionPolygon2D.new()
 		col.polygon = PackedVector2Array([S(fp.position.x, fp.position.y, 0.0), S(fp.end.x, fp.position.y, 0.0),
@@ -155,6 +158,16 @@ func _draw() -> void:
 					S(x1 + 6.0, y1 + 6.0 + 1.9 * METRO, 0.0), S(x0 - 6.0, y1 + 6.0 + 1.9 * METRO, 0.0)]), Color8(42, 30, 20))
 			caixa(x0, y0, x1, y1, 0.0, h, Color8(154, 152, 143), Color8(138, 136, 127), Color8(110, 108, 100))
 			_elipse(S(cx, y1, h) + Vector2(3, 0), 9.0, 5.0, Color8(138, 136, 127), PI, TAU)
+		"bueiro":
+			var c := fp.get_center()
+			var r := fp.size.x * 0.5
+			_disco(c, r + 4.0, Color8(52, 52, 50))                 # aro de concreto
+			_disco(c, r, Color8(38, 39, 40))                       # tampa de ferro
+			for k in range(-3, 4):                                 # frisos da tampa
+				var dx := k * r * 0.26
+				var meia := sqrt(maxf(0.0, r * r - dx * dx)) * 0.86
+				draw_line(S(c.x + dx, c.y - meia, 0.0), S(c.x + dx, c.y + meia, 0.0), Color8(62, 62, 60), 1.5)
+			_disco(c + Vector2(r * 0.3, -r * 0.25), r * 0.35, Color(0.45, 0.25, 0.12, 0.35))   # ferrugem
 		"estatua":
 			var hp := zm(1.4)
 			caixa(x0, y0, x1, y1, 0.0, hp, Color8(168, 164, 152), Color8(152, 148, 136), Color8(124, 120, 110))
@@ -269,3 +282,12 @@ func _process(delta: float) -> void:
 		queue_redraw()
 	if ligar:
 		_luz.energy = 0.85 + 0.08 * sin(_t * 31.0)
+
+
+## Disco no chão (círculo em u de mundo).
+func _disco(c: Vector2, r: float, cor: Color) -> void:
+	var pts := PackedVector2Array()
+	for i in 16:
+		var a := TAU * i / 16.0
+		pts.append(S(c.x + cos(a) * r, c.y + sin(a) * r, 0.0))
+	draw_colored_polygon(pts, cor)

@@ -1,10 +1,10 @@
 class_name Lootavel
 extends Node2D
 ## Recipiente solto no cenário (caixote, entulho/sucata). Vasculha uma vez com E.
-## Tabelas da V13: "caixa" (madeira e sucata) e "scrap" (sucata). Veículos não são
+## Tabelas da V13: "caixa" (madeira e sucata), "scrap" (sucata) e "esgoto" (bueiro: 2 sucatas). Veículos não são
 ## lootáveis na V13, então ficam de fora.
 
-@export_enum("caixa", "scrap") var tipo: String = "caixa"
+@export_enum("caixa", "scrap", "esgoto") var tipo: String = "caixa"
 @export var alcance_m: float = 1.6
 var usado: bool = false
 var _rng := RandomNumberGenerator.new()

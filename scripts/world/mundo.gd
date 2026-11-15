@@ -419,6 +419,13 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			ou.solido = spec.get("s", true)
 			ou.extra = spec.get("x", {})
 			add_child(ou)
+			var loot_u: String = spec.get("loot", "")
+			if loot_u != "":                       # bueiro: acesso ao esgoto vasculhável
+				var lu := Lootavel.new()
+				lu.name = "Loot"
+				lu.tipo = loot_u
+				lu.position = IsoMath.mundo_para_tela(ou.fp.get_center()) - ou.position
+				ou.add_child(lu)
 			no = ou
 		"portao":
 			var pt := PortaoNo.new()
