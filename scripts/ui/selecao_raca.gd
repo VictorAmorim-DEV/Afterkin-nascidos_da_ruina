@@ -29,6 +29,7 @@ var _botoes: Dictionary = {}
 var _titulo := Label.new()
 var _descricao := Label.new()
 var _comecar := Button.new()
+var _continuar := Button.new()
 var _raiz := Control.new()
 
 
@@ -37,7 +38,9 @@ func _ready() -> void:
 	layer = 30
 	_montar()
 	_raiz.visible = false
-	if abrir_ao_iniciar:
+	if not SaveJogo.pendente.is_empty():
+		call_deferred("_retomar")                # partida carregada: nada de escolher raça
+	elif abrir_ao_iniciar:
 		call_deferred("abrir", true)
 
 
@@ -95,6 +98,16 @@ func _montar() -> void:
 	_comecar.custom_minimum_size = Vector2(0, 44)
 	_comecar.pressed.connect(confirmar)
 	col.add_child(_comecar)
+	_continuar.text = "CONTINUAR PARTIDA SALVA"
+	_continuar.custom_minimum_size = Vector2(0, 40)
+	_continuar.pressed.connect(func(): SaveJogo.carregar(get_tree()))
+	col.add_child(_continuar)
+
+
+func _retomar() -> void:
+	SaveJogo.aplicar_resto(get_tree())
+	_raiz.visible = false
+	get_tree().paused = false
 
 
 func _escolher(r: String) -> void:
@@ -112,6 +125,7 @@ func abrir(reiniciar: bool) -> void:
 	escolhida = j.raca if (j != null and not reiniciar) else "human"
 	_botoes[escolhida].button_pressed = true
 	_escolher(escolhida)
+	_continuar.visible = reiniciar and SaveJogo.existe()
 	_raiz.visible = true
 	get_tree().paused = true
 

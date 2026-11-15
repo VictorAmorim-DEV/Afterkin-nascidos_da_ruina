@@ -782,3 +782,36 @@ func usar_antidoto() -> void:
 	doenca = {}
 	sol = 0.0
 	aviso("O antídoto interrompeu a mutação vampírica.")
+
+
+# =====================================================================
+# SAVE (SaveJogo)
+# =====================================================================
+func dados_para_salvar() -> Dictionary:
+	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "xp": xp, "nivel": nivel,
+		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
+		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
+		"equipado": inventario.equipado}
+
+
+func restaurar(d: Dictionary) -> void:
+	if d.is_empty():
+		return
+	definir_raca(str(d.get("raca", "human")), false)
+	forma = str(d.get("forma", forma))
+	_aplicar_frames()
+	nivel = int(d.get("nivel", 1))
+	xp = int(d.get("xp", 0))
+	vida_max = vida_max_atual()
+	vida = clampf(float(d.get("vida", vida_max)), 1.0, vida_max)
+	fome = float(d.get("fome", 100.0))
+	stamina = float(d.get("stamina", stamina_max))
+	sol = float(d.get("sol", 0.0))
+	doenca = (d.get("doenca", {}) as Dictionary).duplicate()
+	lanterna_ligada = bool(d.get("lanterna", true))
+	var slots := SaveJogo.slots_de(d.get("slots", []))
+	for i in mini(slots.size(), inventario.slots.size()):
+		inventario.slots[i] = slots[i]
+	inventario.equipado = int(d.get("equipado", -1))
+	inventario.mudou.emit()

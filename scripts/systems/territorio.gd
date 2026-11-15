@@ -93,3 +93,29 @@ func resumo() -> String:
 		return "Nenhum totem colocado."
 	return "Nível %d • %d/%d HP • raio %.1f m%s" % [totem.nivel, ceili(totem.hp), totem.max, totem.alcance / M,
 		" • abrigo construído" if abrigo else ""]
+
+
+## Totem e abrigo para o SaveJogo (posição do totem em u de mundo).
+func dados_para_salvar() -> Dictionary:
+	if not tem_totem():
+		return {}
+	var p := IsoMath.tela_para_mundo(totem.no.global_position)
+	return {"totem": {"p": [p.x, p.y], "tier": totem.tier, "hp": totem.hp}, "abrigo": abrigo}
+
+
+func restaurar(d: Dictionary) -> void:
+	if not d.has("totem"):
+		return
+	var td: Dictionary = d["totem"]
+	var t: int = clampi(int(td.get("tier", 0)), 0, 4)
+	var no: Node2D = TotemNo.new()
+	jogador.get_parent().add_child(no)
+	var pl: Array = td["p"]
+	no.global_position = IsoMath.mundo_para_tela(Vector2(float(pl[0]), float(pl[1])))
+	no.alcance = ALCANCES[t]
+	totem = {"no": no, "tier": t, "nivel": NIVEIS[t], "hp": float(td.get("hp", VIDAS[t])), "max": VIDAS[t], "alcance": ALCANCES[t]}
+	if bool(d.get("abrigo", false)):
+		abrigo = true
+		_no_abrigo = AbrigoNo.new()
+		jogador.get_parent().add_child(_no_abrigo)
+		_no_abrigo.global_position = no.global_position + IsoMath.mundo_para_tela(Vector2(3.0 * M, 3.0 * M))

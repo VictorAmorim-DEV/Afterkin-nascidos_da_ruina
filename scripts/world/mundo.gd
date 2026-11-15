@@ -65,6 +65,7 @@ func _ready() -> void:
 	jogador = get_node_or_null("Player") as Node2D
 	if jogador != null:
 		jogador.position = IsoMath.mundo_para_tela(MundoGen.INICIO)
+	SaveJogo.aplicar_mundo(self)                 # partida carregada: posição e memória do mundo antes da carga
 	_criar_areas()
 	TerrenoTexturas.preparar_todas()
 	TexturasParede.atlas()                       # gera o atlas na carga, não no primeiro edifício
@@ -584,3 +585,46 @@ func _ao_entrar(corpo: Node, z: int) -> void:
 		_bioma_anunciado = bioma
 		if jogador != null and jogador.has_method("aviso"):
 			jogador.call("aviso", "Entrando: " + MundoGen.nome_bioma(bioma))
+
+
+# ───────────────────────────── save ─────────────────────────────
+
+static func _lista_v(d: Dictionary) -> Array:
+	var out: Array = []
+	for k in d:
+		var v: Vector2i = k
+		out.append([v.x, v.y])
+	return out
+
+
+## O que o mundo lembra, para o SaveJogo. Os chunks carregados entram com os inimigos vivos agora.
+func dados_para_salvar() -> Dictionary:
+	var estado := _estado.duplicate()
+	for k in _chunks:
+		var ch: Chunk = _chunks[k]
+		if ch.obj_planejado and ch.tarefas.is_empty():
+			var vivos := 0
+			for i in ch.inimigos:
+				if is_instance_valid(i) and not (i as Inimigo).morto:
+					vivos += 1
+			estado[k] = vivos
+	var est: Array = []
+	for k in estado:
+		var kv: Vector2i = k
+		est.append([kv.x, kv.y, int(estado[k])])
+	var port: Array = []
+	for k in _portoes:
+		var kp: Vector2i = k
+		port.append([kp.x, kp.y, bool(_portoes[k])])
+	return {"coletados": _lista_v(_coletados), "saqueados": _lista_v(_saqueados), "portoes": port, "estado": est}
+
+
+func restaurar(d: Dictionary) -> void:
+	for p in d.get("coletados", []):
+		_coletados[Vector2i(int(p[0]), int(p[1]))] = true
+	for p in d.get("saqueados", []):
+		_saqueados[Vector2i(int(p[0]), int(p[1]))] = true
+	for p in d.get("portoes", []):
+		_portoes[Vector2i(int(p[0]), int(p[1]))] = bool(p[2])
+	for p in d.get("estado", []):
+		_estado[Vector2i(int(p[0]), int(p[1]))] = int(p[2])

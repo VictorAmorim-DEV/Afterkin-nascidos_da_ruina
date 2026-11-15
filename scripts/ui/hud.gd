@@ -177,10 +177,10 @@ func _montar_vitais() -> void:
 ## Linha de ajuda montada com as teclas atuais (muda quando o jogador remapeia no menu).
 func _texto_ajuda() -> void:
 	var n := func(a: String) -> String: return Controles.nome(a)
-	ajuda.text = "%s %s %s %s mover · %s correr · %s agachar · %s deitar · %s pular · %s lanterna · %s interagir / entrar no veículo · %s mochila · %s atacar/colher · %s forma (rato) · %s minimapa · %s menu · F9 trocar raça" % [
+	ajuda.text = "%s %s %s %s mover · %s correr · %s agachar · %s deitar · %s pular · %s lanterna · %s interagir / entrar no veículo · %s mochila · %s atacar/colher · %s forma (rato) · %s minimapa · %s salvar · %s menu · F9 trocar raça" % [
 		n.call("move_up"), n.call("move_left"), n.call("move_down"), n.call("move_right"), n.call("run"), n.call("crouch"),
 		n.call("prone"), n.call("jump"), n.call("flashlight"), n.call("interact"), n.call("inventory"), n.call("attack"),
-		n.call("transform"), n.call("minimapa"), n.call("menu")]
+		n.call("transform"), n.call("minimapa"), n.call("salvar_rapido"), n.call("menu")]
 
 
 func _montar_toast() -> void:

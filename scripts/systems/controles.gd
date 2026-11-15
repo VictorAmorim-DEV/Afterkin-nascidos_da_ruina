@@ -12,7 +12,8 @@ const ACOES := [
 	["move_right", "Mover para a direita"], ["run", "Correr (segurar)"], ["crouch", "Agachar (alterna)"],
 	["prone", "Deitar (alterna)"], ["jump", "Pular"], ["interact", "Interagir / vasculhar / pegar"],
 	["attack", "Atacar / colher"], ["transform", "Alternar forma (ratos)"], ["flashlight", "Lanterna"],
-	["inventory", "Inventário"], ["minimapa", "Ampliar o minimapa"], ["menu", "Menu / configurações"]]
+	["inventory", "Inventário"], ["minimapa", "Ampliar o minimapa"], ["salvar_rapido", "Salvar a partida"],
+	["carregar_rapido", "Carregar a partida salva"], ["menu", "Menu / configurações"]]
 
 static var _padroes: Dictionary = {}        ## ação -> Array[InputEvent] do project.godot
 static var _carregado := false
@@ -23,11 +24,13 @@ static func iniciar() -> void:
 	if _carregado:
 		return
 	_carregado = true
-	if not InputMap.has_action("minimapa"):
-		InputMap.add_action("minimapa")
-		var m := InputEventKey.new()
-		m.physical_keycode = KEY_M
-		InputMap.action_add_event("minimapa", m)
+	for par in [["minimapa", KEY_M], ["salvar_rapido", KEY_F5], ["carregar_rapido", KEY_F8]]:
+		var nome_acao: String = par[0]
+		if not InputMap.has_action(nome_acao):
+			InputMap.add_action(nome_acao)
+			var m := InputEventKey.new()
+			m.physical_keycode = par[1]
+			InputMap.action_add_event(nome_acao, m)
 	for a in ACOES:
 		var acao: String = a[0]
 		_padroes[acao] = InputMap.action_get_events(acao).duplicate()

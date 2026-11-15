@@ -18,7 +18,7 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ `attack` (l.1415), `nearestEnemy` (l.1397) → `Player.atacar`; ✅ morte do jogador (`step`, l.1848)
 - ✅ `infectPlayer` (l.1436), `useMed` (l.1452) → `Player.infectar` / `usar_antibiotico`
 - ✅ `atualizarInimigos` (l.1358), `rota`, `proxPorta` (l.1346-1357) → `Inimigo` + `Edificio.rota_*`; zumbi arromba porta, rato abre
-- ✅ vampiro inimigo (dorme de dia, sai à noite ×1,35, volta para casa); ⬜ `cortes` (l.1342, só desenho de parede)
+- ✅ vampiro inimigo (dorme de dia, sai à noite ×1,35, volta para casa); ✅ `cortes` (l.1342: só divide a parede em volta das portas para desenhar) — coberto por `Edificio._trecho`, que desenha cada tile com batentes e folha da porta
 - ✅ `povoarEdificios` (l.1160): zumbi 58% / vampiro 22% / rato 20% (`Edificio.moradores`); ✅ prédios altos (moradores por tamanho em `Quadras._predio`)
 - ✅ inimigos pelo mundo aberto: densidade por zona (`MundoGen._inimigos`); o que o jogador matou não volta ao recarregar o chunk
 - ✅ sprites HD das 4 raças (`SpriteFrames`: humano, homem_rato, rato_gigante, vampiro, zumbi)
@@ -63,4 +63,4 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✖ qualidade automática `gfxAuto` (l.69): NÃO portar — decisão do projeto: o gráfico não muda sozinho, só pelo menu de configurações
 - ✅ carros queimados: 22% dos carros de rua com `queimado` (l.334), sprite escurecido por `queimar` (l.1499) → `Veiculo.queimado` (shader com a mesma mistura da V13; carcaça não liga nem anda), nas ruas e estradas
 - ✅ menu/ajustes e remapeamento de teclas (`bindings`, `setBinding`, `resetBindings`, `showModal`, l.1852-1880) → `MenuConfig` (ESC; abas Controles/Vídeo/Áudio) + `Controles` (InputMap, conflito tira a tecla da outra ação, `user://configuracoes.cfg`); a linha de ajuda do HUD segue as teclas; `toast` = `HUD.aviso` · ⬜ `guard` (mirar/guarda) não existe na Godot ainda
-- ⬜ save/load (não existe na V13)
+- ✅ save/load (novo: a V13 não tem) → `SaveJogo` (`user://partida.json`): jogador (posição, raça/forma, vitais, XP, doença, mochila), totem e abrigo, relógio e a memória do mundo (coletados, portões, inimigos por chunk, ninhos vasculhados); aba Partida no menu, F5/F8 remapeáveis, "Continuar partida salva" na tela inicial e na de morte; carregar recarrega a cena

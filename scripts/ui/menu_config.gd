@@ -17,6 +17,8 @@ var _sombras := CheckBox.new()
 var _volume := HSlider.new()
 var _volume_txt := Label.new()
 var _status := Label.new()
+var _info_save := Label.new()
+var _carregar := Button.new()
 
 
 func _ready() -> void:
@@ -62,6 +64,32 @@ func _montar() -> void:
 
 	_abas.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	col.add_child(_abas)
+
+	# ---------- Partida (save/load) ----------
+	var aba_p := VBoxContainer.new()
+	aba_p.name = "Partida"
+	aba_p.add_theme_constant_override("separation", 10)
+	var salvar := Button.new()
+	salvar.text = "Salvar partida"
+	salvar.custom_minimum_size = Vector2(0, 40)
+	salvar.focus_mode = Control.FOCUS_NONE
+	salvar.pressed.connect(_salvar_partida)
+	aba_p.add_child(salvar)
+	_carregar.text = "Carregar partida salva"
+	_carregar.custom_minimum_size = Vector2(0, 40)
+	_carregar.focus_mode = Control.FOCUS_NONE
+	_carregar.pressed.connect(_carregar_partida)
+	aba_p.add_child(_carregar)
+	_info_save.add_theme_font_size_override("font_size", 13)
+	_info_save.modulate = Color(1, 1, 1, 0.7)
+	aba_p.add_child(_info_save)
+	var nota_p := Label.new()
+	nota_p.text = "Atalhos durante o jogo: salvar e carregar (veja a aba Controles). Carregar descarta o progresso não salvo."
+	nota_p.add_theme_font_size_override("font_size", 12)
+	nota_p.modulate = Color(1, 1, 1, 0.6)
+	nota_p.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	aba_p.add_child(nota_p)
+	_abas.add_child(aba_p)
 
 	# ---------- Controles ----------
 	var aba_c := VBoxContainer.new()
@@ -174,6 +202,22 @@ func _atualizar() -> void:
 	for acao in _botoes:
 		var b: Button = _botoes[acao]
 		b.text = "Aperte…" if acao == _capturando else Controles.nome(acao)
+	var q := SaveJogo.quando()
+	_info_save.text = ("Último save: " + q.replace("T", " ")) if q != "" else "Nenhuma partida salva ainda."
+	_carregar.disabled = q == ""
+
+
+func _salvar_partida() -> void:
+	_aviso(SaveJogo.salvar(get_tree()))
+	_atualizar()
+
+
+func _carregar_partida() -> void:
+	visible = false
+	var erro := SaveJogo.carregar(get_tree())
+	if erro != "":
+		visible = true
+		_aviso(erro)
 
 
 func _comecar_captura(acao: String) -> void:
@@ -221,6 +265,18 @@ func _input(event: InputEvent) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not visible and not get_tree().paused:            # atalhos de salvar/carregar durante o jogo
+		var j := get_tree().get_first_node_in_group("jogador")
+		if event.is_action_pressed("salvar_rapido") and j != null:
+			j.aviso(SaveJogo.salvar(get_tree()))
+			get_viewport().set_input_as_handled()
+			return
+		if event.is_action_pressed("carregar_rapido") and j != null:
+			var erro := SaveJogo.carregar(get_tree())
+			if erro != "":
+				j.aviso(erro)
+			get_viewport().set_input_as_handled()
+			return
 	if event.is_action_pressed("menu"):
 		if visible:
 			fechar_menu()

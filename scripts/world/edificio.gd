@@ -167,7 +167,11 @@ func _ready() -> void:
 	_gerar_planta()
 	if _estourou():
 		await _pausa()
+		if not is_inside_tree():
+			return
 	await _construir()
+	if not is_inside_tree():
+		return                                  # saiu da cena no meio da obra
 	for seg in _segs:
 		seg.caixa = (seg.no as Desenho).caixa()
 		seg.ocl_j = false
@@ -198,8 +202,10 @@ func _estourou() -> bool:
 	return _gasto_us > ORCAMENTO_US
 
 
+## Espera o próximo quadro. Pela árvore global: o edifício pode sair da cena no meio da obra (chunk descarregado,
+## partida carregada, morte); quem chama confere is_inside_tree() depois e abandona a construção.
 func _pausa() -> void:
-	await get_tree().process_frame
+	await (Engine.get_main_loop() as SceneTree).process_frame
 	_t_fatia = Time.get_ticks_usec()
 
 
@@ -591,6 +597,8 @@ func _construir() -> void:
 			_colisor(Rect2(m.x0, m.y0, m.x1 - m.x0, m.y1 - m.y0))
 	if _estourou():
 		await _pausa()
+		if not is_inside_tree():
+			return
 	# ---------- pisos e sombras dos cômodos ----------
 	for i in salas.size():
 		var s: Dictionary = salas[i]
@@ -616,11 +624,15 @@ func _construir() -> void:
 			_trecho(p, t)
 			if _estourou():
 				await _pausa()
+				if not is_inside_tree():
+					return
 	# ---------- móveis ----------
 	for m in moveis:
 		_movel(m)
 		if _estourou():
 			await _pausa()
+			if not is_inside_tree():
+				return
 	# ---------- telhado, um pedaço por cômodo ----------
 	for i in salas.size():
 		if predio() and cobertura == "plana":
@@ -629,6 +641,8 @@ func _construir() -> void:
 			_telhado(i)
 		if _estourou():
 			await _pausa()
+			if not is_inside_tree():
+				return
 	if predio() and cobertura == "igreja":
 		_telhados.append(Fachada.torre_igreja(self))
 
