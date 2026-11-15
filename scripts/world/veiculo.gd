@@ -43,6 +43,7 @@ void fragment() {
 static var _mat_queimado: ShaderMaterial = null
 
 var _sprite := Sprite2D.new()
+var _sombra: Sprite2D = null
 var _col := CollisionPolygon2D.new()
 var _ocl := LightOccluder2D.new()
 var _farol_chao := PointLight2D.new()
@@ -68,6 +69,8 @@ func _ready() -> void:
 		_sprite.material = _mat_queimado
 		nome = "Carcaça queimada"
 	add_child(_sprite)
+	_sombra = SombraSol.de_textura(textura, Vector2.ZERO, Vector2.ONE)   # sombra do sol, apoiada no centro do carro
+	add_child(_sombra)
 	add_child(_col)
 	_ocl.occluder = OccluderPolygon2D.new()
 	add_child(_ocl)
@@ -110,6 +113,9 @@ func _atualizar_forma() -> void:
 		var p1 := IsoMath.mundo_para_tela(Vector2(largura / 2.0, comprimento / 2.0))
 		_sprite.scale = Vector2(escala, escala)
 		_sprite.position = p1 - pivo * escala
+	if _sombra != null:                              # mesma arte, com a origem no centro do carro
+		_sombra.scale = _sprite.scale
+		_sombra.offset = _sprite.position / _sprite.scale
 	var r := _retangulo()
 	_col.polygon = r
 	_ocl.occluder.polygon = _retangulo(1.0)

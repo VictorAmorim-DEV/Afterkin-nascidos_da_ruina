@@ -58,6 +58,7 @@ const ALCANCE_LUZ := 520.0            ## px de tela; além disso não vale a pen
 
 var _fatias: Array[Sprite2D] = []
 var _largo: bool = false
+var _sombra: Sprite2D = null
 var _iluminado: bool = true
 var _espera_luz: float = 0.0
 
@@ -132,10 +133,16 @@ func _montar() -> void:
 		if is_instance_valid(f):
 			f.queue_free()
 	_fatias.clear()
+	if is_instance_valid(_sombra):
+		_sombra.queue_free()
+	_sombra = null
 	y_sort_enabled = true
 	_atualizar_colisao()
 	if textura == null or escala <= 0.0:
 		return
+	if not Engine.is_editor_hint():                  # sombra do sol (V13: sombraSol), apoiada no pivô
+		_sombra = SombraSol.de_textura(textura, pivo, Vector2(escala, escala))
+		add_child(_sombra, false, Node.INTERNAL_MODE_BACK)
 	var tam := textura.get_size()
 	var x_esq := clampf(base_esq.x, 0.0, tam.x)
 	var x_dir := clampf(base_dir.x, x_esq, tam.x)

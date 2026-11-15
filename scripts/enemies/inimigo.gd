@@ -42,6 +42,9 @@ func _ready() -> void:
 	hp = hp_max
 	_flip_dorme = randf() < 0.5
 	_animar(Vector2.DOWN, false)
+	var sombra := SombraSol.Personagem.new()          # sombra do sol (V13: sombraChar)
+	sombra.fonte = sprite
+	add_child(sombra)
 
 
 func _mundo() -> Vector2:

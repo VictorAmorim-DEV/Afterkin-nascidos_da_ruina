@@ -32,6 +32,7 @@ func _process(delta: float) -> void:
 			minutos -= 1440.0
 			dia += 1
 	_aplicar()
+	SombraSol.atualizar(minutos)
 
 
 func _aplicar() -> void:

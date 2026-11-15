@@ -81,6 +81,9 @@ var _altura_luz: float = 31.0
 func _ready() -> void:
 	add_to_group("jogador")
 	stamina = stamina_max
+	var sombra := SombraSol.Personagem.new()          # sombra do sol (V13: sombraChar)
+	sombra.fonte = sprite
+	add_child(sombra)
 	inventario = Inventario.new()
 	inventario.name = "Inventario"
 	inventario.jogador = self
