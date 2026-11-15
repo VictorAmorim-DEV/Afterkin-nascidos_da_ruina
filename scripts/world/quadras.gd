@@ -23,7 +23,23 @@ const PAPEIS := {
 const CORES_CONTAINER := ["#3a5a7a", "#8a3a2a", "#3a6a4a", "#8a6a2a", "#5a5a5a"]
 const TUDO := Rect2(-1.0e7, -1.0e7, 2.0e7, 2.0e7)
 
+## Cruzamento (rua N-S i, rua L-O j) que vira rotatória (V13: rotatoria): o primeiro da avenida por onde o jogador
+## entra, entre o comércio, as casas e a praça. Medidas em tiles, como na V13.
+const ROTATORIA := Vector2i(1, 2)
+const ROT_RO := 9.5                 ## raio externo do asfalto
+const ROT_RI := 3.6                 ## raio da ilha central (meio-fio)
+const ROT_CALCADA := 2.2            ## calçada em volta do anel
+const ROT_OCUPA := 19.0             ## raio reservado nos quarteirões vizinhos (nenhum prédio ou lote)
+const ROT_PRACA := Vector2(11.0, 18.5)   ## anel gramado das pracinhas (começa sob a calçada do anel: sem degrau)
+## Papéis cujas calçadas ficam sem árvore (entradas de veículos, portões).
+const SEM_ARVORE := ["industrial", "posto", "hospital"]
+const LIXO_ESQUINA := ["folhas", "folhas", "jornal", "papelao", "saco", "grama", "mato", "musgo", "entulho"]
+
 static var _cache: Dictionary = {}
+static var _vias_pronto := false
+static var _vias_specs: Array = []           ## rotatória (estátua, árvores, bancos) e árvores de calçada
+static var _vias_chao: Array = []            ## detalhes pintados no chão (ver detalhes_no)
+static var _postes_cache := PackedVector2Array()
 
 
 ## Estado da geração de um quarteirão.
@@ -124,6 +140,7 @@ static func _bloco(i: int, j: int) -> Dictionary:
 		return _cache[k]
 	var r := _bloco_rect(i, j)
 	var q := Q.new(r.position.x, r.position.y, (((i * 7919) ^ (j * 104729)) + MundoGen.SEMENTE * 31337) & 0x7fffffff)
+	_reservar_rotatoria(q)
 	match PAPEIS.get(k, "casas"):
 		"escola": _escola(q)
 		"hospital": _hospital(q)
@@ -161,6 +178,10 @@ static func specs_no(r: Rect2) -> Array:
 			for s in _bloco(i, j)["specs"]:
 				if r.has_point(_ancora(s)):
 					out.append((s as Dictionary).duplicate(true))
+	_vias()
+	for s in _vias_specs:                             # rotatória e árvores de calçada
+		if r.has_point(_ancora(s)):
+			out.append((s as Dictionary).duplicate(true))
 	return out
 
 
@@ -177,36 +198,56 @@ static func chao_no(r: Rect2) -> Array:
 	return out
 
 
-## Postes nas calçadas a cada 16 tiles, alternando o lado, fora dos cruzamentos (V13: mobiliarioUrbano/LAMP).
+## Detalhes pintados no chão que tocam 'r' (lixo e poças das esquinas, canteiros das árvores de calçada).
+## Cada um: {"t": tipo, "p": centro, "a": ângulo, "s": escala, "v": semente do desenho}.
+static func detalhes_no(r: Rect2) -> Array:
+	_vias()
+	var out: Array = []
+	for d in _vias_chao:
+		if r.has_point((d as Dictionary)["p"]):
+			out.append(d)
+	return out
+
+
+## Postes nas calçadas a cada 16 tiles, alternando o lado, fora dos cruzamentos e da rotatória (V13: mobiliarioUrbano/LAMP).
 static func postes_no(r: Rect2, specs: Array) -> void:
+	for p in _postes():
+		_poste(p, r, specs)
+
+
+## Posição de todos os postes de rua (cache).
+static func _postes() -> PackedVector2Array:
+	if not _postes_cache.is_empty():
+		return _postes_cache
 	var C := MundoGen.CIDADE
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
 	var lado_calcada := [32.0, R - 32.0]
+	var out := PackedVector2Array()
 	for i in 4:                                       # ruas norte-sul
 		var x := C.position.x + i * B
-		if x + R < r.position.x or x > r.end.x:
-			continue
 		var k := 0
 		var y := C.position.y + 512.0
 		while y < C.end.y:
 			var m := fposmod(y - C.position.y, B)
 			if m > R + 160.0 and m < B - 160.0:
-				_poste(Vector2(x + lado_calcada[k % 2], y), r, specs)
+				out.append(Vector2(x + lado_calcada[k % 2], y))
 			y += 1024.0
 			k += 1
 	for j in 5:                                       # ruas leste-oeste
 		var y2 := C.position.y + j * B
-		if y2 + R < r.position.y or y2 > r.end.y:
-			continue
 		var k2 := 1
 		var x2 := C.position.x + 512.0
 		while x2 < C.end.x:
 			var m2 := fposmod(x2 - C.position.x, B)
 			if m2 > R + 160.0 and m2 < B - 160.0:
-				_poste(Vector2(x2, y2 + lado_calcada[k2 % 2]), r, specs)
+				out.append(Vector2(x2, y2 + lado_calcada[k2 % 2]))
 			x2 += 1024.0
 			k2 += 1
+	for p in out:
+		if not perto_rotatoria(p, 13.0):
+			_postes_cache.append(p)
+	return _postes_cache
 
 
 static func _poste(p: Vector2, r: Rect2, specs: Array) -> void:
@@ -651,3 +692,158 @@ static func _lote(q: Q, lx0: int, ly0: int, lx1: int, ly1: int, frente: String, 
 	if q.rng.randf() >= 0.55:
 		pular.append(frente)
 	q.cerca(rl, frente, q.w(gx, 0).x, 150.0, estilo, pular)
+
+
+# ═════════════════════════════════ ruas: rotatória, esquinas, árvores de calçada ═════════════════════════════════
+
+## Centro (u) do cruzamento da rua N-S i com a rua L-O j.
+static func cruzamento(i: int, j: int) -> Vector2:
+	return MundoGen.CIDADE.position + Vector2(i, j) * MundoGen.BLOCO + Vector2.ONE * (MundoGen.RUA * 0.5)
+
+
+static func centro_rotatoria() -> Vector2:
+	return cruzamento(ROTATORIA.x, ROTATORIA.y)
+
+
+static func perto_rotatoria(p: Vector2, raio_tiles: float) -> bool:
+	return p.distance_to(centro_rotatoria()) < raio_tiles * TILE
+
+
+static func _papel(i: int, j: int) -> String:
+	if i < 0 or i > 2 or j < 0 or j > 3:
+		return ""
+	return PAPEIS.get(Vector2i(i, j), "casas")
+
+
+## Reserva o canto do quarteirão tomado pela rotatória (V13: ocuparCirculo) e grama as pracinhas dos cantos.
+## Roda antes do gerador do quarteirão: os lotes e prédios que cairiam ali são pulados (q.livre).
+static func _reservar_rotatoria(q: Q) -> void:
+	var c := (centro_rotatoria() - Vector2(q.X0, q.Y0)) / TILE
+	if Vector2(clampf(c.x, 0.0, N), clampf(c.y, 0.0, N)).distance_to(c) >= ROT_OCUPA:
+		return
+	for ty in N:
+		var ini := -1
+		for tx in N + 1:
+			var na_praca := false
+			if tx < N:
+				var d := Vector2(tx + 0.5, ty + 0.5).distance_to(c)
+				if d < ROT_OCUPA:
+					q.ocupar(tx, ty, tx + 1, ty + 1)
+				na_praca = d > ROT_PRACA.x and d < ROT_PRACA.y
+			if na_praca and ini < 0:
+				ini = tx
+			elif not na_praca and ini >= 0:
+				q.solo(ini, ty, tx, ty + 1, "grama", Color(0.88, 0.96, 0.8))
+				ini = -1
+
+
+## Gera uma vez (semente fixa) os objetos e os detalhes de chão das ruas.
+static func _vias() -> void:
+	if _vias_pronto:
+		return
+	_vias_pronto = true
+	var rng := RandomNumberGenerator.new()
+	rng.seed = (MundoGen.SEMENTE * 7727 + 911) & 0x7fffffff
+	_rotatoria(rng)
+	_esquinas(rng)
+	_arvores_calcada(rng)
+
+
+static func _prop_via(nome: String, p: Vector2, extra: Dictionary = {}) -> void:
+	var s := {"k": "prop", "n": nome, "p": p}
+	s.merge(extra)
+	_vias_specs.append(s)
+
+
+static func _detalhe(t: String, p: Vector2, rng: RandomNumberGenerator, s: float = 1.0) -> void:
+	_vias_chao.append({"t": t, "p": p, "a": rng.randf_range(0.0, TAU), "s": s * rng.randf_range(0.8, 1.25), "v": rng.randi()})
+
+
+## Rotatória (V13: rotatoria/pintarRotatoria): o asfalto e a ilha são pintados pelo ChaoChunk; aqui vão a estátua,
+## a vegetação da ilha e as pracinhas dos cantos (árvore, arbusto e banco).
+static func _rotatoria(rng: RandomNumberGenerator) -> void:
+	var c := centro_rotatoria()
+	var e := 1.2 * TILE
+	_vias_specs.append({"k": "urbano", "t": "estatua", "r": Rect2(c - Vector2(e, e), Vector2(e, e) * 2.0), "h": zm(3.4),
+		"s": true, "x": {}, "p": c})
+	_prop_via("arbusto_redondo", c + Vector2(-1.8, 1.6) * TILE)
+	_prop_via("arbusto_folhudo", c + Vector2(1.6, -1.8) * TILE)
+	_prop_via("arvore_jovem", c + Vector2(-1.85, -1.85) * TILE, {"col": "arvore"})   # atrás da estátua
+	for sx in [-1.0, 1.0]:
+		for sy in [-1.0, 1.0]:
+			var a: Vector2 = c + Vector2(sx, sy) * 11.0 * TILE
+			_prop_via(["arvore_frondosa", "arvore_outono", "arvore_jovem"][rng.randi() % 3], a, {"col": "arvore"})
+			_prop_via(["arbusto_largo", "arbusto_redondo"][rng.randi() % 2], a + Vector2(sx * mt(2.4), -sy * mt(1.6)))
+			var b: Vector2 = a + Vector2(-sy * mt(2.6), sx * mt(1.2))
+			_vias_specs.append({"k": "urbano", "t": "banco", "r": Rect2(b, Vector2(mt(1.6), mt(0.5))), "h": zm(0.9), "s": true,
+				"x": {}, "p": b})
+			for k in 3:                               # folhas caídas e mato em volta da árvore
+				_detalhe("folhas" if k < 2 else "grama", a + Vector2(rng.randf_range(-70, 70), rng.randf_range(-50, 60)), rng)
+
+
+## Esquinas (V13: esquina): lixo, folhas e mato acumulados no canto de cada calçada; às vezes uma poça no asfalto.
+static func _esquinas(rng: RandomNumberGenerator) -> void:
+	var canto := MundoGen.RUA * 0.5 - MundoGen.CALCADA * 0.5
+	for i in 4:
+		for j in 5:
+			if Vector2i(i, j) == ROTATORIA:
+				continue
+			var c := cruzamento(i, j)
+			for sx in [-1.0, 1.0]:
+				for sy in [-1.0, 1.0]:
+					var p: Vector2 = c + Vector2(sx, sy) * canto
+					for k in 7:
+						var ang := rng.randf_range(0.0, TAU)
+						_detalhe(LIXO_ESQUINA[rng.randi() % LIXO_ESQUINA.size()], p + Vector2.from_angle(ang) * rng.randf_range(0.0, 46.0), rng)
+					if rng.randf() < 0.5:
+						_detalhe("poca", c + Vector2(sx, sy) * 100.0, rng, 1.3)
+
+
+## Árvores de calçada (V13: arvoresCalcada): a cada 9–14 tiles, alternando o lado, longe dos cruzamentos, da rotatória,
+## dos postes e de outros objetos da calçada. Cada uma tem um canteiro de terra e rachaduras em volta.
+static func _arvores_calcada(rng: RandomNumberGenerator) -> void:
+	var C := MundoGen.CIDADE
+	var B := MundoGen.BLOCO
+	var R := MundoGen.RUA
+	var ocupados := PackedVector2Array(_postes())
+	for i in 3:
+		for j in 4:
+			for s in _bloco(i, j)["specs"]:
+				var sd: Dictionary = s
+				if sd["k"] == "urbano" or sd["k"] == "carro" or sd["k"] == "prop":
+					ocupados.append(_ancora(sd))
+	for i in 4:                                       # ruas norte-sul, um trecho por quarteirão
+		for j in 4:
+			var x := C.position.x + i * B
+			var y0 := C.position.y + j * B + R
+			_fila_arvores(rng, Vector2(x + 32.0, y0), Vector2(x + R - 32.0, y0), Vector2(0, 1), B - R,
+				[_papel(i - 1, j), _papel(i, j)], ocupados)
+	for j in 5:                                       # ruas leste-oeste
+		for i in 3:
+			var y := C.position.y + j * B
+			var x0 := C.position.x + i * B + R
+			_fila_arvores(rng, Vector2(x0, y + 32.0), Vector2(x0, y + R - 32.0), Vector2(1, 0), B - R,
+				[_papel(i, j - 1), _papel(i, j)], ocupados)
+
+
+static func _fila_arvores(rng: RandomNumberGenerator, a0: Vector2, a1: Vector2, dir: Vector2, comp: float, papeis: Array,
+		ocupados: PackedVector2Array) -> void:
+	var lado := rng.randi() % 2
+	var u := rng.randf_range(3.0, 6.0) * TILE
+	while u < comp - 3.0 * TILE:
+		var papel: String = papeis[lado]
+		var p: Vector2 = (a0 if lado == 0 else a1) + dir * u
+		var ok := not SEM_ARVORE.has(papel) and not perto_rotatoria(p, 14.0)
+		if ok:
+			for o: Vector2 in ocupados:
+				if o.distance_to(p) < 96.0:
+					ok = false
+					break
+		if ok:
+			ocupados.append(p)
+			_detalhe("canteiro", p, rng)
+			_detalhe("rachadura" if rng.randf() < 0.5 else "mato", p + dir * rng.randf_range(-40.0, 40.0), rng)
+			var nome: String = "arvore_morta" if rng.randf() < 0.2 else ["arvore_frondosa", "arvore_jovem", "arvore_fina", "arvore_outono"][rng.randi() % 4]
+			_prop_via(nome, p, {"col": "arvore"})
+		u += rng.randi_range(9, 14) * TILE
+		lado = 1 - lado

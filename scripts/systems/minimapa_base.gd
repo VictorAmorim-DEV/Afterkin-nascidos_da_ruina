@@ -134,6 +134,14 @@ static func gerar() -> Image:
 				if sd["k"] == "edificio":
 					var uso: String = (sd["o"] as Dictionary).get("uso", "casa") if sd.has("o") else "casa"
 					_casa(img, Rect2(sd["p"], Vector2(sd["w"], sd["h"]) * 64.0), COR_USO.get(uso, COR_CASA))
+	# rotatória: anel de asfalto e ilha gramada
+	var rc := Quadras.centro_rotatoria()
+	var ro := Quadras.ROT_RO * Quadras.TILE
+	for iy in range(int((rc.y - ro) / PX), int((rc.y + ro) / PX) + 1):
+		for ix in range(int((rc.x - ro) / PX), int((rc.x + ro) / PX) + 1):
+			var d := Vector2((ix + 0.5) * PX, (iy + 0.5) * PX).distance_to(rc)
+			if d <= ro:
+				img.set_pixel(ix, iy, COR_CHAO["grama"] if d < (Quadras.ROT_RI - 0.5) * Quadras.TILE else COR_ASFALTO)
 	return img
 
 

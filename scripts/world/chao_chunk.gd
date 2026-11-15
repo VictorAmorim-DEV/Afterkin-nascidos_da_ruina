@@ -13,6 +13,7 @@ const TINTA_SEMIARIDO := Color(1.00, 0.83, 0.52)
 var c := Vector2i.ZERO
 var grama: Texture2D = null
 var _r := Rect2()
+var _desenho: Desenho = null      ## detalhes da cidade (lixo, folhas, poças, canteiros)
 
 
 func _ready() -> void:
@@ -20,6 +21,7 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_r = Rect2(c.x * MundoGen.CH, c.y * MundoGen.CH, MundoGen.CH, MundoGen.CH)
+	_detalhes()
 	queue_redraw()
 
 
@@ -186,14 +188,21 @@ func _cidade_chao() -> void:
 
 func _ruas() -> void:
 	var faixas := MundoGen.ruas(_r)
-	if faixas.is_empty():
+	var rc := Quadras.centro_rotatoria()
+	var T := Quadras.TILE
+	var tem_rot := _r.grow((Quadras.ROT_RO + Quadras.ROT_CALCADA) * T).has_point(rc)
+	if faixas.is_empty() and not tem_rot:
 		return
 	var calcada := TerrenoTexturas.obter("calcada")
 	var asfalto := TerrenoTexturas.obter("asfalto")
 	for f in faixas:
 		_ret((f as Dictionary)["r"], calcada, Color.WHITE)
+	if tem_rot:                                       # calçada em volta do anel (o asfalto das ruas continua por cima)
+		_poli_recortado(_circulo(rc, (Quadras.ROT_RO + Quadras.ROT_CALCADA) * T, 64), calcada, Color.WHITE)
 	for f in faixas:
 		_ret(((f as Dictionary)["r"] as Rect2).grow(-MundoGen.CALCADA), asfalto, Color.WHITE)
+	if tem_rot:
+		_rotatoria(rc, calcada, asfalto)
 	var x0: float = MundoGen.CIDADE.position.x
 	var y0: float = MundoGen.CIDADE.position.y
 	var amarelo := Color(0.85, 0.72, 0.2, 0.9)
@@ -206,13 +215,165 @@ func _ruas() -> void:
 		t = floorf(t / 192.0) * 192.0
 		while t < fim:
 			var cx := Vector2(fr.get_center().x, t + 40.0) if vertical else Vector2(t + 40.0, fr.get_center().y)
-			# sem faixa dentro dos cruzamentos
-			var em_x: bool = posmod(int(cx.x - x0), int(MundoGen.BLOCO)) < int(MundoGen.RUA)
-			var em_y: bool = posmod(int(cx.y - y0), int(MundoGen.BLOCO)) < int(MundoGen.RUA)
-			if not (em_x and em_y):
+			# sem faixa dentro dos cruzamentos, nas faixas de pedestre e no anel da rotatória
+			var m: float = fposmod((cx.y - y0) if vertical else (cx.x - x0), MundoGen.BLOCO)
+			var livre: bool = m > MundoGen.RUA + 170.0 and m < MundoGen.BLOCO - 170.0
+			if livre and cx.distance_to(rc) > (Quadras.ROT_RO + 5.0) * T:
 				var dash := Rect2(cx.x - 5.0, cx.y - 40.0, 10.0, 80.0) if vertical else Rect2(cx.x - 40.0, cx.y - 5.0, 80.0, 10.0)
 				_ret(dash, null, amarelo)
 			t += 192.0
+	_faixas_pedestre(rc)
+
+
+## Anel de asfalto, faixa tracejada, ilha com meio-fio e grama (V13: pintarRotatoria).
+func _rotatoria(rc: Vector2, calcada: Texture2D, asfalto: Texture2D) -> void:
+	var T := Quadras.TILE
+	_poli_recortado(_circulo(rc, Quadras.ROT_RO * T, 64), asfalto, Color.WHITE)
+	var rm := (Quadras.ROT_RO + Quadras.ROT_RI) * 0.5 * T     # tracejado branco no meio da pista
+	var n := 28
+	for k in n:
+		var a0 := TAU * k / n
+		var a1 := a0 + TAU / n * 0.45
+		var ext := PackedVector2Array()
+		var inn := PackedVector2Array()
+		for s in 4:
+			var a := lerpf(a0, a1, s / 3.0)
+			ext.append(rc + Vector2.from_angle(a) * (rm + 5.0))
+			inn.append(rc + Vector2.from_angle(a) * (rm - 5.0))
+		inn.reverse()
+		ext.append_array(inn)
+		_poli_recortado(ext, null, Color(0.86, 0.85, 0.8, 0.75))
+	_poli_recortado(_circulo(rc, Quadras.ROT_RI * T, 40), calcada, Color(0.95, 0.94, 0.9))
+	_poli_recortado(_circulo(rc, (Quadras.ROT_RI - 1.0) * T, 40), grama, Color(0.85, 0.98, 0.8))
+
+
+## Faixas de pedestre (V13: faixas): listras logo fora de cada cruzamento, em todos os braços que existem;
+## na rotatória, depois da calçada do anel.
+func _faixas_pedestre(rc: Vector2) -> void:
+	var C := MundoGen.CIDADE
+	var meia := MundoGen.RUA * 0.5 - MundoGen.CALCADA      # meia largura do asfalto
+	var branco := Color(0.88, 0.87, 0.82, 0.8)
+	for i in 4:
+		for j in 5:
+			var c := Quadras.cruzamento(i, j)
+			if absf(c.x - _r.get_center().x) > 1400.0 or absf(c.y - _r.get_center().y) > 1400.0:
+				continue
+			var d0: float = MundoGen.RUA * 0.5 + 10.0
+			if Vector2i(i, j) == Quadras.ROTATORIA:
+				d0 = (Quadras.ROT_RO + Quadras.ROT_CALCADA + 0.4) * Quadras.TILE
+			for dir in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
+				var dv: Vector2 = dir
+				if not C.has_point(c + dv * (d0 + 200.0)):
+					continue
+				var w := dv.orthogonal()
+				var s := -meia + 14.0
+				while s < meia - 30.0:
+					var a: Vector2 = c + dv * d0 + w * s
+					var b: Vector2 = c + dv * (d0 + 110.0) + w * (s + 26.0)
+					_ret(Rect2(Vector2(minf(a.x, b.x), minf(a.y, b.y)), (b - a).abs()), null, branco)
+					s += 48.0
+
+
+## Lixo, folhas, poças, mato e rachaduras pintados no chão (V13: decais das esquinas e das árvores de calçada).
+## Cada detalhe é desenhado inteiro, sem recorte, pelo chunk onde está o centro, num Desenho filho um z acima do
+## chão: o chão do chunk vizinho não o corta e nada é pintado duas vezes.
+func _detalhes() -> void:
+	if not MundoGen.CIDADE.grow(200.0).intersects(_r):
+		return
+	var lista := Quadras.detalhes_no(_r)
+	if lista.is_empty():
+		return
+	_desenho = Desenho.new()
+	_desenho.name = "Detalhes"
+	_desenho.z_index = 1
+	_desenho.light_mask = light_mask
+	add_child(_desenho)
+	var rng := RandomNumberGenerator.new()
+	for d in lista:
+		var dd: Dictionary = d
+		var p: Vector2 = dd["p"]
+		var s: float = dd["s"]
+		var a: float = dd["a"]
+		rng.seed = int(dd["v"])
+		match String(dd["t"]):
+			"folhas":
+				for k in rng.randi_range(5, 8):
+					var cor: Color = [Color(0.55, 0.33, 0.12), Color(0.7, 0.5, 0.15), Color(0.45, 0.38, 0.14), Color(0.62, 0.26, 0.1)][rng.randi() % 4]
+					cor.a = 0.85
+					var q := p + Vector2.from_angle(rng.randf_range(0, TAU)) * rng.randf_range(0, 18.0 * s)
+					_dp(_elipse(q, 7.0 * s, 4.0 * s, rng.randf_range(0, PI)), cor)
+			"jornal":
+				_dp(_caixa(p, Vector2(36, 26) * s, a), Color(0.8, 0.78, 0.72, 0.95))
+				for k in 3:
+					_dp(_caixa(p + Vector2(0, -7.0 + k * 7.0).rotated(a) * s, Vector2(26, 2.5) * s, a), Color(0.45, 0.45, 0.45, 0.6))
+			"papelao":
+				_dp(_caixa(p, Vector2(44, 32) * s, a), Color(0.55, 0.42, 0.27, 0.95))
+				_dp(_caixa(p, Vector2(44, 3) * s, a), Color(0.4, 0.3, 0.18, 0.8))
+			"saco":
+				_dp(_mancha(p, 12.0 * s, rng), Color(0.1, 0.11, 0.1, 0.95))
+				_dp(_elipse(p + Vector2(-3, -3) * s, 4.0 * s, 2.5 * s, a), Color(0.35, 0.37, 0.35, 0.7))
+			"grama":
+				_dp(_mancha(p, 16.0 * s, rng), Color(0.33, 0.47, 0.2, 0.8))
+				_dp(_mancha(p + Vector2(4, 2), 8.0 * s, rng), Color(0.42, 0.56, 0.24, 0.85))
+			"musgo":
+				_dp(_mancha(p, 20.0 * s, rng), Color(0.28, 0.4, 0.2, 0.5))
+			"entulho":
+				for k in rng.randi_range(4, 7):
+					var q2 := p + Vector2.from_angle(rng.randf_range(0, TAU)) * rng.randf_range(0, 16.0 * s)
+					var g := rng.randf_range(0.38, 0.6)
+					_dp(_mancha(q2, rng.randf_range(3.0, 7.0) * s, rng, 5), Color(g, g * 0.97, g * 0.92))
+			"poca":
+				_dp(_mancha(p, 34.0 * s, rng, 12), Color(0.2, 0.25, 0.3, 0.55))
+				_dp(_elipse(p + Vector2(-6, -4) * s, 14.0 * s, 6.0 * s, a), Color(0.55, 0.64, 0.72, 0.25))
+			"canteiro":
+				_dp(_caixa(p, Vector2(54, 54), 0.0), Color(0.5, 0.48, 0.44, 0.9))
+				_dp(_caixa(p, Vector2(44, 44), 0.0), Color(0.3, 0.22, 0.14, 0.95))
+			"mato":
+				_rachadura(p, a, s, rng, Color(0.12, 0.12, 0.12, 0.6))
+				for k in 3:
+					_dp(_mancha(p + Vector2.from_angle(a) * rng.randf_range(-16, 16) * s, 6.0 * s, rng, 6), Color(0.35, 0.5, 0.2, 0.85))
+			"rachadura":
+				_rachadura(p, a, s, rng, Color(0.1, 0.1, 0.1, 0.55))
+
+
+## Polígono em u de mundo no Desenho de detalhes (que fica em coordenadas de tela).
+func _dp(pts: PackedVector2Array, cor: Color) -> void:
+	var tela := PackedVector2Array()
+	for p in pts:
+		tela.append(IsoMath.mundo_para_tela(p))
+	_desenho.poli(tela, cor)
+
+
+func _caixa(c: Vector2, tam: Vector2, a: float) -> PackedVector2Array:
+	var h := tam * 0.5
+	return PackedVector2Array([c + Vector2(-h.x, -h.y).rotated(a), c + Vector2(h.x, -h.y).rotated(a),
+		c + Vector2(h.x, h.y).rotated(a), c + Vector2(-h.x, h.y).rotated(a)])
+
+
+func _elipse(c: Vector2, rx: float, ry: float, a: float) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in 10:
+		var t := TAU * i / 10.0
+		pts.append(c + Vector2(cos(t) * rx, sin(t) * ry).rotated(a))
+	return pts
+
+
+## Polígono irregular em volta de c (raio varia ±35%).
+func _mancha(c: Vector2, r: float, rng: RandomNumberGenerator, n: int = 9) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	for i in n:
+		pts.append(c + Vector2.from_angle(TAU * i / n) * r * rng.randf_range(0.65, 1.35))
+	return pts
+
+
+## Rachadura em zigue-zague, desenhada como tiras finas.
+func _rachadura(p: Vector2, a: float, s: float, rng: RandomNumberGenerator, cor: Color) -> void:
+	var q := p - Vector2.from_angle(a) * 30.0 * s
+	for k in 5:
+		var q2 := q + Vector2.from_angle(a + rng.randf_range(-0.7, 0.7)) * 13.0 * s
+		var n := (q2 - q).normalized().orthogonal() * 1.6
+		_dp(PackedVector2Array([q - n, q2 - n, q2 + n, q + n]), cor)
+		q = q2
 
 
 # ───────────────────────────── água, estradas, ponte ─────────────────────────────
@@ -239,10 +400,10 @@ func _agua() -> void:
 			_poli_recortado(MundoGen.poligono_rio(y0, y1, true), agua, Color(0.50, 0.65, 0.85, 1.0))
 
 
-func _circulo(p: Vector2, raio: float) -> PackedVector2Array:
+func _circulo(p: Vector2, raio: float, n: int = 12) -> PackedVector2Array:
 	var pts := PackedVector2Array()
-	for i in 12:
-		pts.append(p + Vector2.from_angle(TAU * i / 12.0) * raio)
+	for i in n:
+		pts.append(p + Vector2.from_angle(TAU * i / float(n)) * raio)
 	return pts
 
 

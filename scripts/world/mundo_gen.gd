@@ -548,7 +548,7 @@ static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, 
 			p.x = fr.position.x + RUA * 0.5 + lado * 70.0
 		else:
 			p.y = fr.position.y + RUA * 0.5 + lado * 70.0
-		var ok := true
+		var ok := not Quadras.perto_rotatoria(p, Quadras.ROT_RI + 2.5)   # nada em cima da ilha da rotatória
 		for q in colocados:
 			var qp: Vector2 = q
 			if qp.distance_to(p) < 300.0:
@@ -564,8 +564,10 @@ static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, 
 		var fr2: Rect2 = fd2["r"]
 		var a2 := fr2.intersection(r)
 		if a2.size.x > 0.0 and a2.size.y > 0.0:
-			specs.append({"k": "prop", "n": ["barreira_listrada", "barreira_quebrada", "entulho_pedras"][rng.randi() % 3],
-				"p": Vector2(rng.randf_range(a2.position.x, a2.end.x), rng.randf_range(a2.position.y, a2.end.y))})
+			var nome: String = ["barreira_listrada", "barreira_quebrada", "entulho_pedras"][rng.randi() % 3]
+			var pb := Vector2(rng.randf_range(a2.position.x, a2.end.x), rng.randf_range(a2.position.y, a2.end.y))
+			if not Quadras.perto_rotatoria(pb, Quadras.ROT_RI + 2.5):
+				specs.append({"k": "prop", "n": nome, "p": pb})
 
 
 static func _carro(rng: RandomNumberGenerator, p: Vector2, proa: float, specs: Array) -> void:
