@@ -58,5 +58,5 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 
 ## Sistemas gerais
 - ✅ câmera, Y-Sort, movimento, fôlego, lanterna, ciclo dia/noite (`js/lighting.js`, `js/depth.js`)
-- ⬜ menu/ajustes e remapeamento de teclas (`bindings`, l.1852-1880), `showModal`, `toast`
+- ✅ menu/ajustes e remapeamento de teclas (`bindings`, `setBinding`, `resetBindings`, `showModal`, l.1852-1880) → `MenuConfig` (ESC; abas Controles/Vídeo/Áudio) + `Controles` (InputMap, conflito tira a tecla da outra ação, `user://configuracoes.cfg`); a linha de ajuda do HUD segue as teclas; `toast` = `HUD.aviso` · ⬜ `guard` (mirar/guarda) não existe na Godot ainda
 - ⬜ save/load (não existe na V13)

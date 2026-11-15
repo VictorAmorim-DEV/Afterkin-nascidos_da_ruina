@@ -31,6 +31,7 @@ var _t_dica := 0.0                ## a dica de interação é recalculada 10× p
 
 func _ready() -> void:
 	add_to_group("hud")
+	Controles.iniciar()                            # teclas salvas e a ação "minimapa" antes de quem as usa
 	_jogador = get_node_or_null(jogador_path)
 	_ciclo = get_node_or_null(ciclo_path)
 	var fundo := StyleBoxFlat.new()
@@ -54,7 +55,14 @@ func _ready() -> void:
 	dica.add_theme_font_size_override("font_size", 18)
 	_montar_vitais()
 	_montar_toast()
-	add_child(Minimapa.new())                      # V13: minimapa com bússola (M amplia)
+	var mm := Minimapa.new()                       # V13: minimapa com bússola (M amplia)
+	add_child(mm)
+	var menu := MenuConfig.new()                   # V13: menu de configurações (ESC)
+	menu.name = "MenuConfig"
+	add_child(menu)
+	menu.mudou.connect(_texto_ajuda)
+	menu.mudou.connect(mm._layout)                 # a dica "M · ampliar" acompanha a tecla
+	_texto_ajuda()
 
 
 func _process(delta: float) -> void:
@@ -163,7 +171,16 @@ func _montar_vitais() -> void:
 	for n in [_vida_texto, _vida_barra, _fome_barra, _saude_texto]:
 		painel.add_child(n)
 		painel.move_child(n, painel.get_child_count() - 2)     # antes da linha de ajuda
-	ajuda.text += " · E entrar em veículo · I mochila · botão esquerdo atacar/colher · Q forma (rato) · M minimapa · F9 trocar raça"
+	pass
+
+
+## Linha de ajuda montada com as teclas atuais (muda quando o jogador remapeia no menu).
+func _texto_ajuda() -> void:
+	var n := func(a: String) -> String: return Controles.nome(a)
+	ajuda.text = "%s %s %s %s mover · %s correr · %s agachar · %s deitar · %s pular · %s lanterna · %s interagir / entrar no veículo · %s mochila · %s atacar/colher · %s forma (rato) · %s minimapa · %s menu · F9 trocar raça" % [
+		n.call("move_up"), n.call("move_left"), n.call("move_down"), n.call("move_right"), n.call("run"), n.call("crouch"),
+		n.call("prone"), n.call("jump"), n.call("flashlight"), n.call("interact"), n.call("inventory"), n.call("attack"),
+		n.call("transform"), n.call("minimapa"), n.call("menu")]
 
 
 func _montar_toast() -> void:

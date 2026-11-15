@@ -92,7 +92,7 @@ func _layout() -> void:
 	_rumo.size = Vector2(d, 18)
 	_dica.position = Vector2(0, d + 12.0)
 	_dica.size = Vector2(d, 16)
-	_dica.text = "M · reduzir" if grande else "M · ampliar"
+	_dica.text = "%s · %s" % [Controles.nome("minimapa"), "reduzir" if grande else "ampliar"]
 	_mat.set_shader_parameter("tam", Vector2(d, d))
 	_mat.set_shader_parameter("raio", _raio_tela())
 	_sobre.queue_redraw()
@@ -109,7 +109,7 @@ func _esc() -> float:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_M and not get_tree().paused:
+	if event.is_action_pressed("minimapa") and not get_tree().paused:
 		grande = not grande
 		_layout()
 		get_viewport().set_input_as_handled()

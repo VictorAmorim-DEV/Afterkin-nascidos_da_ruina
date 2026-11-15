@@ -95,6 +95,7 @@ func _ready() -> void:
 	_anel_ruido.z_index = -1
 	_anel_ruido.draw.connect(_desenhar_anel_ruido)
 	add_child(_anel_ruido)
+	aplicar_sombras_lanterna(Controles.ler_cfg().get_value("video", "sombras_lanterna", true))
 
 
 func _process(_delta: float) -> void:
@@ -110,6 +111,11 @@ func _desenhar_anel_ruido() -> void:
 	_anel_ruido.draw_colored_polygon(pts, Color(1, 1, 1, 0.03))
 	pts.append(pts[0])
 	_anel_ruido.draw_polyline(pts, Color(1, 1, 1, 0.15), 2.0)
+
+
+## Sombras da luz da lanterna (opção de vídeo: desligar alivia PCs mais fracos).
+func aplicar_sombras_lanterna(ligar: bool) -> void:
+	lanterna_chao.shadow_enabled = ligar
 
 
 ## Furtividade pelo barulho (V13: hudStealth).
