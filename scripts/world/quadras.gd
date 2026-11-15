@@ -33,6 +33,11 @@ const ROT_OCUPA := 19.0             ## raio reservado nos quarteirões vizinhos 
 const ROT_PRACA := Vector2(11.0, 18.5)   ## anel gramado das pracinhas (começa sob a calçada do anel: sem degrau)
 ## Papéis cujas calçadas ficam sem árvore (entradas de veículos, portões).
 const SEM_ARVORE := ["industrial", "posto", "hospital"]
+## Folga até o edifício da frente para caber uma árvore de calçada: abaixo da pequena, nenhuma; abaixo da grande,
+## só a árvore jovem (copa de ~130 px); acima, qualquer uma (a frondosa tem ~280 px de copa e encosta num prédio
+## alto até do outro lado da rua, a 352 u).
+const ARV_FOLGA_PEQUENA := 160.0
+const ARV_FOLGA_GRANDE := 400.0
 const LIXO_ESQUINA := ["folhas", "folhas", "jornal", "papelao", "saco", "grama", "mato", "musgo", "entulho"]
 
 static var _cache: Dictionary = {}
@@ -806,28 +811,31 @@ static func _arvores_calcada(rng: RandomNumberGenerator) -> void:
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
 	var ocupados := PackedVector2Array(_postes())
+	var predios: Array = []                            # pegadas (u) de todos os edifícios da cidade
 	for i in 3:
 		for j in 4:
 			for s in _bloco(i, j)["specs"]:
 				var sd: Dictionary = s
 				if sd["k"] == "urbano" or sd["k"] == "carro" or sd["k"] == "prop":
 					ocupados.append(_ancora(sd))
+				elif sd["k"] == "edificio":
+					predios.append(Rect2(sd["p"], Vector2(sd["w"], sd["h"]) * TILE))
 	for i in 4:                                       # ruas norte-sul, um trecho por quarteirão
 		for j in 4:
 			var x := C.position.x + i * B
 			var y0 := C.position.y + j * B + R
 			_fila_arvores(rng, Vector2(x + 32.0, y0), Vector2(x + R - 32.0, y0), Vector2(0, 1), B - R,
-				[_papel(i - 1, j), _papel(i, j)], ocupados)
+				[_papel(i - 1, j), _papel(i, j)], ocupados, predios)
 	for j in 5:                                       # ruas leste-oeste
 		for i in 3:
 			var y := C.position.y + j * B
 			var x0 := C.position.x + i * B + R
 			_fila_arvores(rng, Vector2(x0, y + 32.0), Vector2(x0, y + R - 32.0), Vector2(1, 0), B - R,
-				[_papel(i, j - 1), _papel(i, j)], ocupados)
+				[_papel(i, j - 1), _papel(i, j)], ocupados, predios)
 
 
 static func _fila_arvores(rng: RandomNumberGenerator, a0: Vector2, a1: Vector2, dir: Vector2, comp: float, papeis: Array,
-		ocupados: PackedVector2Array) -> void:
+		ocupados: PackedVector2Array, predios: Array) -> void:
 	var lado := rng.randi() % 2
 	var u := rng.randf_range(3.0, 6.0) * TILE
 	while u < comp - 3.0 * TILE:
@@ -839,11 +847,27 @@ static func _fila_arvores(rng: RandomNumberGenerator, a0: Vector2, a1: Vector2, 
 				if o.distance_to(p) < 96.0:
 					ok = false
 					break
-		if ok:
+		var folga := _folga_predio(p, predios) if ok else 0.0
+		if ok and folga >= ARV_FOLGA_PEQUENA:
 			ocupados.append(p)
 			_detalhe("canteiro", p, rng)
 			_detalhe("rachadura" if rng.randf() < 0.5 else "mato", p + dir * rng.randf_range(-40.0, 40.0), rng)
 			var nome: String = "arvore_morta" if rng.randf() < 0.2 else ["arvore_frondosa", "arvore_jovem", "arvore_fina", "arvore_outono"][rng.randi() % 4]
+			if folga < ARV_FOLGA_GRANDE:
+				nome = "arvore_jovem"                    # copa pequena: cabe entre a calçada e a parede
 			_prop_via(nome, p, {"col": "arvore"})
 		u += rng.randi_range(9, 14) * TILE
 		lado = 1 - lado
+
+
+## Distância (u) da árvore em p até o edifício mais próximo que fica À FRENTE dela na tela (a sul ou a leste:
+## soma x + y maior). Esse edifício é desenhado por cima da copa e a cortaria; os de trás são cobertos pela copa,
+## o que fica natural, e não contam.
+static func _folga_predio(p: Vector2, predios: Array) -> float:
+	var menor := INF
+	for r in predios:
+		var rr: Rect2 = r
+		var q := Vector2(clampf(p.x, rr.position.x, rr.end.x), clampf(p.y, rr.position.y, rr.end.y))
+		if q.x + q.y > p.x + p.y:
+			menor = minf(menor, p.distance_to(q))
+	return menor
