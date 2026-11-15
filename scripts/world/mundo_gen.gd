@@ -23,11 +23,11 @@ const FRENTE1 := 22528.0          ## centro da transição tropical → semiári
 const FRENTE2 := 43008.0          ## centro da transição semiárido → deserto
 const FAIXA := 3072.0             ## meia largura de cada transição
 
-# cidade: 3 × 4 quarteirões de 3072 u, separados por ruas de 384 u (calçada 64 + asfalto 256 + calçada 64)
+# cidade: 3 × 4 quarteirões de 3072 u, separados por ruas de 512 u (calçada 128 + asfalto 256 + calçada 128)
 const CIDADE := Rect2(1536.0, 7168.0, 9600.0, 12672.0)
 const BLOCO := 3072.0
-const RUA := 384.0
-const CALCADA := 64.0
+const RUA := 512.0
+const CALCADA := 128.0
 
 const ESTRADA_Y := 13504.0        ## a estrada principal sai pela rua do meio da cidade
 const INICIO := Vector2(900.0, 13504.0)

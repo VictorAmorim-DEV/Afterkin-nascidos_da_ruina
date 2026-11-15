@@ -10,7 +10,7 @@ extends RefCounted
 const TILE := 64.0
 const METRO := 49.48
 const VPM := 30.3
-const N := 42                       ## tiles por lado do miolo (BLOCO - RUA = 2688 u)
+const N := 40                       ## tiles por lado do miolo (BLOCO - RUA = 2560 u)
 
 ## Papel de cada quarteirão (coluna oeste→leste, linha norte→sul): o programa da cidade principal da V13 (cidadesTWD).
 ## O ponto inicial fica a oeste da linha 2, então o jogador entra pela vizinhança residencial.
@@ -28,16 +28,19 @@ const TUDO := Rect2(-1.0e7, -1.0e7, 2.0e7, 2.0e7)
 const ROTATORIA := Vector2i(1, 2)
 const ROT_RO := 9.5                 ## raio externo do asfalto
 const ROT_RI := 3.6                 ## raio da ilha central (meio-fio)
-const ROT_CALCADA := 2.2            ## calçada em volta do anel
+const ROT_CALCADA := 2.0            ## calçada em volta do anel (a mesma largura das calçadas)
 const ROT_OCUPA := 19.0             ## raio reservado nos quarteirões vizinhos (nenhum prédio ou lote)
 const ROT_PRACA := Vector2(11.0, 18.5)   ## anel gramado das pracinhas (começa sob a calçada do anel: sem degrau)
 ## Papéis cujas calçadas ficam sem árvore (entradas de veículos, portões).
 const SEM_ARVORE := ["industrial", "posto", "hospital"]
-## Folga até o edifício da frente para caber uma árvore de calçada: abaixo da pequena, nenhuma; abaixo da grande,
-## só a árvore jovem (copa de ~130 px); acima, qualquer uma (a frondosa tem ~280 px de copa e encosta num prédio
-## alto até do outro lado da rua, a 352 u).
-const ARV_FOLGA_PEQUENA := 160.0
-const ARV_FOLGA_GRANDE := 400.0
+## Árvores de calçada: raio da copa no mundo (u, ≈ meia largura do sprite na tela × 1,41) e quanto a copa pode
+## passar da parede do edifício que fica à frente dela na tela (esse edifício é desenhado por cima da copa).
+const ARV_COPA := {"arvore_frondosa": 197.0, "arvore_outono": 146.0, "arvore_fina": 144.0, "arvore_morta": 144.0,
+	"arvore_jovem": 95.0}
+const ARV_TOLERANCIA := 60.0
+## Distância da árvore e do poste à parede do quarteirão (a calçada tem 128 u: os dois ficam perto do meio-fio).
+const ARV_RECUO := 88.0
+const POSTE_RECUO := 108.0
 const LIXO_ESQUINA := ["folhas", "folhas", "jornal", "papelao", "saco", "grama", "mato", "musgo", "entulho"]
 
 static var _cache: Dictionary = {}
@@ -50,7 +53,7 @@ static var _postes_cache := PackedVector2Array()
 ## Estado da geração de um quarteirão.
 class Q:
 	const T := 64.0
-	const NN := 42
+	const NN := 40                  ## = Quadras.N
 	var X0: float
 	var Y0: float
 	var rng := RandomNumberGenerator.new()
@@ -227,7 +230,7 @@ static func _postes() -> PackedVector2Array:
 	var C := MundoGen.CIDADE
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
-	var lado_calcada := [32.0, R - 32.0]
+	var lado_calcada := [POSTE_RECUO, R - POSTE_RECUO]
 	var out := PackedVector2Array()
 	for i in 4:                                       # ruas norte-sul
 		var x := C.position.x + i * B
@@ -294,7 +297,7 @@ static func _predio(q: Q, tx0: int, ty0: int, tx1: int, ty1: int, o: Dictionary)
 	return true
 
 
-## Tipos de prédio das fileiras (V13: fabrica), medidas ajustadas ao miolo de 42 tiles.
+## Tipos de prédio das fileiras (V13: fabrica), medidas ajustadas ao miolo de 40 tiles.
 static func _fabrica(q: Q, tipo: String) -> Dictionary:
 	match tipo:
 		"apto":
@@ -824,13 +827,13 @@ static func _arvores_calcada(rng: RandomNumberGenerator) -> void:
 		for j in 4:
 			var x := C.position.x + i * B
 			var y0 := C.position.y + j * B + R
-			_fila_arvores(rng, Vector2(x + 32.0, y0), Vector2(x + R - 32.0, y0), Vector2(0, 1), B - R,
+			_fila_arvores(rng, Vector2(x + ARV_RECUO, y0), Vector2(x + R - ARV_RECUO, y0), Vector2(0, 1), B - R,
 				[_papel(i - 1, j), _papel(i, j)], ocupados, predios)
 	for j in 5:                                       # ruas leste-oeste
 		for i in 3:
 			var y := C.position.y + j * B
 			var x0 := C.position.x + i * B + R
-			_fila_arvores(rng, Vector2(x0, y + 32.0), Vector2(x0, y + R - 32.0), Vector2(1, 0), B - R,
+			_fila_arvores(rng, Vector2(x0, y + ARV_RECUO), Vector2(x0, y + R - ARV_RECUO), Vector2(1, 0), B - R,
 				[_papel(i, j - 1), _papel(i, j)], ocupados, predios)
 
 
@@ -847,14 +850,19 @@ static func _fila_arvores(rng: RandomNumberGenerator, a0: Vector2, a1: Vector2, 
 				if o.distance_to(p) < 96.0:
 					ok = false
 					break
-		var folga := _folga_predio(p, predios) if ok else 0.0
-		if ok and folga >= ARV_FOLGA_PEQUENA:
+		var cabem: Array = []                         # espécies cuja copa cabe até o edifício da frente
+		if ok:
+			var folga := _folga_predio(p, predios) + ARV_TOLERANCIA
+			for nm in ["arvore_frondosa", "arvore_outono", "arvore_fina", "arvore_jovem"]:
+				if float(ARV_COPA[nm]) <= folga:
+					cabem.append(nm)
+		if not cabem.is_empty():
 			ocupados.append(p)
 			_detalhe("canteiro", p, rng)
 			_detalhe("rachadura" if rng.randf() < 0.5 else "mato", p + dir * rng.randf_range(-40.0, 40.0), rng)
-			var nome: String = "arvore_morta" if rng.randf() < 0.2 else ["arvore_frondosa", "arvore_jovem", "arvore_fina", "arvore_outono"][rng.randi() % 4]
-			if folga < ARV_FOLGA_GRANDE:
-				nome = "arvore_jovem"                    # copa pequena: cabe entre a calçada e a parede
+			var nome: String = cabem[rng.randi() % cabem.size()]
+			if rng.randf() < 0.2 and float(ARV_COPA["arvore_morta"]) <= float(ARV_COPA[nome]):
+				nome = "arvore_morta"
 			_prop_via(nome, p, {"col": "arvore"})
 		u += rng.randi_range(9, 14) * TILE
 		lado = 1 - lado
