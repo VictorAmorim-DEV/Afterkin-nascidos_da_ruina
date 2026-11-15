@@ -29,9 +29,12 @@ HTML/JS (V13, em docs/prototipo_html_v13/) para Godot 4.7, renderizador GL Compa
 - Quem dá `git push` sou eu; não faça push sem eu pedir.
 
 ## Estado atual
-- Migrado e rodando na Godot: construções, inventário/loot, combate/inimigos, raças/doenças,
-  veículos/totem, mundo aberto por chunks e biomas, galhos/pedras, portões, HUD completo,
-  cidade completa (prédios de vários andares, quarteirões especiais, objetos urbanos, postes).
+- Port da V13 concluído (docs/RESUMO_V13.md): construções com texturas procedurais, inventário/loot,
+  combate/inimigos, raças/doenças (com sintomas por estágio e antídoto dos ninhos de morcegos),
+  veículos/totem, mundo aberto por chunks e biomas, três áreas urbanas (`MundoGen.AREAS`) e viaduto,
+  ruas com rotatória, esquinas, árvores, bueiros e lixo, sombras do sol, minimapa, menu, save/load.
 - Prédios: `Edificio` constrói fatiado (orçamento por quadro comum a todos) e fica invisível até
-  `pronto`; os polígonos vão para um `Desenho` (um _draw por nó), não um Polygon2D por face.
-- Pendente: ver ⬜ em docs/RESUMO_V13.md (minimapa, menu/remapeamento, detalhes de ruas).
+  `pronto`; os polígonos vão para um `Desenho` (um draw call por nó, sempre com o atlas `TexturasParede`).
+- Gráficos nunca mudam sozinhos: efeitos pesados ficam atrás de uma flag (ex.: `SombraSol.ativo`) que vira
+  opção no menu de configurações.
+- Único ⬜ que resta no RESUMO: guarda/mirar (na V13 é só um anel, sem efeito).
