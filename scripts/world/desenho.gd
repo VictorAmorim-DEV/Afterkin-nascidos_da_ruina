@@ -6,7 +6,8 @@ extends Node2D
 ## Os polígonos são triangulados ao entrar e viram UM array de triângulos com cor por vértice: um comando
 ## de desenho por nó. Com um draw_colored_polygon por face, a cidade passava de 4000 draw calls por quadro.
 ## A ordem de desenho é a ordem em que as peças foram adicionadas; modulate/visible valem para o conjunto.
-## Tudo sai com o atlas de materiais (TexturasParede): peças com material usam poli_uv; as outras, o texel branco.
+## Tudo sai com o atlas de materiais (TexturasParede, com normal map: relevo na luz da lanterna): peças com material
+## usam poli_uv; as outras, o texel branco.
 
 var _pts := PackedVector2Array()
 var _cores := PackedColorArray()
@@ -70,6 +71,6 @@ func _draw() -> void:
 	_pendente = false
 	if not _idx.is_empty():
 		RenderingServer.canvas_item_add_triangle_array(get_canvas_item(), _idx, _pts, _cores, _uvs,
-			PackedInt32Array(), PackedFloat32Array(), TexturasParede.atlas().get_rid())
+			PackedInt32Array(), PackedFloat32Array(), TexturasParede.atlas_relevo().get_rid())
 	for l in _linhas:
 		draw_polyline(l[0], l[1], l[2])

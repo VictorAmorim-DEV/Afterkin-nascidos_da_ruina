@@ -44,6 +44,9 @@ static var _mat_queimado: ShaderMaterial = null
 
 var _sprite := Sprite2D.new()
 var _sombra: Sprite2D = null
+var _poeira := CPUParticles2D.new()               ## rastro de poeira atrás das rodas na terra e na areia
+var _t_chao := 0.0
+var _chao_poeira := false
 var _col := CollisionPolygon2D.new()
 var _ocl := LightOccluder2D.new()
 var _farol_chao := PointLight2D.new()
@@ -57,7 +60,7 @@ func _ready() -> void:
 	add_to_group("veiculo")
 	y_sort_enabled = true
 	_sprite.centered = false
-	_sprite.texture = textura
+	_sprite.texture = Relevo.com_normal(textura)       # relevo: a lanterna e os faróis marcam a lataria
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_sprite.light_mask = 2
 	if queimado:
@@ -71,6 +74,8 @@ func _ready() -> void:
 	add_child(_sprite)
 	_sombra = SombraSol.de_textura(textura, Vector2.ZERO, Vector2.ONE)   # sombra do sol, apoiada no centro do carro
 	add_child(_sombra)
+	add_child(SombraSol.contato(comprimento * 1.1))                     # sombra de contato sob a carroceria
+	_montar_poeira()
 	add_child(_col)
 	_ocl.occluder = OccluderPolygon2D.new()
 	add_child(_ocl)
@@ -242,6 +247,41 @@ func _physics_process(delta: float) -> void:
 	if not is_equal_approx(proa, _proa_desenhada):
 		_atualizar_forma()
 	_atualizar_farois()
+	_atualizar_poeira(delta)
+
+
+func _montar_poeira() -> void:
+	Atmosfera.emissor(_poeira, 60, 1.6, Atmosfera._textura_ponto())
+	_poeira.emitting = false
+	_poeira.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	_poeira.emission_sphere_radius = 14.0
+	_poeira.spread = 30.0
+	_poeira.initial_velocity_min = 10.0
+	_poeira.initial_velocity_max = 35.0
+	_poeira.gravity = Vector2(0.0, -6.0)
+	_poeira.damping_min = 8.0
+	_poeira.damping_max = 14.0
+	_poeira.scale_amount_min = 1.5
+	_poeira.scale_amount_max = 2.8
+	var cresce := Curve.new()
+	cresce.add_point(Vector2(0.0, 0.4))
+	cresce.add_point(Vector2(1.0, 1.6))
+	_poeira.scale_amount_curve = cresce
+	_poeira.color = Color(0.95, 0.87, 0.72, 0.75)
+	add_child(_poeira)
+
+
+## Poeira atrás das rodas: só andando rápido sobre terra, areia ou mato seco (o chão é revisto 4× por segundo).
+func _atualizar_poeira(delta: float) -> void:
+	_t_chao -= delta
+	if _t_chao <= 0.0:
+		_t_chao = 0.25
+		_chao_poeira = MundoGen.poeira_em(IsoMath.tela_para_mundo(global_position))
+	var d := Vector2.from_angle(proa) * (1.0 if vel >= 0.0 else -1.0)
+	_poeira.position = IsoMath.mundo_para_tela(-d * comprimento * 0.42)
+	_poeira.emitting = _chao_poeira and absf(vel) > 90.0
+	_poeira.modulate.a = clampf(absf(vel) / vel_max, 0.35, 1.0)
+	_poeira.direction = -IsoMath.mundo_para_tela(d)
 
 
 func _atualizar_farois() -> void:

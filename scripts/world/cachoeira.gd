@@ -1,8 +1,8 @@
 class_name Cachoeira
 extends StaticBody2D
-## Cachoeira na nascente do rio: paredão de rocha atravessando o vale e uma cortina d'água animada.
-## O paredão bloqueia a passagem (colisão); a água cai na lagoa funda logo abaixo (chão + colisão do chunk).
-## Origem = base do paredão no mundo (centro do rio, y = RIO_Y0).
+## Cachoeira (na saída do lago norte do mapa-múndi): paredão de rocha atravessando o rio e uma cortina d'água animada.
+## O paredão bloqueia a passagem (colisão); a água cai no rio fundo logo abaixo (chão + colisão do chunk).
+## Origem = base do paredão no mundo (MundoGen.cachoeira_pos: meio do rio); a largura vem do rio naquele ponto.
 
 const ALTURA := 230.0                 ## px de tela
 var _t: float = 0.0
@@ -11,11 +11,11 @@ var _t: float = 0.0
 func _ready() -> void:
 	_t = randf() * 20.0
 	var rc := MundoGen.cachoeira_rect()
-	var c := rc.get_center()
+	var c := MundoGen.cachoeira_pos()
 	var col := CollisionPolygon2D.new()
 	var pts := PackedVector2Array()
 	for p in [rc.position, Vector2(rc.end.x, rc.position.y), rc.end, Vector2(rc.position.x, rc.end.y)]:
-		pts.append(IsoMath.mundo_para_tela((p as Vector2) - Vector2(c.x, MundoGen.RIO_Y0)))
+		pts.append(IsoMath.mundo_para_tela((p as Vector2) - c))
 	col.polygon = pts
 	add_child(col)
 
@@ -26,7 +26,8 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	var w := MundoGen.RIO_W + 700.0
+	var meia: float = MundoGen.cachoeira()["meia"]
+	var w := meia + 500.0
 	var bl := IsoMath.mundo_para_tela(Vector2(-w, 0.0))
 	var br := IsoMath.mundo_para_tela(Vector2(w, 0.0))
 	var up := Vector2(0, -ALTURA)
@@ -42,8 +43,8 @@ func _draw() -> void:
 	var fundo := IsoMath.mundo_para_tela(Vector2(0.0, -200.0))
 	draw_colored_polygon(PackedVector2Array([bl + up, br + up, br + up + fundo, bl + up + fundo]), Color(0.16, 0.30, 0.14))
 	# cortina d'água
-	var wa := IsoMath.mundo_para_tela(Vector2(-MundoGen.RIO_W * 0.75, 0.0))
-	var wb := IsoMath.mundo_para_tela(Vector2(MundoGen.RIO_W * 0.75, 0.0))
+	var wa := IsoMath.mundo_para_tela(Vector2(-meia * 0.85, 0.0))
+	var wb := IsoMath.mundo_para_tela(Vector2(meia * 0.85, 0.0))
 	draw_colored_polygon(PackedVector2Array([wa + up, wb + up, wb, wa]), Color(0.62, 0.80, 0.88, 0.92))
 	for k in 16:
 		var x: float = lerpf(0.04, 0.96, float(k) / 15.0)

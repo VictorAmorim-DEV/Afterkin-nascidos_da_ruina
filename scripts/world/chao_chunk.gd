@@ -1,10 +1,13 @@
 class_name ChaoChunk
 extends Node2D
-## Chão de UM chunk (1024 × 1024 u), desenhado em isométrico 2:1 a partir de MundoGen.
-## Camadas, de baixo para cima: bioma (tropical → semiárido → deserto, com mistura suave pelos vértices)
-## → manchas de solo rachado → quintais e roças → cidade → água → estradas e trilhas → ruas → ponte.
+## Chão de UM chunk (1024 × 1024 u), desenhado em isométrico 2:1 a partir do mapa-múndi (MapaMundi) e do MundoGen.
+## Camadas, de baixo para cima: terreno (grama tropical, grama seca do semiárido, mata, solo rachado, areia da praia
+## e do deserto, lama do pântano, terra das estradas, rocha, cânion, neve e asfalto das rodovias, cada uma com
+## opacidade por vértice) → quintais e roças → cidade → água (margem, rasa e funda) → trilhas → ruas.
 ## Tudo é recortado ao retângulo do chunk, então chunks vizinhos nunca se sobrepõem.
-## Os UVs vêm das coordenadas do mundo: a textura continua entre chunks, sem emenda.
+## Os UVs vêm das coordenadas do mundo: a textura continua entre chunks, sem emenda. Os pontos são desenhados
+## relativos à origem do chunk (o nó fica nela): com as coordenadas da ilha (até 250 mil u), a triangulação em
+## float32 do motor perderia a precisão no cálculo de área e falharia em polígonos finos.
 
 const U_POR_PX_GRAMA := 2.0
 const TINTA_TROPICAL := Color(0.90, 1.00, 0.88)
@@ -21,6 +24,7 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_r = Rect2(c.x * MundoGen.CH, c.y * MundoGen.CH, MundoGen.CH, MundoGen.CH)
+	position = IsoMath.mundo_para_tela(_r.position)
 	_detalhes()
 	queue_redraw()
 
@@ -39,13 +43,22 @@ func _uvs(pts: PackedVector2Array, tex: Texture2D) -> PackedVector2Array:
 	return uvs
 
 
+## Pontos do mundo relativos à origem do chunk.
+func _local(pts: PackedVector2Array) -> PackedVector2Array:
+	var out := PackedVector2Array()
+	out.resize(pts.size())
+	for i in pts.size():
+		out[i] = pts[i] - _r.position
+	return out
+
+
 func _poli(pts: PackedVector2Array, tex: Texture2D, cor: Color) -> void:
 	if pts.size() >= 3:
-		draw_colored_polygon(pts, cor, _uvs(pts, tex), tex)
+		draw_colored_polygon(_local(pts), cor, _uvs(pts, tex), tex)
 
 
 func _poli_cores(pts: PackedVector2Array, cores: PackedColorArray, tex: Texture2D) -> void:
-	draw_polygon(pts, cores, _uvs(pts, tex), tex)
+	draw_polygon(_local(pts), cores, _uvs(pts, tex), tex)
 
 
 func _poli_recortado(pts: PackedVector2Array, tex: Texture2D, cor: Color) -> void:
@@ -80,52 +93,94 @@ func _draw() -> void:
 	_agua()
 	_estradas()
 	_ruas()
-	_viaduto()
-	_ponte()
 
 
 # ───────────────────────────── bioma ─────────────────────────────
 
+## Terreno a partir do mapa: cada camada é uma grade de 9 × 9 vértices (128 u) com a opacidade tirada dos dados e
+## vira UM array de triângulos (um draw call por camada; camadas sem nada não desenham).
 func _bioma() -> void:
 	_ret(_r, grama, TINTA_TROPICAL)
-	var q := 256.0
-	var v: Array = []
-	for j in 5:
-		var linha: Array = []
-		for i in 5:
-			linha.append(MundoGen.bioma_valor(_r.position.x + i * q, _r.position.y + j * q))
-		v.append(linha)
-	var rachada := TerrenoTexturas.obter("rachada")
-	var areia := TerrenoTexturas.obter("areia")
-	for camada in 3:
-		for j in 4:
-			for i in 4:
-				var pts := PackedVector2Array()
-				var cores := PackedColorArray()
-				var algum := false
-				for d in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(1, 1), Vector2i(0, 1)]:
-					var dv: Vector2i = d
-					var vv: float = (v[j + dv.y] as Array)[i + dv.x]
-					var p := Vector2(_r.position.x + (i + dv.x) * q, _r.position.y + (j + dv.y) * q)
-					pts.append(p)
-					var a1: float = clampf(vv, 0.0, 1.0)
-					var a: float
-					var cor: Color
-					if camada == 0:                         # grama seca por cima da tropical
-						a = a1
-						cor = Color(TINTA_SEMIARIDO.r, TINTA_SEMIARIDO.g, TINTA_SEMIARIDO.b, a)
-					elif camada == 1:                       # manchas de solo rachado (semiárido)
-						a = clampf(MundoGen.ruido_mancha(p.x, p.y) * 1.8 - 0.55, 0.0, 0.9) * a1 * (1.0 - clampf(vv - 1.0, 0.0, 1.0))
-						cor = Color(1, 1, 1, a)
-					else:                                   # areia do deserto
-						a = clampf(vv - 1.0, 0.0, 1.0)
-						cor = Color(1, 1, 1, a)
-					if a > 0.01:
-						algum = true
-					cores.append(cor)
-				if algum:
-					_poli_cores(pts, cores, grama if camada == 0 else (rachada if camada == 1 else areia))
+	var n := 9
+	var q := _r.size.x / (n - 1)
+	var bio := PackedFloat32Array()
+	var mata := PackedFloat32Array()
+	var urb := PackedByteArray()
+	bio.resize(n * n)
+	mata.resize(n * n)
+	urb.resize(n * n)
+	for j in n:
+		for i in n:
+			var x := _r.position.x + i * q
+			var y := _r.position.y + j * q
+			var idx := j * n + i
+			bio[idx] = MundoGen.bioma_valor(x, y)
+			mata[idx] = MapaMundi.mata(x, y)
+			urb[idx] = 1 if MundoGen.urbano_em(Vector2(x, y), 64.0) else 0
+	# fração de cada classe nos vértices (Packed*Array é valor: cada uma é montada inteira e só depois guardada)
+	var fr := {}
+	for k in [MapaMundi.PRAIA, MapaMundi.PANTANO, MapaMundi.TERRA, MapaMundi.ROCHA, MapaMundi.CANION, MapaMundi.NEVE,
+			MapaMundi.URBANO]:
+		var arr := PackedFloat32Array()
+		arr.resize(n * n)
+		for idx2 in n * n:
+			arr[idx2] = MapaMundi.fracao(_r.position.x + (idx2 % n) * q, _r.position.y + (idx2 / n) * q, k)
+		fr[k] = arr
+	var seca := PackedFloat32Array()
+	var escura := PackedFloat32Array()
+	var rachada := PackedFloat32Array()
+	var areia := PackedFloat32Array()
+	var asfalto := PackedFloat32Array()
+	for idx in n * n:
+		var v: float = bio[idx]
+		var x2 := _r.position.x + (idx % n) * q
+		var y2 := _r.position.y + (idx / n) * q
+		seca.append(clampf(v, 0.0, 1.0))
+		escura.append(mata[idx] * 0.55 * (1.0 - clampf(v, 0.0, 1.0)))
+		rachada.append(clampf(MundoGen.ruido_mancha(x2, y2) * 1.8 - 0.55, 0.0, 0.9) * clampf(v, 0.0, 1.0) * (1.0 - clampf(v - 1.0, 0.0, 1.0)))
+		areia.append(maxf(clampf(v - 1.0, 0.0, 1.0), (fr[MapaMundi.PRAIA] as PackedFloat32Array)[idx]))
+		asfalto.append(0.0 if urb[idx] == 1 else (fr[MapaMundi.URBANO] as PackedFloat32Array)[idx])
+	var rocha := PackedFloat32Array()
+	for idx in n * n:
+		rocha.append(minf(1.0, (fr[MapaMundi.ROCHA] as PackedFloat32Array)[idx] + (fr[MapaMundi.CANION] as PackedFloat32Array)[idx]))
+	_camada(grama, TINTA_SEMIARIDO, seca, n, q)
+	_camada(grama, Color(0.55, 0.72, 0.5), escura, n, q)
+	_camada(TerrenoTexturas.obter("rachada"), Color.WHITE, rachada, n, q)
+	_camada(TerrenoTexturas.obter("areia"), Color.WHITE, areia, n, q)
+	_camada(TerrenoTexturas.obter("lama"), Color.WHITE, fr[MapaMundi.PANTANO], n, q)
+	_camada(TerrenoTexturas.obter("terra"), Color(0.95, 0.9, 0.85), fr[MapaMundi.TERRA], n, q)
+	_camada(TerrenoTexturas.obter("rocha"), Color.WHITE, rocha, n, q)
+	_camada(TerrenoTexturas.obter("rocha"), Color(1.0, 0.6, 0.42), fr[MapaMundi.CANION], n, q)
+	_camada(TerrenoTexturas.obter("neve"), Color.WHITE, fr[MapaMundi.NEVE], n, q)
+	_camada(TerrenoTexturas.obter("asfalto"), Color(0.95, 0.95, 0.97), asfalto, n, q)
 
+
+## Uma camada de terreno: grade n × n (passo q) com a opacidade de cada vértice; quads sem nada ficam de fora.
+func _camada(tex: Texture2D, cor: Color, alfa: PackedFloat32Array, n: int, q: float) -> void:
+	var algum := false
+	for a in alfa:
+		if a > 0.01:
+			algum = true
+			break
+	if not algum:
+		return
+	var pts := PackedVector2Array()
+	var cores := PackedColorArray()
+	for j in n:
+		for i in n:
+			pts.append(_r.position + Vector2(i * q, j * q))
+			cores.append(Color(cor.r, cor.g, cor.b, cor.a * clampf(alfa[j * n + i], 0.0, 1.0)))
+	var idx := PackedInt32Array()
+	for j in n - 1:
+		for i in n - 1:
+			var a0 := j * n + i
+			if alfa[a0] + alfa[a0 + 1] + alfa[a0 + n] + alfa[a0 + n + 1] < 0.02:
+				continue
+			idx.append_array([a0, a0 + 1, a0 + n + 1, a0, a0 + n + 1, a0 + n])
+	if idx.is_empty():
+		return
+	RenderingServer.canvas_item_add_triangle_array(get_canvas_item(), idx, _local(pts), cores, _uvs(pts, tex),
+		PackedInt32Array(), PackedFloat32Array(), tex.get_rid())
 
 # ───────────────────────────── roças, quintais, acampamentos ─────────────────────────────
 
@@ -211,7 +266,6 @@ func _ruas() -> void:
 		if _r.grow(1200.0).has_point(c0):
 			nos.append(c0)
 	var lim := MundoGen.RUA * 0.5 + 170.0
-	var via := MundoGen.viaduto().grow_individual(0.0, 170.0, 0.0, 170.0)
 	var amarelo := Color(0.85, 0.72, 0.2, 0.9)
 	for f in faixas:
 		var fd: Dictionary = f
@@ -224,8 +278,8 @@ func _ruas() -> void:
 		t = floorf(t / 192.0) * 192.0
 		while t < fim:
 			var cx := Vector2(fr.get_center().x, t + 40.0) if vertical else Vector2(t + 40.0, fr.get_center().y)
-			# sem faixa dentro dos cruzamentos, nas faixas de pedestre, no viaduto e no anel da rotatória
-			var livre: bool = not via.has_point(cx)
+			# sem faixa dentro dos cruzamentos, nas faixas de pedestre e no anel da rotatória
+			var livre := true
 			for no in nos:
 				var nv: Vector2 = no
 				if absf(cx.x - nv.x) < lim and absf(cx.y - nv.y) < lim:
@@ -373,7 +427,7 @@ func _detalhes() -> void:
 func _dp(pts: PackedVector2Array, cor: Color) -> void:
 	var tela := PackedVector2Array()
 	for p in pts:
-		tela.append(IsoMath.mundo_para_tela(p))
+		tela.append(IsoMath.mundo_para_tela(p - _r.position))     # o Desenho é filho do chunk
 	_desenho.poli(tela, cor)
 
 
@@ -409,51 +463,44 @@ func _rachadura(p: Vector2, a: float, s: float, rng: RandomNumberGenerator, cor:
 		q = q2
 
 
-## Viaduto (V13: viaduto): acostamento de concreto, asfalto, faixa dupla amarela no meio, faixas tracejadas entre
-## as pistas e linha de bordo. Desenhado depois das ruas: as ligações que o cruzam passam por baixo da pintura.
-func _viaduto() -> void:
-	var v := MundoGen.viaduto()
-	if not v.intersects(_r):
-		return
-	var y := MundoGen.VIA_Y
-	_ret(v, TerrenoTexturas.obter("calcada"), Color(0.9, 0.9, 0.88))
-	var asf := v.grow_individual(0.0, -MundoGen.VIA_ACOST, 0.0, -MundoGen.VIA_ACOST)
-	_ret(asf, TerrenoTexturas.obter("asfalto"), Color(0.93, 0.93, 0.96))
-	var amarelo := Color(0.85, 0.72, 0.2, 0.9)
-	var branco := Color(0.88, 0.87, 0.82, 0.75)
-	_ret(Rect2(_r.position.x, y - 14.0, _r.size.x, 7.0), null, amarelo)
-	_ret(Rect2(_r.position.x, y + 7.0, _r.size.x, 7.0), null, amarelo)
-	_ret(Rect2(_r.position.x, asf.position.y + 14.0, _r.size.x, 6.0), null, branco)
-	_ret(Rect2(_r.position.x, asf.end.y - 20.0, _r.size.x, 6.0), null, branco)
-	for off in [-176.0, 176.0]:
-		var x := floorf(_r.position.x / 256.0) * 256.0
-		while x < _r.end.x:
-			_ret(Rect2(x + 40.0, y + off - 4.0, 120.0, 8.0), null, branco)
-			x += 256.0
+# ───────────────────────────── água e trilhas ─────────────────────────────
 
-
-# ───────────────────────────── água, estradas, ponte ─────────────────────────────
-
+## Água do mapa: margem molhada, rasa e funda (marching squares sobre a distância até a margem). O mar é mais escuro
+## que rios e lagos. Cada camada é um array de triângulos só.
 func _agua() -> void:
-	var ya := maxf(_r.position.y, MundoGen.RIO_Y0)
-	var yb := _r.end.y
-	if ya >= yb:
-		return
-	var cx := MundoGen.rio_x((ya + yb) * 0.5)
-	if absf(cx - _r.get_center().x) > MundoGen.CH * 0.5 + MundoGen.RIO_W * 3.0 + 1800.0:
-		return
+	var maior := -99.0
+	for j in 5:
+		for i in 5:
+			maior = maxf(maior, MapaMundi.sd(_r.position.x + i * 256.0, _r.position.y + j * 256.0))
+	if maior < -1.6:
+		return                                    # nenhuma água por perto
+	var c := _r.get_center()
+	var mar := MapaMundi.eh_mar(c.x, c.y) or MapaMundi.sd(c.x, c.y) > 4.0
 	var agua := TerrenoTexturas.obter("agua")
-	var terra := TerrenoTexturas.obter("terra")
-	var rasa := MundoGen.poligono_rio(ya, yb, false)
-	for m in Geometry2D.offset_polygon(rasa, 70.0, Geometry2D.JOIN_ROUND):
-		_poli_recortado(m, terra, Color(0.8, 0.75, 0.65, 0.6))
-	_poli_recortado(rasa, agua, Color(0.85, 1.0, 1.0, 0.95))
-	for iv in MundoGen.intervalos_fundos():
-		var ivv: Vector2 = iv
-		var y0 := maxf(ivv.x, _r.position.y)
-		var y1 := minf(ivv.y, _r.end.y)
-		if y0 < y1:
-			_poli_recortado(MundoGen.poligono_rio(y0, y1, true), agua, Color(0.50, 0.65, 0.85, 1.0))
+	_agua_camada(-0.45, TerrenoTexturas.obter("terra"), Color(0.78, 0.72, 0.6, 0.55))
+	_agua_camada(0.0, agua, Color(0.78, 0.96, 1.0, 0.95) if mar else Color(0.85, 1.0, 1.0, 0.95))
+	_agua_camada(MapaMundi.FUNDO, agua, Color(0.36, 0.5, 0.74, 1.0) if mar else Color(0.5, 0.65, 0.85, 1.0))
+
+
+func _agua_camada(limiar: float, tex: Texture2D, cor: Color) -> void:
+	var pts := PackedVector2Array()
+	var idx := PackedInt32Array()
+	for poli in MapaMundi.poligonos(_r, limiar, 64.0):
+		var pp: PackedVector2Array = poli
+		var tri := Geometry2D.triangulate_polygon(pp)
+		if tri.is_empty():
+			continue
+		var base := pts.size()
+		pts.append_array(pp)
+		for t in tri:
+			idx.append(base + t)
+	if idx.is_empty():
+		return
+	var cores := PackedColorArray()
+	cores.resize(pts.size())
+	cores.fill(cor)
+	RenderingServer.canvas_item_add_triangle_array(get_canvas_item(), idx, _local(pts), cores, _uvs(pts, tex),
+		PackedInt32Array(), PackedFloat32Array(), tex.get_rid())
 
 
 func _circulo(p: Vector2, raio: float, n: int = 12) -> PackedVector2Array:
@@ -485,16 +532,3 @@ func _estradas() -> void:
 			_poli_recortado(PackedVector2Array([a - n, b - n, b + n, a + n]), terra, cor)
 			_poli_recortado(_circulo(a, w * 0.5), terra, cor)
 			_poli_recortado(_circulo(b, w * 0.5), terra, cor)
-
-
-func _ponte() -> void:
-	var pt := MundoGen.ponte()
-	if not pt.intersects(_r):
-		return
-	_ret(pt, TerrenoTexturas.obter("madeira"), Color.WHITE)
-	var x := pt.position.x + 24.0
-	while x < pt.end.x:
-		_ret(Rect2(x, pt.position.y, 5.0, pt.size.y), null, Color(0.18, 0.12, 0.07, 0.55))
-		x += 48.0
-	_ret(Rect2(pt.position.x, pt.position.y, pt.size.x, 16.0), null, Color(0.22, 0.15, 0.09))
-	_ret(Rect2(pt.position.x, pt.end.y - 16.0, pt.size.x, 16.0), null, Color(0.22, 0.15, 0.09))

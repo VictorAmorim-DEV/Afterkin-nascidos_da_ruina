@@ -10,7 +10,7 @@ extends RefCounted
 ## SelecaoRaca, em vez de abrir, aplica o resto (raça, mochila, totem, relógio).
 
 const ARQUIVO := "user://partida.json"
-const VERSAO := 1
+const VERSAO := 2                      ## 2: mundo da ilha (o save do mundo antigo não vale mais)
 
 ## Partida lida do disco esperando a cena recarregar (vazio = começo normal).
 static var pendente: Dictionary = {}

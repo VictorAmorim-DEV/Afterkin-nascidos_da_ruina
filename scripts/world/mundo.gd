@@ -47,8 +47,7 @@ var _cc := Vector2i(-9999, -9999)
 var _cenas: Dictionary = {}
 var _ciclo: Node = null
 var _tween: Tween = null
-var _zona: int = -1                   ## 0 trop · 1 trans · 2 semi · 3 trans · 4 deserto
-var _bioma_anunciado: int = 0
+var _bioma_anunciado: int = -1          ## bioma (0 tropical, 1 semiárido, 2 deserto) já anunciado no HUD
 var _t_retintar: float = 0.0
 var _focando := true
 ## objetos (árvores, carros...) translúcidos porque estão na frente do jogador: nó -> true enquanto encobrem
@@ -66,9 +65,9 @@ func _ready() -> void:
 	if jogador != null:
 		jogador.position = IsoMath.mundo_para_tela(MundoGen.INICIO)
 	SaveJogo.aplicar_mundo(self)                 # partida carregada: posição e memória do mundo antes da carga
-	_criar_areas()
+	add_child(Atmosfera.new())                   # poeira e folhas caindo em volta da câmera
 	TerrenoTexturas.preparar_todas()
-	TexturasParede.atlas()                       # gera o atlas na carga, não no primeiro edifício
+	TexturasParede.atlas_relevo()                # gera o atlas (e o relevo dele) na carga, não no primeiro edifício
 	# carga inicial síncrona (limitada): o jogador já nasce com chão e a vizinhança de volta
 	var foco := _foco_mundo()
 	_cc = Vector2i(floori(foco.x / CH), floori(foco.y / CH))
@@ -122,12 +121,18 @@ func _process(delta: float) -> void:
 		_t_transp = 0.1
 		_marcar_props_na_frente()
 	_animar_props(delta)
-	# dentro de uma faixa de transição a tinta acompanha a posição (suave, sem degrau)
-	if _zona == 1 or _zona == 3:
-		_t_retintar -= delta
-		if _t_retintar <= 0.0:
-			_t_retintar = 0.5
-			_tintar(_tinta_para(MundoGen.bioma_valor(foco.x, foco.y)), 1.6)
+	# tinta do bioma: a cada meio segundo a luz ambiente vai (Tween no CanvasModulate) para a cor do bioma sob a
+	# câmera; a transição do mapa é contínua, então a cor também muda aos poucos
+	_t_retintar -= delta
+	if _t_retintar <= 0.0:
+		_t_retintar = 0.5
+		var v := MundoGen.bioma_valor(foco.x, foco.y)
+		_tintar(_tinta_para(v), 1.6)
+		var b := MundoGen.bioma_id(v)
+		if b != _bioma_anunciado:
+			if _bioma_anunciado >= 0 and jogador != null and jogador.has_method("aviso"):
+				jogador.call("aviso", "Entrando: " + MundoGen.nome_bioma(b))
+			_bioma_anunciado = b
 
 
 # ───────────────────────────── objetos na frente do jogador ─────────────────────────────
@@ -267,36 +272,31 @@ static func _area(p: PackedVector2Array) -> float:
 	return absf(s) * 0.5
 
 
-## Colisão da água funda do chunk (a rasa e a ponte ficam livres).
+## Colisão da água funda do chunk (o raso, as pontes e os vaus ficam livres): polígonos do marching squares.
 func _corpo_agua(k: Vector2i) -> StaticBody2D:
 	var r := Rect2(k.x * CH, k.y * CH, CH, CH)
-	var ya := maxf(r.position.y, MundoGen.RIO_Y0)
-	if ya >= r.end.y:
+	var maior := -99.0
+	for j in 5:
+		for i in 5:
+			maior = maxf(maior, MapaMundi.sd(r.position.x + i * 256.0, r.position.y + j * 256.0))
+	if maior < MapaMundi.FUNDO - 1.5:
 		return null
-	if absf(MundoGen.rio_x((ya + r.end.y) * 0.5) - r.get_center().x) > CH * 0.5 + 1200.0:
-		return null
-	var rp := PackedVector2Array([r.position, Vector2(r.end.x, r.position.y), r.end, Vector2(r.position.x, r.end.y)])
 	var corpo: StaticBody2D = null
-	for iv in MundoGen.intervalos_fundos():
-		var ivv: Vector2 = iv
-		var y0 := maxf(ivv.x, r.position.y)
-		var y1 := minf(ivv.y, r.end.y)
-		if y0 >= y1:
+	for poli in MapaMundi.poligonos(r, MapaMundi.FUNDO, 64.0):
+		var qp: PackedVector2Array = poli
+		if qp.size() < 3 or _area(qp) < 300.0:
 			continue
-		for q in Geometry2D.intersect_polygons(MundoGen.poligono_rio(y0, y1, true), rp):
-			var qp: PackedVector2Array = q
-			if qp.size() < 3 or Geometry2D.is_polygon_clockwise(qp) or _area(qp) < 400.0:
-				continue
-			if corpo == null:
-				corpo = StaticBody2D.new()
-				corpo.name = "AguaFunda"
-				add_child(corpo)
-			var tela := PackedVector2Array()
-			for p in qp:
-				tela.append(IsoMath.mundo_para_tela(p))
-			var cp := CollisionPolygon2D.new()
-			cp.polygon = tela
-			corpo.add_child(cp)
+		if corpo == null:
+			corpo = StaticBody2D.new()
+			corpo.name = "AguaFunda"
+			corpo.position = IsoMath.mundo_para_tela(r.position)     # polígonos locais: precisão longe da origem
+			add_child(corpo)
+		var tela := PackedVector2Array()
+		for p in qp:
+			tela.append(IsoMath.mundo_para_tela(p - r.position))
+		var cp := CollisionPolygon2D.new()
+		cp.polygon = tela
+		corpo.add_child(cp)
 	return corpo
 
 
@@ -430,6 +430,13 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			ni.add_child(lt)
 			add_child(ni)
 			no = ni
+		"plantacao":
+			var pl := Plantacao.new()
+			pl.r = spec["r"]
+			pl.seco = spec["seco"]
+			pl.semente = int(pl.r.position.x * 7.0 + pl.r.position.y * 13.0)
+			add_child(pl)
+			no = pl
 		"cachoeira":
 			var ca := Cachoeira.new()
 			ca.position = IsoMath.mundo_para_tela(spec["p"])
@@ -490,6 +497,7 @@ func _prop(spec: Dictionary) -> Node2D:
 	var no := cena.instantiate() as Node2D
 	no.position = IsoMath.mundo_para_tela(spec["p"])
 	add_child(no)
+	Vento.aplicar(no, nome)                      # árvores, arbustos e mato balançam
 	var col: String = spec.get("col", "")
 	if col != "":
 		var co := Coletavel.new()
@@ -526,65 +534,6 @@ func _tintar(alvo: Color, dur: float) -> void:
 		_tween.kill()
 	_tween = create_tween()
 	_tween.tween_property(ciclo, "tinta_bioma", alvo, dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-
-
-func _criar_areas() -> void:
-	var ys: Array = []
-	var y := -1024.0
-	while y <= MundoGen.ALT + 1024.0:
-		ys.append(y)
-		y += 1024.0
-	for z in 5:
-		var esq := PackedVector2Array()
-		var dir := PackedVector2Array()
-		for yy in ys:
-			var yv: float = yy
-			var xa: float
-			var xb: float
-			match z:
-				0:
-					xa = -2048.0
-					xb = MundoGen.borda_x(0, yv, -1)
-				1:
-					xa = MundoGen.borda_x(0, yv, -1)
-					xb = MundoGen.borda_x(0, yv, 1)
-				2:
-					xa = MundoGen.borda_x(0, yv, 1)
-					xb = MundoGen.borda_x(1, yv, -1)
-				3:
-					xa = MundoGen.borda_x(1, yv, -1)
-					xb = MundoGen.borda_x(1, yv, 1)
-				_:
-					xa = MundoGen.borda_x(1, yv, 1)
-					xb = MundoGen.LARG + 2048.0
-			esq.append(IsoMath.mundo_para_tela(Vector2(xa, yv)))
-			dir.append(IsoMath.mundo_para_tela(Vector2(xb, yv)))
-		dir.reverse()
-		esq.append_array(dir)
-		var area := Area2D.new()
-		area.name = "Bioma%d" % z
-		area.collision_layer = 0
-		area.collision_mask = 2                       # camada do jogador
-		var cp := CollisionPolygon2D.new()
-		cp.polygon = esq
-		area.add_child(cp)
-		area.body_entered.connect(_ao_entrar.bind(z))
-		add_child(area)
-
-
-func _ao_entrar(corpo: Node, z: int) -> void:
-	if corpo != jogador:
-		return
-	_zona = z
-	if z == 1 or z == 3:
-		_t_retintar = 0.0                              # _process acompanha a posição dentro da faixa
-		return
-	var bioma: int = z / 2
-	_tintar(TINTAS[bioma], 4.0)
-	if bioma != _bioma_anunciado:
-		_bioma_anunciado = bioma
-		if jogador != null and jogador.has_method("aviso"):
-			jogador.call("aviso", "Entrando: " + MundoGen.nome_bioma(bioma))
 
 
 # ───────────────────────────── save ─────────────────────────────

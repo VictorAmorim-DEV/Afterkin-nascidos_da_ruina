@@ -59,6 +59,9 @@ const ALCANCE_LUZ := 520.0            ## px de tela; além disso não vale a pen
 var _fatias: Array[Sprite2D] = []
 var _largo: bool = false
 var _sombra: Sprite2D = null
+var _contato: Sprite2D = null
+var _material_fatias: Material = null
+var _tex_desenho: Texture2D = null        ## textura das fatias: a original ou uma CanvasTexture com normal map
 var _iluminado: bool = true
 var _espera_luz: float = 0.0
 
@@ -136,13 +139,21 @@ func _montar() -> void:
 	if is_instance_valid(_sombra):
 		_sombra.queue_free()
 	_sombra = null
+	if is_instance_valid(_contato):
+		_contato.queue_free()
+	_contato = null
 	y_sort_enabled = true
 	_atualizar_colisao()
 	if textura == null or escala <= 0.0:
 		return
+	_tex_desenho = textura
 	if not Engine.is_editor_hint():                  # sombra do sol (V13: sombraSol), apoiada no pivô
 		_sombra = SombraSol.de_textura(textura, pivo, Vector2(escala, escala))
 		add_child(_sombra, false, Node.INTERNAL_MODE_BACK)
+		var larg := maxf(28.0, (canto_dir().x - canto_esq().x) * 1.15)
+		_contato = SombraSol.contato(larg, (canto_esq() + canto_dir()) * 0.5)
+		add_child(_contato, false, Node.INTERNAL_MODE_BACK)
+		_tex_desenho = Relevo.com_normal(textura)    # relevo: reage à lanterna e aos faróis
 	var tam := textura.get_size()
 	var x_esq := clampf(base_esq.x, 0.0, tam.x)
 	var x_dir := clampf(base_dir.x, x_esq, tam.x)
@@ -169,18 +180,28 @@ func _montar() -> void:
 
 func _criar_fatia(c0: float, c1: float, y_ordem: float, altura: float) -> void:
 	var s := Sprite2D.new()
-	s.texture = textura
+	s.texture = _tex_desenho if _tex_desenho != null else textura
 	s.centered = false
 	s.region_enabled = true
 	s.region_rect = Rect2(c0, 0.0, c1 - c0, altura)
 	s.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	s.light_mask = MASCARA_LUZ_OBJETOS if _iluminado else 0
 	s.scale = Vector2(escala, escala)
+	if _material_fatias != null:
+		s.material = _material_fatias
 	# a posição da fatia é o ponto de ordenação; o offset devolve a arte ao lugar
 	s.position = Vector2((c0 - pivo.x) * escala, y_ordem)
 	s.offset = Vector2(0.0, -pivo.y - y_ordem / escala)
 	add_child(s, false, Node.INTERNAL_MODE_BACK)
 	_fatias.append(s)
+
+
+## Material de todas as fatias (ex.: o vento das plantas).
+func definir_material(m: Material) -> void:
+	_material_fatias = m
+	for f in _fatias:
+		if is_instance_valid(f):
+			f.material = m
 
 
 ## true se alguma fatia deste objeto é desenhada por cima de 'corpo' (retângulo global da cabeça/tronco de

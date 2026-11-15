@@ -28,6 +28,17 @@ void fragment() {
 """
 
 static var _mat: ShaderMaterial = null
+static var _mat_contato: ShaderMaterial = null
+static var _tex_contato: GradientTexture2D = null
+
+## Sombra de contato: mancha suave no pé de cada objeto (oclusão no chão). Mais forte de dia, fraca à noite.
+const SHADER_CONTATO := """shader_type canvas_item;
+render_mode unshaded;
+uniform float alfa = 0.3;
+void fragment() {
+	COLOR = vec4(0.0, 0.0, 0.0, texture(TEXTURE, UV).a * alfa);
+}
+"""
 
 
 static func material() -> ShaderMaterial:
@@ -43,6 +54,8 @@ static func material() -> ShaderMaterial:
 static func atualizar(minutos: float) -> void:
 	var m := material()
 	var h := minutos / 60.0
+	var dia := clampf(sin((h - 5.6) / 13.8 * PI), 0.0, 1.0) if h >= 5.6 and h <= 19.4 else 0.0
+	material_contato().set_shader_parameter("alfa", lerpf(0.16, 0.34, dia) if ativo else 0.0)
 	if not ativo or h < 5.6 or h > 19.4:
 		m.set_shader_parameter("alfa", 0.0)
 		return
@@ -94,3 +107,38 @@ class Personagem extends AnimatedSprite2D:
 			animation = fonte.animation
 		frame = fonte.frame
 		flip_h = fonte.flip_h
+
+
+static func material_contato() -> ShaderMaterial:
+	if _mat_contato == null:
+		var sh := Shader.new()
+		sh.code = SHADER_CONTATO
+		_mat_contato = ShaderMaterial.new()
+		_mat_contato.shader = sh
+	return _mat_contato
+
+
+## Sombra de contato: elipse suave (largura em px de tela, 2:1) centrada em 'centro' (local do objeto).
+static func contato(largura: float, centro: Vector2 = Vector2.ZERO) -> Sprite2D:
+	if _tex_contato == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(1, 1, 1, 1))
+		g.set_color(1, Color(1, 1, 1, 0))
+		g.add_point(0.55, Color(1, 1, 1, 0.55))
+		_tex_contato = GradientTexture2D.new()
+		_tex_contato.gradient = g
+		_tex_contato.fill = GradientTexture2D.FILL_RADIAL
+		_tex_contato.fill_from = Vector2(0.5, 0.5)
+		_tex_contato.fill_to = Vector2(1.0, 0.5)
+		_tex_contato.width = 64
+		_tex_contato.height = 64
+	var s := Sprite2D.new()
+	s.name = "SombraContato"
+	s.texture = _tex_contato
+	s.position = centro
+	s.scale = Vector2(largura / 64.0, largura * 0.5 / 64.0)
+	s.material = material_contato()
+	s.z_as_relative = false
+	s.z_index = -1
+	s.light_mask = 0
+	return s

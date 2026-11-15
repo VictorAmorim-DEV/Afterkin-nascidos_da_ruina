@@ -12,18 +12,38 @@ const METRO := 49.48
 const VPM := 30.3
 const N := 40                       ## tiles por lado do miolo (BLOCO - RUA = 2560 u)
 
-## Papel de cada quarteirão (coluna oeste→leste, linha norte→sul): o programa da cidade principal da V13 (cidadesTWD).
-## O ponto inicial fica a oeste da linha 2, então o jogador entra pela vizinhança residencial.
+## Papel de cada quarteirão por área urbana (MundoGen.AREAS; coluna oeste→leste, linha norte→sul). O Porto (área 0)
+## leva o programa da cidade principal da V13 (cidadesTWD) em volta da rotatória e o cais na coluna da água.
 const PAPEIS := {
-	Vector2i(0, 0): "escola", Vector2i(1, 0): "hospital", Vector2i(2, 0): "casas_dividida",
-	Vector2i(0, 1): "comercial_banco", Vector2i(1, 1): "comercial_farmacia", Vector2i(2, 1): "mercado",
-	Vector2i(0, 2): "casas", Vector2i(1, 2): "praca", Vector2i(2, 2): "comercial_delegacia",
-	Vector2i(0, 3): "posto", Vector2i(1, 3): "igreja", Vector2i(2, 3): "casas_dividida"}
-## Papéis por área urbana (MundoGen.AREAS): cidade principal; cidade pequena (V13: comércio com oficina, farmácia,
-## loja e mercado + praça e casas); área industrial (V13: dois quarteirões de galpões, só um com chaminé).
+	Vector2i(0, 0): "cais", Vector2i(1, 0): "casas", Vector2i(2, 0): "escola", Vector2i(3, 0): "hospital",
+	Vector2i(4, 0): "casas_dividida", Vector2i(5, 0): "mercado", Vector2i(6, 0): "casas",
+	Vector2i(0, 1): "cais", Vector2i(1, 1): "comercial_banco", Vector2i(2, 1): "comercial_farmacia",
+	Vector2i(3, 1): "comercial_delegacia", Vector2i(4, 1): "comercial_oficina", Vector2i(5, 1): "casas", Vector2i(6, 1): "posto",
+	Vector2i(0, 2): "cais", Vector2i(1, 2): "casas", Vector2i(2, 2): "casas", Vector2i(3, 2): "praca",
+	Vector2i(4, 2): "comercial_farmacia", Vector2i(5, 2): "casas_dividida", Vector2i(6, 2): "casas",
+	Vector2i(0, 3): "cais", Vector2i(1, 3): "posto", Vector2i(2, 3): "igreja", Vector2i(3, 3): "casas_dividida",
+	Vector2i(4, 3): "casas", Vector2i(5, 3): "comercial_banco", Vector2i(6, 3): "casas",
+	Vector2i(0, 4): "cais", Vector2i(1, 4): "casas", Vector2i(2, 4): "industrial", Vector2i(3, 4): "industrial_simples",
+	Vector2i(4, 4): "casas", Vector2i(5, 4): "casas", Vector2i(6, 4): "igreja"}
 const PAPEIS_AREAS := [PAPEIS,
-	{Vector2i(0, 0): "comercial_oficina", Vector2i(1, 0): "praca"},
-	{Vector2i(0, 0): "industrial_simples", Vector2i(1, 0): "industrial"}]
+	{Vector2i(0, 0): "casas", Vector2i(1, 0): "escola", Vector2i(2, 0): "comercial_banco", Vector2i(3, 0): "casas_dividida",
+		Vector2i(4, 0): "casas", Vector2i(0, 1): "mercado", Vector2i(1, 1): "comercial_farmacia", Vector2i(2, 1): "praca",
+		Vector2i(3, 1): "comercial_delegacia", Vector2i(4, 1): "posto", Vector2i(0, 2): "casas", Vector2i(1, 2): "igreja",
+		Vector2i(2, 2): "casas", Vector2i(3, 2): "hospital", Vector2i(4, 2): "casas"},                 # Cidade Norte
+	{Vector2i(0, 0): "comercial_oficina", Vector2i(1, 0): "praca"},                                   # Vila do Lago
+	{Vector2i(0, 0): "militar", Vector2i(1, 0): "militar", Vector2i(2, 0): "militar", Vector2i(0, 1): "militar",
+		Vector2i(1, 1): "militar", Vector2i(2, 1): "militar", Vector2i(0, 2): "militar", Vector2i(1, 2): "militar",
+		Vector2i(2, 2): "militar"},                                                                     # Base Militar
+	{Vector2i(0, 0): "hangar", Vector2i(1, 0): "terminal", Vector2i(2, 0): "hangar"},                 # Aeroporto
+	{Vector2i(0, 0): "posto", Vector2i(1, 0): "comercial_oficina", Vector2i(0, 1): "casas", Vector2i(1, 1): "mercado"},
+	{Vector2i(0, 0): "casas", Vector2i(1, 0): "igreja", Vector2i(2, 0): "comercial_farmacia", Vector2i(0, 1): "casas_dividida",
+		Vector2i(1, 1): "praca", Vector2i(2, 1): "casas"},                                             # São Jorge
+	{Vector2i(0, 0): "cais", Vector2i(1, 0): "casas"},                                                # Baía do Sul
+	{Vector2i(0, 0): "casas", Vector2i(1, 0): "igreja"},                                              # Cruzeiro
+	{Vector2i(0, 0): "posto", Vector2i(1, 0): "casas"},                                               # Poeira
+	{Vector2i(0, 0): "militar"},                                                                       # Forte do Leste
+	{Vector2i(0, 0): "casas"}, {Vector2i(0, 0): "posto"}, {Vector2i(0, 0): "casas"},
+	{Vector2i(0, 0): "comercial_oficina"}, {Vector2i(0, 0): "casas"}]
 
 ## Rua secundária N–S no meio dos quarteirões "casas_dividida" (V13: quadraResidencialDividida, via 's'):
 ## tiles [SEC_X0, SEC_X0 + SEC_LARG) do miolo; calçadas como as das ruas principais e asfalto mais estreito.
@@ -34,16 +54,16 @@ const SEC_CALCADA := 128.0
 const CORES_CONTAINER := ["#3a5a7a", "#8a3a2a", "#3a6a4a", "#8a6a2a", "#5a5a5a"]
 const TUDO := Rect2(-1.0e7, -1.0e7, 2.0e7, 2.0e7)
 
-## Cruzamento (rua N-S i, rua L-O j) que vira rotatória (V13: rotatoria): o primeiro da avenida por onde o jogador
-## entra, entre o comércio, as casas e a praça. Medidas em tiles, como na V13.
-const ROTATORIA := Vector2i(1, 2)
+## Cruzamento do Porto (rua N-S i, rua L-O j) que vira rotatória (V13: rotatoria): entre o comércio, as casas e a
+## praça, na avenida por onde o jogador chega. Medidas em tiles, como na V13.
+const ROTATORIA := Vector2i(3, 2)
 const ROT_RO := 9.5                 ## raio externo do asfalto
 const ROT_RI := 3.6                 ## raio da ilha central (meio-fio)
 const ROT_CALCADA := 2.0            ## calçada em volta do anel (a mesma largura das calçadas)
 const ROT_OCUPA := 19.0             ## raio reservado nos quarteirões vizinhos (nenhum prédio ou lote)
 const ROT_PRACA := Vector2(11.0, 18.5)   ## anel gramado das pracinhas (começa sob a calçada do anel: sem degrau)
 ## Papéis cujas calçadas ficam sem árvore (entradas de veículos, portões).
-const SEM_ARVORE := ["industrial", "posto", "hospital"]
+const SEM_ARVORE := ["industrial", "industrial_simples", "posto", "hospital", "cais", "militar", "hangar", "terminal"]
 ## Árvores de calçada: raio da copa no mundo (u, ≈ meia largura do sprite na tela × 1,41) e quanto a copa pode
 ## passar da parede do edifício que fica à frente dela na tela (esse edifício é desenhado por cima da copa).
 const ARV_COPA := {"arvore_frondosa": 197.0, "arvore_outono": 146.0, "arvore_fina": 144.0, "arvore_morta": 144.0,
@@ -181,6 +201,10 @@ static func _bloco(i: int, j: int, a: int = 0) -> Dictionary:
 		"industrial": _industrial(q, true)
 		"industrial_simples": _industrial(q, false)
 		"comercial_oficina": _comercial(q, {"s": ["oficina", "farmacia", "loja"], "n": ["mercado"]}, ["loja", "loja", "apto"])
+		"cais": _cais(q)
+		"militar": _militar(q)
+		"hangar": _aeroporto(q, false)
+		"terminal": _aeroporto(q, true)
 		"comercial_banco": _comercial(q, {"s": ["banco", "apto"], "e": ["apto"]}, ["apto", "apto", "loja"])
 		"comercial_farmacia": _comercial(q, {"s": ["apto", "farmacia", "apto"], "w": ["loja"]}, ["apto", "apto", "loja"])
 		"comercial_delegacia": _comercial(q, {"s": ["delegacia", "loja"]}, ["apto", "loja"])
@@ -287,15 +311,6 @@ static func _postes() -> PackedVector2Array:
 					out.append(Vector2(x2, y2 + lado_calcada[k2 % 2]))
 				x2 += 1024.0
 				k2 += 1
-	for l in MundoGen.ligacoes():                     # ligações: fora do viaduto e das pontas
-		for r in _partes_ligacao((l as Dictionary)["r"]):
-			var rr: Rect2 = r
-			var k4 := 0
-			var y4 := rr.position.y + 300.0
-			while y4 < rr.end.y - 200.0:
-				out.append(Vector2(rr.position.x + POSTE_RECUO if k4 % 2 == 0 else rr.end.x - POSTE_RECUO, y4))
-				y4 += 1024.0
-				k4 += 1
 	for s in ruas_secundarias():                      # rua secundária: um poste a cada 1024 u, alternando o lado
 		var r: Rect2 = (s as Dictionary)["r"]
 		var k3 := 0
@@ -761,19 +776,6 @@ static func cruzamento(i: int, j: int, a: int = 0) -> Vector2:
 	return MundoGen.area_rect(a).position + Vector2(i, j) * MundoGen.BLOCO + Vector2.ONE * (MundoGen.RUA * 0.5)
 
 
-## Pedaços de uma ligação fora da faixa do viaduto.
-static func _partes_ligacao(r: Rect2) -> Array:
-	var v := MundoGen.viaduto()
-	if r.end.y <= v.position.y or r.position.y >= v.end.y:
-		return [r]
-	var out: Array = []
-	if r.position.y < v.position.y:
-		out.append(Rect2(r.position.x, r.position.y, r.size.x, v.position.y - r.position.y))
-	if r.end.y > v.end.y:
-		out.append(Rect2(r.position.x, v.end.y, r.size.x, r.end.y - v.end.y))
-	return out
-
-
 static func centro_rotatoria() -> Vector2:
 	return cruzamento(ROTATORIA.x, ROTATORIA.y)
 
@@ -915,11 +917,6 @@ static func _arvores_calcada(rng: RandomNumberGenerator) -> void:
 				var x0 := C.position.x + i * B + R
 				_fila_arvores(rng, Vector2(x0, y + ARV_RECUO), Vector2(x0, y + R - ARV_RECUO), Vector2(1, 0), B - R,
 					[_papel(i, j - 1, a), _papel(i, j, a)], ocupados, predios)
-	for l in MundoGen.ligacoes():                     # ligações
-		for r in _partes_ligacao((l as Dictionary)["r"]):
-			var rr: Rect2 = r
-			_fila_arvores(rng, Vector2(rr.position.x + ARV_RECUO, rr.position.y), Vector2(rr.end.x - ARV_RECUO, rr.position.y),
-				Vector2(0, 1), rr.size.y, ["", ""], ocupados, predios)
 	for s in ruas_secundarias():                      # rua secundária
 		var r: Rect2 = (s as Dictionary)["r"]
 		_fila_arvores(rng, Vector2(r.position.x + ARV_RECUO, r.position.y), Vector2(r.end.x - ARV_RECUO, r.position.y),
@@ -991,11 +988,6 @@ static func _trechos() -> Array:
 			for i in nx:
 				out.append({"c": Vector2(C.position.x + i * B + R, C.position.y + j * B + R * 0.5), "dir": Vector2(1, 0),
 					"n": Vector2(0, 1), "comp": B - R, "meia": meia, "calc": MundoGen.CALCADA})
-	for l in MundoGen.ligacoes():
-		for r in _partes_ligacao((l as Dictionary)["r"]):
-			var rr: Rect2 = r
-			out.append({"c": Vector2(rr.get_center().x, rr.position.y), "dir": Vector2(0, 1), "n": Vector2(1, 0),
-				"comp": rr.size.y, "meia": meia, "calc": MundoGen.CALCADA})
 	for s in ruas_secundarias():
 		var r: Rect2 = (s as Dictionary)["r"]
 		out.append({"c": Vector2(r.get_center().x, r.position.y), "dir": Vector2(0, 1), "n": Vector2(1, 0),
@@ -1115,3 +1107,94 @@ static func cruzamentos() -> Array:
 			for j in ny + 1:
 				out.append({"c": cruzamento(i, j, a), "a": a, "i": i, "j": j, "rot": a == 0 and Vector2i(i, j) == ROTATORIA})
 	return out
+
+
+# ═════════════════════════════════ quarteirões novos do mapa-múndi ═════════════════════════════════
+
+## Cais do porto: armazéns de frente para a água (oeste), contêineres empilhados, cargas e entulho; chão de concreto.
+static func _cais(q: Q) -> void:
+	q.solo(0, 0, N, N, "concreto", Color(0.86, 0.85, 0.82))
+	var y := 2
+	while y < N - 10:
+		var d := q.ri(10, 14)
+		_predio(q, N - 16, y, N - 2, y + d, {"uso": "galpao", "andares": 1, "altura_m": 7.0, "cobertura": "galpao",
+			"frente": "w", "bsp_prof": 1, "bsp_min": 6, "dano": q.rf(0.3, 0.7)})
+		y += d + 3
+	for k in 14:                                      # contêineres
+		var vert := q.rng.randf() < 0.25
+		var cw := 2 if vert else 5
+		var chh := 5 if vert else 2
+		var tx := q.ri(2, N - 22)
+		var ty := q.ri(2, N - 7)
+		if not q.livre(tx, ty, tx + cw, ty + chh):
+			continue
+		q.ocupar(tx, ty, tx + cw, ty + chh)
+		var p := q.w(tx, ty)
+		q.urbano("container", p.x, p.y, p.x + cw * TILE - 6.0, p.y + chh * TILE - 6.0, zm(2.6), true, {"cor": q.pick(CORES_CONTAINER)})
+	for k in 10:
+		var tx2 := q.ri(1, N - 18)
+		var ty2 := q.ri(1, N - 2)
+		if q.livre(tx2, ty2, tx2 + 1, ty2 + 1):
+			q.prop(q.pick(["barril_azul", "caixote", "caixa_madeira", "sacos_areia_b", "entulho_pedras"]), q.w(tx2 + 0.5, ty2 + 0.5),
+				{"loot": "caixa"} if k % 3 == 0 else {})
+	MundoGen._carro(q.rng, q.w(q.rf(4.0, N - 20.0), q.rf(4.0, N - 4.0)), q.rf(-PI, PI), q.specs)
+
+
+## Base militar (Base Militar e Forte do Leste): muro com portão ao sul, alojamentos, sacos de areia, barricadas,
+## jipes e caixas de suprimento.
+static func _militar(q: Q) -> void:
+	q.solo(0, 0, N, N, "terra", Color(0.9, 0.86, 0.78))
+	var x := 3
+	while x < N - 12:
+		var w := q.ri(9, 12)
+		_predio(q, x, 4, x + w, 4 + q.ri(7, 9), {"uso": "galpao", "andares": 1, "altura_m": 4.5, "cobertura": "galpao",
+			"frente": "s", "bsp_prof": 1, "bsp_min": 4, "dano": q.rf(0.2, 0.6)})
+		x += w + 3
+	_estacionamento(q, 4, N - 14, N - 4, N - 3, "x", 0.0)
+	for k in 4:                                       # jipes do pátio
+		MundoGen._carro(q.rng, q.w(6.0 + k * 8.0, N - 8.5), PI * 0.5, q.specs)
+	for k in 8:                                       # trincheiras de sacos de areia e barricadas
+		var tx := q.rf(3.0, N - 6.0)
+		var ty := q.rf(16.0, N - 18.0)
+		if q.livre(int(tx), int(ty), int(tx) + 3, int(ty) + 1):
+			q.ocupar(int(tx), int(ty), int(tx) + 3, int(ty) + 1)
+			if k % 2 == 0:
+				q.prop("sacos_areia_a" if k % 4 == 0 else "sacos_areia_b", q.w(tx, ty))
+			else:
+				var p := q.w(tx, ty)
+				q.urbano("barricada", p.x, p.y, p.x + mt(3.0), p.y + mt(0.7), zm(0.9))
+	for k in 6:
+		var tx2 := q.ri(2, N - 3)
+		var ty2 := q.ri(14, N - 16)
+		if q.livre(tx2, ty2, tx2 + 1, ty2 + 1):
+			q.prop(q.pick(["caixote", "caixa_madeira", "barril_azul"]), q.w(tx2 + 0.5, ty2 + 0.5), {"loot": "caixa"})
+	var rc := Rect2(q.w(0.4, 0.4), Vector2((N - 0.8) * TILE, (N - 0.8) * TILE))
+	q.cerca(rc, "s", rc.get_center().x, mt(6.0), "muro")
+
+
+## Aeroporto: a pista atravessa os quarteirões (faixa de asfalto com a linha central tracejada) e, ao norte dela,
+## hangares ou o terminal com placa.
+static func _aeroporto(q: Q, terminal: bool) -> void:
+	q.solo(0, 0, N, N, "concreto", Color(0.82, 0.82, 0.8))
+	var y0 := 22
+	var y1 := 34
+	q.ocupar(0, y0, N, y1)
+	q.solo(0, y0, N, y1, "asfalto", Color(0.85, 0.85, 0.88))
+	var x := 1.0
+	while x < N - 2.0:
+		q.solo(x, (y0 + y1) * 0.5 - 0.12, x + 3.0, (y0 + y1) * 0.5 + 0.12, "", Color(0.92, 0.92, 0.88, 0.85))
+		x += 6.0
+	q.solo(0, y0 + 0.4, N, y0 + 0.55, "", Color(0.92, 0.92, 0.88, 0.7))
+	q.solo(0, y1 - 0.55, N, y1 - 0.4, "", Color(0.92, 0.92, 0.88, 0.7))
+	if terminal:
+		_predio(q, 6, 3, 34, 15, {"uso": "banco", "andares": 2, "pe_direito_m": 4.0, "frente": "s",
+			"placa": ["AEROPORTO", "#1e3a5e", "#f0f0f0"], "dano": 0.5})
+		_estacionamento(q, 4, 16, N - 4, 21, "x", 0.3)
+	else:
+		_predio(q, 4, 2, 36, 18, {"uso": "galpao", "andares": 1, "altura_m": 9.0, "cobertura": "galpao", "frente": "s",
+			"bsp_prof": 1, "bsp_min": 8, "dano": q.rf(0.3, 0.7)})
+		for k in 5:
+			var tx := q.ri(2, N - 4)
+			var ty := q.ri(36, N - 2)
+			if q.livre(tx, ty, tx + 1, ty + 1):
+				q.prop(q.pick(["barril_azul", "caixote", "barreira_listrada"]), q.w(tx + 0.5, ty + 0.5), {"loot": "scrap"} if k == 0 else {})

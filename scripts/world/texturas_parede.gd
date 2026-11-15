@@ -19,6 +19,7 @@ const PERIODO := 64.0                ## altura (px de tela) que uma célula cobr
 const REALCE := 1.12
 
 static var _atlas: ImageTexture = null
+static var _relevo: CanvasTexture = null
 static var _tam := Vector2.ZERO
 
 
@@ -35,6 +36,15 @@ static func atlas() -> Texture2D:
 		_atlas = ImageTexture.create_from_image(img)
 		_tam = Vector2(img.get_width(), img.get_height())
 	return _atlas
+
+
+## O atlas com o normal map (Relevo): juntas de tijolo, ondas do zinco e frestas das tábuas reagem à lanterna.
+static func atlas_relevo() -> Texture2D:
+	if _relevo == null:
+		_relevo = CanvasTexture.new()
+		_relevo.diffuse_texture = atlas()
+		_relevo.normal_texture = ImageTexture.create_from_image(Relevo.gerar(atlas().get_image(), 1.6))
+	return _relevo
 
 
 ## UV no atlas do ponto (fu, fv) ∈ [0, 1] da célula do material (1 texel para dentro: sem vazar para a vizinha).

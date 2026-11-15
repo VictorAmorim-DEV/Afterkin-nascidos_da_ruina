@@ -3,7 +3,7 @@ extends StaticBody2D
 ## Trecho de cerca (até ~256 u) entre dois pontos do mundo. Desenhada por código:
 ## "madeira" (mourões e duas travas), "arame" (mourões finos e fios), "palicada" (toras pontudas),
 ## "alambrado" (tela de aço da V13: chain), "muro" (muro baixo de tijolo/reboco do cemitério e dos lotes) e
-## "mureta" (barreira de concreto do viaduto, V13: rail).
+## "mureta" (barreira de concreto, V13: rail).
 ## Origem do nó = meio do trecho; a colisão é uma tira fina ao longo dele.
 
 var a := Vector2.ZERO        ## extremos em coordenadas de MUNDO
@@ -90,7 +90,7 @@ func _alambrado() -> void:
 		draw_line(p, p + Vector2(0, -alt - 2.0), Color8(96, 98, 100), 3.0)
 
 
-## Barreira de concreto do viaduto (~0,8 m), base mais larga, manchas de sujeira e marcas de batida.
+## Barreira de concreto (~0,8 m), base mais larga, manchas de sujeira e marcas de batida.
 func _mureta() -> void:
 	var alt := 24.0
 	var d := (_lb - _la).normalized()

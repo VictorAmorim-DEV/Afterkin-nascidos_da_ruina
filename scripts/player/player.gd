@@ -84,6 +84,7 @@ func _ready() -> void:
 	var sombra := SombraSol.Personagem.new()          # sombra do sol (V13: sombraChar)
 	sombra.fonte = sprite
 	add_child(sombra)
+	add_child(SombraSol.contato(34.0))                # sombra de contato no pé
 	inventario = Inventario.new()
 	inventario.name = "Inventario"
 	inventario.jogador = self

@@ -1,7 +1,7 @@
 class_name TerrenoTexturas
 extends RefCounted
 ## Texturas de chão desenhadas por código (sem arquivos novos): areia, solo rachado, terra, asfalto,
-## calçada, concreto, água, madeira e solo lavrado. Todas repetem sem emenda: o ruído usa período
+## calçada, concreto, água, madeira, solo lavrado, rocha (montanha e cânion), neve e lama (pântano do delta). Todas repetem sem emenda: o ruído usa período
 ## inteiro e as rachaduras usam Voronoi "enrolado". Cada uma é gerada uma vez e fica em cache.
 
 const N := 128                       ## lado do ladrilho, em px
@@ -10,7 +10,8 @@ const MUNDO := 384.0                 ## tamanho do ladrilho no mundo, em u
 static var _cache: Dictionary = {}
 
 
-const NOMES := ["areia", "rachada", "terra", "lavrado", "asfalto", "calcada", "concreto", "agua", "madeira"]
+const NOMES := ["areia", "rachada", "terra", "lavrado", "asfalto", "calcada", "concreto", "agua", "madeira", "rocha",
+	"neve", "lama"]
 
 
 ## Gera todas de uma vez (~600 ms) na carga inicial. Geradas sob demanda, cada uma travava o jogo de 40 a 160 ms
@@ -122,4 +123,19 @@ static func _cor(nome: String, u: float, v: float, px: int, py: int) -> Color:
 			var veio: float = 0.85 + 0.18 * _vn(u * 3.0, v * 24.0, 3, 13) + 0.06 * (grao - 0.5)
 			var c9 := Color(0.45 * veio, 0.31 * veio, 0.18 * veio)
 			return c9.darkened(0.4) if tabua else c9
+		"rocha":
+			var vo2 := _voronoi(u * 5.0, v * 5.0, 5, 14)
+			var f10: float = 0.78 + 0.18 * _vn(u * 6.0, v * 6.0, 6, 15) + 0.1 * (grao - 0.5) + 0.12 * vo2.x
+			var c10 := Color(0.47 * f10, 0.45 * f10, 0.41 * f10)
+			if vo2.y - vo2.x < 0.05:
+				c10 = c10.darkened(0.45)                  # fendas entre as lajes de pedra
+			return c10
+		"neve":
+			var f11: float = 0.92 + 0.06 * _vn(u * 4.0, v * 4.0, 4, 16) + 0.04 * (grao - 0.5)
+			return Color(0.9 * f11, 0.93 * f11, 0.97 * f11)
+		"lama":
+			var poca: float = _vn(u * 5.0, v * 5.0, 5, 17)
+			var f12: float = 0.8 + 0.2 * _vn(u * 10.0, v * 10.0, 10, 18) + 0.1 * (grao - 0.5)
+			var c12 := Color(0.3 * f12, 0.27 * f12, 0.18 * f12)
+			return c12.lerp(Color(0.24, 0.3, 0.3), clampf((poca - 0.6) * 3.0, 0.0, 0.7))   # poças de água parada
 	return Color(1, 0, 1)
