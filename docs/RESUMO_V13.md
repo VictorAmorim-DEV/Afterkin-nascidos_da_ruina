@@ -50,7 +50,7 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ quadras especiais → `Quadras`: `quadraComercial` (fileiras, beco com caçambas, estacionamentos), `quadraHospital`, `quadraMercado`, `quadraEscola` (quadra de esportes), `quadraIgreja` (cemitério com muro), `quadraPosto`, `quadraIndustrial` (galpões, contêineres, chaminé), `quadraPraca`, `quadraCasas`/`loteCasa` (garagem, jardim, quintal, correio, cercas); `fileira`/`fabrica` · ⬜ `quadraParque` e `quadraResidencialDividida` (rua secundária); área industrial e cidade pequena separadas (a Godot tem uma cidade só: a indústria virou um quarteirão)
 - ✅ prédios altos: `predio` (l.528) → `Edificio` com tipo "predio" (andares, uso, cobertura plana/galpão/igreja); `fachadaPredio`, `janelaAndar`, `vitrines`, `placaFace`, `placaTelhado`, `pichar`, `deteriorar`, `escadaIncendio`, `telhadoPlano`, `torreIgreja` → `Fachada`; `PAREDES_PREDIO`, `MAT_USO`, `LOJAS`, `PLACAS`, `PICHA`, `USO_SALAS`, móveis de loja, escritório, enfermaria, sala de aula, igreja e depósito
 - ✅ terreno: `tileAt`, `autotileRoads`, `buildBlendLayer` → texturas procedurais (`TerrenoTexturas`) + polígonos recortados por chunk (`ChaoChunk`)
-- ⬜ minimapa: `construirMinimapa`, `desenharMinimapa` (l.1763-1818)
+- ✅ minimapa: `construirMinimapa` → `MinimapaBase` (1 px por tile, gerado numa Thread a partir do MundoGen/Quadras, edifícios pelo uso), `desenharMinimapa` → `Minimapa` (projeção isométrica no shader, recorte circular, bússola, seta, totem, inimigos em alerta, rumo; M amplia 60 m ↔ 180 m)
 
 ## Construções (já na Godot: `scripts/world/edificio.gd`)
 - ✅ `novoEdificio`, `bsp`, `porta`, `mobiliar`, `edifColisoes`, `EDIF_atualizar`

@@ -47,9 +47,14 @@ func _ready() -> void:
 	relogio.add_theme_font_size_override("font_size", 17)
 	ajuda.add_theme_font_size_override("font_size", 12)
 	ajuda.modulate = Color(1.0, 1.0, 1.0, 0.7)
+	# a linha de ajuda quebra dentro do painel: sem isso o painel crescia até a largura da tela e
+	# esticava as barras de vida/fôlego por baixo do minimapa
+	ajuda.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	ajuda.custom_minimum_size = Vector2(300, 0)
 	dica.add_theme_font_size_override("font_size", 18)
 	_montar_vitais()
 	_montar_toast()
+	add_child(Minimapa.new())                      # V13: minimapa com bússola (M amplia)
 
 
 func _process(delta: float) -> void:
@@ -158,7 +163,7 @@ func _montar_vitais() -> void:
 	for n in [_vida_texto, _vida_barra, _fome_barra, _saude_texto]:
 		painel.add_child(n)
 		painel.move_child(n, painel.get_child_count() - 2)     # antes da linha de ajuda
-	ajuda.text += " · E entrar em veículo · I mochila · botão esquerdo atacar/colher · Q forma (rato) · F9 trocar raça"
+	ajuda.text += " · E entrar em veículo · I mochila · botão esquerdo atacar/colher · Q forma (rato) · M minimapa · F9 trocar raça"
 
 
 func _montar_toast() -> void:
