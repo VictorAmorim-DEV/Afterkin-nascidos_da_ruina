@@ -18,7 +18,13 @@ const PAPEIS := {
 	Vector2i(0, 0): "escola", Vector2i(1, 0): "hospital", Vector2i(2, 0): "industrial",
 	Vector2i(0, 1): "comercial_banco", Vector2i(1, 1): "comercial_farmacia", Vector2i(2, 1): "mercado",
 	Vector2i(0, 2): "casas", Vector2i(1, 2): "praca", Vector2i(2, 2): "comercial_delegacia",
-	Vector2i(0, 3): "posto", Vector2i(1, 3): "igreja", Vector2i(2, 3): "casas"}
+	Vector2i(0, 3): "posto", Vector2i(1, 3): "igreja", Vector2i(2, 3): "casas_dividida"}
+
+## Rua secundária N–S no meio dos quarteirões "casas_dividida" (V13: quadraResidencialDividida, via 's'):
+## tiles [SEC_X0, SEC_X0 + SEC_LARG) do miolo; calçadas como as das ruas principais e asfalto mais estreito.
+const SEC_X0 := 16
+const SEC_LARG := 7
+const SEC_CALCADA := 128.0
 
 const CORES_CONTAINER := ["#3a5a7a", "#8a3a2a", "#3a6a4a", "#8a6a2a", "#5a5a5a"]
 const TUDO := Rect2(-1.0e7, -1.0e7, 2.0e7, 2.0e7)
@@ -166,6 +172,10 @@ static func _bloco(i: int, j: int) -> Dictionary:
 			_casas(q, N / 2 + 1, 0, N, N)
 		"posto": _posto(q)
 		"igreja": _igreja(q)
+		"casas_dividida":
+			q.ocupar(SEC_X0, 0, SEC_X0 + SEC_LARG, N)
+			_casas(q, 0, 0, SEC_X0, N)
+			_casas(q, SEC_X0 + SEC_LARG, 0, N, N)
 		_: _casas(q, 0, 0, N, N)
 	var d := {"specs": q.specs, "chao": q.chao}
 	_cache[k] = d
@@ -256,6 +266,14 @@ static func _postes() -> PackedVector2Array:
 				out.append(Vector2(x2, y2 + lado_calcada[k2 % 2]))
 			x2 += 1024.0
 			k2 += 1
+	for s in ruas_secundarias():                      # rua secundária: um poste a cada 1024 u, alternando o lado
+		var r: Rect2 = (s as Dictionary)["r"]
+		var k3 := 0
+		var y3 := r.position.y + 448.0
+		while y3 < r.end.y - 300.0:
+			out.append(Vector2(r.position.x + POSTE_RECUO if k3 % 2 == 0 else r.end.x - POSTE_RECUO, y3))
+			y3 += 1024.0
+			k3 += 1
 	for p in out:
 		if not perto_rotatoria(p, 13.0):
 			_postes_cache.append(p)
@@ -813,6 +831,12 @@ static func _esquinas(rng: RandomNumberGenerator) -> void:
 						_detalhe(LIXO_ESQUINA[rng.randi() % LIXO_ESQUINA.size()], p + Vector2.from_angle(ang) * rng.randf_range(0.0, 46.0), rng)
 					if rng.randf() < 0.5:
 						_detalhe("poca", c + Vector2(sx, sy) * 100.0, rng, 1.3)
+	for s in ruas_secundarias():                      # entroncamentos em T da rua secundária
+		var r: Rect2 = (s as Dictionary)["r"]
+		for y in [r.position.y + SEC_CALCADA * 0.5, r.end.y - SEC_CALCADA * 0.5]:
+			for x in [r.position.x + SEC_CALCADA * 0.5, r.end.x - SEC_CALCADA * 0.5]:
+				for k in 6:
+					_detalhe(LIXO_ESQUINA[rng.randi() % LIXO_ESQUINA.size()], Vector2(x, y) + Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(0.0, 46.0), rng)
 
 
 ## Árvores de calçada (V13: arvoresCalcada): a cada 9–14 tiles, alternando o lado, longe dos cruzamentos, da rotatória,
@@ -843,6 +867,10 @@ static func _arvores_calcada(rng: RandomNumberGenerator) -> void:
 			var x0 := C.position.x + i * B + R
 			_fila_arvores(rng, Vector2(x0, y + ARV_RECUO), Vector2(x0, y + R - ARV_RECUO), Vector2(1, 0), B - R,
 				[_papel(i, j - 1), _papel(i, j)], ocupados, predios)
+	for s in ruas_secundarias():                      # rua secundária
+		var r: Rect2 = (s as Dictionary)["r"]
+		_fila_arvores(rng, Vector2(r.position.x + ARV_RECUO, r.position.y), Vector2(r.end.x - ARV_RECUO, r.position.y),
+			Vector2(0, 1), r.size.y, ["casas", "casas"], ocupados, predios)
 
 
 static func _fila_arvores(rng: RandomNumberGenerator, a0: Vector2, a1: Vector2, dir: Vector2, comp: float, papeis: Array,
@@ -891,20 +919,26 @@ static func _folga_predio(p: Vector2, predios: Array) -> float:
 
 # ═════════════════════════════════ ruas: bueiros, lixo e mato ao longo das vias ═════════════════════════════════
 
-## Trechos de rua entre dois cruzamentos: c = início no eixo da rua, dir = sentido, n = normal, comp = comprimento (u).
+## Trechos de rua entre dois cruzamentos: c = início no eixo da rua, dir = sentido, n = normal, comp = comprimento (u),
+## meia = meia largura do asfalto, calc = largura da calçada.
 static func _trechos() -> Array:
 	var C := MundoGen.CIDADE
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
+	var meia := R * 0.5 - MundoGen.CALCADA
 	var out: Array = []
 	for i in 4:
 		for j in 4:
 			out.append({"c": Vector2(C.position.x + i * B + R * 0.5, C.position.y + j * B + R), "dir": Vector2(0, 1),
-				"n": Vector2(1, 0), "comp": B - R})
+				"n": Vector2(1, 0), "comp": B - R, "meia": meia, "calc": MundoGen.CALCADA})
 	for j in 5:
 		for i in 3:
 			out.append({"c": Vector2(C.position.x + i * B + R, C.position.y + j * B + R * 0.5), "dir": Vector2(1, 0),
-				"n": Vector2(0, 1), "comp": B - R})
+				"n": Vector2(0, 1), "comp": B - R, "meia": meia, "calc": MundoGen.CALCADA})
+	for s in ruas_secundarias():
+		var r: Rect2 = (s as Dictionary)["r"]
+		out.append({"c": Vector2(r.get_center().x, r.position.y), "dir": Vector2(0, 1), "n": Vector2(1, 0),
+			"comp": r.size.y, "meia": r.size.x * 0.5 - SEC_CALCADA, "calc": SEC_CALCADA})
 	return out
 
 
@@ -936,9 +970,10 @@ static func _bueiros_vias(rng: RandomNumberGenerator, trechos: Array) -> void:
 ## Lixo ao longo das vias (V13: mobiliarioUrbano, laço 'ev'): no asfalto junto ao meio-fio folhas, lixo, poça ou
 ## óleo, cone, pneu ou mato na rachadura; na calçada (70%) sujeira, mato e entulho.
 static func _lixo_vias(rng: RandomNumberGenerator, trechos: Array) -> void:
-	var meia := MundoGen.RUA * 0.5 - MundoGen.CALCADA          # meia largura do asfalto
 	for t in trechos:
 		var td: Dictionary = t
+		var meia: float = td["meia"]                               # meia largura do asfalto
+		var calc: float = td["calc"]
 		var comp: float = td["comp"]
 		var dir: Vector2 = td["dir"]
 		var n: Vector2 = td["n"]
@@ -963,14 +998,14 @@ static func _lixo_vias(rng: RandomNumberGenerator, trechos: Array) -> void:
 			else:
 				_detalhe("mato", p, rng)
 			if rng.randf() < 0.7:
-				_aglomerado(rng, base + n * lado * (meia + MundoGen.CALCADA * 0.5), 40.0, 3, LIXO_CALCADA)
+				_aglomerado(rng, base + n * lado * (meia + calc * 0.5), 40.0, 3, LIXO_CALCADA)
 
 
 ## Mato invadindo as ruas (V13: matoNasRuas): quase sempre rente ao meio-fio, às vezes no meio do asfalto.
 static func _mato_ruas(rng: RandomNumberGenerator, trechos: Array) -> void:
-	var meia := MundoGen.RUA * 0.5 - MundoGen.CALCADA
 	for t in trechos:
 		var td: Dictionary = t
+		var meia: float = td["meia"]
 		var comp: float = td["comp"]
 		for k in int(comp / TILE * 0.35):
 			var lado := -1.0 if rng.randf() < 0.5 else 1.0
@@ -985,3 +1020,24 @@ static func _mato_ruas(rng: RandomNumberGenerator, trechos: Array) -> void:
 static func _aglomerado(rng: RandomNumberGenerator, p: Vector2, raio: float, n: int, tipos: Array) -> void:
 	for k in n:
 		_detalhe(tipos[rng.randi() % tipos.size()], p + Vector2.from_angle(rng.randf_range(0.0, TAU)) * rng.randf_range(0.0, raio), rng)
+
+
+# ═════════════════════════════════ rua secundária (V13: quadraResidencialDividida) ═════════════════════════════════
+
+static var _sec_cache: Array = []
+
+
+## Ruas secundárias no formato de MundoGen.ruas: o asfalto avança pelas calçadas das ruas principais até o asfalto
+## delas, formando os entroncamentos em T.
+static func ruas_secundarias() -> Array:
+	if not _sec_cache.is_empty():
+		return _sec_cache
+	for k in PAPEIS:
+		if PAPEIS[k] != "casas_dividida":
+			continue
+		var b := _bloco_rect(k.x, k.y)
+		var r := Rect2(b.position.x + SEC_X0 * TILE, b.position.y, SEC_LARG * TILE, b.size.y)
+		var asf := Rect2(r.position.x + SEC_CALCADA, r.position.y - MundoGen.CALCADA, r.size.x - 2.0 * SEC_CALCADA,
+			r.size.y + 2.0 * MundoGen.CALCADA)
+		_sec_cache.append({"r": r, "v": true, "asf": asf, "sec": true})
+	return _sec_cache

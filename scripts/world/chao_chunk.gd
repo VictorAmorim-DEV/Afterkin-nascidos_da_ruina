@@ -200,7 +200,7 @@ func _ruas() -> void:
 	if tem_rot:                                       # calçada em volta do anel (o asfalto das ruas continua por cima)
 		_poli_recortado(_circulo(rc, (Quadras.ROT_RO + Quadras.ROT_CALCADA) * T, 64), calcada, Color.WHITE)
 	for f in faixas:
-		_ret(((f as Dictionary)["r"] as Rect2).grow(-MundoGen.CALCADA), asfalto, Color.WHITE)
+		_ret((f as Dictionary)["asf"], asfalto, Color.WHITE)
 	if tem_rot:
 		_rotatoria(rc, calcada, asfalto)
 	var x0: float = MundoGen.CIDADE.position.x
@@ -208,6 +208,8 @@ func _ruas() -> void:
 	var amarelo := Color(0.85, 0.72, 0.2, 0.9)
 	for f in faixas:
 		var fd: Dictionary = f
+		if fd["sec"]:
+			continue                                  # rua secundária: sem faixa central
 		var fr: Rect2 = fd["r"]
 		var vertical: bool = fd["v"]
 		var t: float = fr.position.y if vertical else fr.position.x

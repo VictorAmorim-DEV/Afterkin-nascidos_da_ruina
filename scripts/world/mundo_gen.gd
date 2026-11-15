@@ -437,7 +437,8 @@ static func nome_bioma(b: int) -> String:
 
 # ───────────────────────────── cidade ─────────────────────────────
 
-## Faixas de rua (calçada + asfalto + calçada) que tocam o retângulo r. v = corre ao longo de y.
+## Faixas de rua (calçada + asfalto + calçada) que tocam o retângulo r. v = corre ao longo de y; asf = retângulo do
+## asfalto; sec = rua secundária (Quadras.RUAS_SECUNDARIAS: sem faixa central nem faixa de pedestre).
 static func ruas(r: Rect2) -> Array:
 	var res: Array = []
 	if not CIDADE.intersects(r):
@@ -445,11 +446,15 @@ static func ruas(r: Rect2) -> Array:
 	for i in 4:
 		var b := Rect2(CIDADE.position.x + i * BLOCO, CIDADE.position.y, RUA, CIDADE.size.y)
 		if b.intersects(r):
-			res.append({"r": b, "v": true})
+			res.append({"r": b, "v": true, "asf": b.grow(-CALCADA), "sec": false})
 	for j in 5:
 		var b2 := Rect2(CIDADE.position.x, CIDADE.position.y + j * BLOCO, CIDADE.size.x, RUA)
 		if b2.intersects(r):
-			res.append({"r": b2, "v": false})
+			res.append({"r": b2, "v": false, "asf": b2.grow(-CALCADA), "sec": false})
+	for s in Quadras.ruas_secundarias():
+		var sd: Dictionary = s
+		if (sd["r"] as Rect2).intersects(r):
+			res.append(sd)
 	return res
 
 
@@ -549,10 +554,11 @@ static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, 
 		var vertical: bool = fd["v"]
 		var lado: float = 1.0 if rng.randf() < 0.5 else -1.0
 		var p := Vector2(rng.randf_range(area.position.x, area.end.x), rng.randf_range(area.position.y, area.end.y))
+		var mao: float = 50.0 if fd["sec"] else 70.0          # meio de cada mão
 		if vertical:
-			p.x = fr.position.x + RUA * 0.5 + lado * 70.0
+			p.x = fr.get_center().x + lado * mao
 		else:
-			p.y = fr.position.y + RUA * 0.5 + lado * 70.0
+			p.y = fr.get_center().y + lado * mao
 		var ok := not Quadras.perto_rotatoria(p, Quadras.ROT_RI + 2.5)   # nada em cima da ilha da rotatória
 		for q in colocados:
 			var qp: Vector2 = q

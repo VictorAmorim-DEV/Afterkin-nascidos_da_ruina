@@ -42,6 +42,7 @@ static func preparar() -> void:
 	for i in 3:
 		for j in 4:
 			Quadras._bloco(i, j)
+	Quadras.ruas_secundarias()
 
 
 static func gerar() -> Image:
@@ -134,6 +135,9 @@ static func gerar() -> Image:
 				if sd["k"] == "edificio":
 					var uso: String = (sd["o"] as Dictionary).get("uso", "casa") if sd.has("o") else "casa"
 					_casa(img, Rect2(sd["p"], Vector2(sd["w"], sd["h"]) * 64.0), COR_USO.get(uso, COR_CASA))
+	# ruas secundárias (dentro dos quarteirões)
+	for s in Quadras.ruas_secundarias():
+		_ret(img, (s as Dictionary)["asf"], COR_ASFALTO)
 	# rotatória: anel de asfalto e ilha gramada
 	var rc := Quadras.centro_rotatoria()
 	var ro := Quadras.ROT_RO * Quadras.TILE
