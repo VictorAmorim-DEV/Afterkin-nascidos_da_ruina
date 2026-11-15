@@ -66,6 +66,7 @@ func _ready() -> void:
 		jogador.position = IsoMath.mundo_para_tela(MundoGen.INICIO)
 	_criar_areas()
 	TerrenoTexturas.preparar_todas()
+	TexturasParede.atlas()                       # gera o atlas na carga, não no primeiro edifício
 	# carga inicial síncrona (limitada): o jogador já nasce com chão e a vizinhança de volta
 	var foco := _foco_mundo()
 	_cc = Vector2i(floori(foco.x / CH), floori(foco.y / CH))

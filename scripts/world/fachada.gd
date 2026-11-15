@@ -137,20 +137,7 @@ static func trecho(e: Edificio, no: Node2D, p: Dictionary, t: int, P_parede: Cal
 	var porta: bool = ab != null and ab.tipo == "porta"
 	var dentro := func(a: float) -> bool: return a >= U and a < U + TILE
 
-	# material
-	if e.mat_tipo == "zinco":
-		for k in 4:
-			F.q(k * 16.0 + 6.0, 0.0, k * 16.0 + 9.0, H, Color(0, 0, 0, 0.13))
-	elif e.mat_tipo == "tijolo":
-		for k in 3:
-			var bx := h(sd + U, k) * 52.0
-			var by := h(k, sd + U) * (H - 20.0)
-			F.q(bx, by, bx + 12.0, by + 6.0, Color(0, 0, 0, 0.08))
-	elif e.mat_tipo == "madeira":
-		var v := 12.0
-		while v < H:
-			F.q(0.0, v, 64.0, v + 1.5, Color(0, 0, 0, 0.12))
-			v += 12.0
+	# o material (tijolo, reboco, zinco, tábuas) vem da textura da face (TexturasParede)
 	# embasamento escuro (0,45 m)
 	F.q(0.0, 0.0, 64.0, zm(0.45), Color(0.23, 0.21, 0.19, 0.85))
 	if not gal and not igr:
@@ -471,7 +458,7 @@ static func telhado_plano(e: Edificio, i: int) -> Dictionary:
 	var S := func(x: float, y: float, z: float) -> Vector2: return e._s3(x, y, z) - o
 	var sd: float = e.semente + i * 13.0
 	var laje := Color8(96, 95, 90).lerp(Color8(84, 86, 80), h(sd, 1))
-	e._poli(no, [S.call(x0, y0, H), S.call(x1, y0, H), S.call(x1, y1, H), S.call(x0, y1, H)], laje)
+	e._plano(no, func(x: float, y: float) -> Vector2: return S.call(x, y, H), x0, x1, y0, y1, "laje", laje, true)
 	for k in 2:                                       # manchas de umidade e limo
 		var cx := lerpf(x0, x1, h(sd, k + 30))
 		var cy := lerpf(y0, y1, h(sd, k + 40))

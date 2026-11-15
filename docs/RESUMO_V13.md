@@ -55,7 +55,7 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 
 ## Construções (já na Godot: `scripts/world/edificio.gd`)
 - ✅ `novoEdificio`, `bsp`, `porta`, `mobiliar`, `edifColisoes`, `EDIF_atualizar`
-- ✅ sujeira, hera, pichação, prédios com vários andares (`Fachada`) · ✅ `ímã de porta` (l.1184) → `Edificio._ima_de_porta` · ⬜ texturas procedurais das paredes (`tex`, `GTEX`: hoje cor lisa + detalhes desenhados)
+- ✅ sujeira, hera, pichação, prédios com vários andares (`Fachada`) · ✅ `ímã de porta` (l.1184) → `Edificio._ima_de_porta` · ✅ texturas procedurais (`tex`, `GTEX`, l.1029) → `TexturasParede`: atlas único (tijolo, reboco descascando, concreto, tábuas, zinco, papel listrado/estampado, telha, ardósia, zinco de telhado, laje, reboco liso) no estilo de `concept_art/novo teste`; `Desenho` sempre desenha com o atlas (1 draw call por nó), `Edificio._face`/`_face_poli`/`_plano` mapeiam paredes, oitões, telhados e lajes; variação por trecho (espelho, fase, buracos por fatia)
 
 ## Sistemas gerais
 - ✅ câmera, Y-Sort, movimento, fôlego, lanterna, ciclo dia/noite (`js/lighting.js`, `js/depth.js`)

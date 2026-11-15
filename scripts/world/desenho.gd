@@ -6,9 +6,11 @@ extends Node2D
 ## Os polígonos são triangulados ao entrar e viram UM array de triângulos com cor por vértice: um comando
 ## de desenho por nó. Com um draw_colored_polygon por face, a cidade passava de 4000 draw calls por quadro.
 ## A ordem de desenho é a ordem em que as peças foram adicionadas; modulate/visible valem para o conjunto.
+## Tudo sai com o atlas de materiais (TexturasParede): peças com material usam poli_uv; as outras, o texel branco.
 
 var _pts := PackedVector2Array()
 var _cores := PackedColorArray()
+var _uvs := PackedVector2Array()
 var _idx := PackedInt32Array()
 var _linhas: Array = []       ## [PackedVector2Array, Color, largura]
 var _pendente := false
@@ -16,9 +18,18 @@ var _pendente := false
 
 func _init() -> void:
 	light_mask = 2
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR     # o atlas é reduzido na tela: sem filtro, cintila
 
 
 func poli(pts: PackedVector2Array, cor: Color) -> void:
+	var uvs := PackedVector2Array()
+	uvs.resize(pts.size())
+	uvs.fill(TexturasParede.uv_branco())
+	poli_uv(pts, uvs, cor)
+
+
+## Polígono com coordenadas de textura no atlas de materiais (uma por ponto).
+func poli_uv(pts: PackedVector2Array, uvs: PackedVector2Array, cor: Color) -> void:
 	if pts.size() < 3 or cor.a <= 0.0:
 		return
 	var tri := Geometry2D.triangulate_polygon(pts)
@@ -26,6 +37,7 @@ func poli(pts: PackedVector2Array, cor: Color) -> void:
 		return                                        # degenerado (área zero): não aparece mesmo
 	var base := _pts.size()
 	_pts.append_array(pts)
+	_uvs.append_array(uvs)
 	for k in pts.size():
 		_cores.append(cor)
 	for i in tri:
@@ -57,6 +69,7 @@ func _marcar() -> void:
 func _draw() -> void:
 	_pendente = false
 	if not _idx.is_empty():
-		RenderingServer.canvas_item_add_triangle_array(get_canvas_item(), _idx, _pts, _cores)
+		RenderingServer.canvas_item_add_triangle_array(get_canvas_item(), _idx, _pts, _cores, _uvs,
+			PackedInt32Array(), PackedFloat32Array(), TexturasParede.atlas().get_rid())
 	for l in _linhas:
 		draw_polyline(l[0], l[1], l[2])

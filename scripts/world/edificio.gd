@@ -27,6 +27,10 @@ const JAN_V1 := 62.0                 # verga (2,05 m)
 const PAREDES_EXT := [Color8(196, 188, 170), Color8(112, 130, 98), Color8(110, 126, 140), Color8(134, 102, 76),
 	Color8(190, 170, 118), Color8(152, 74, 54), Color8(112, 64, 50), Color8(188, 174, 150), Color8(152, 150, 142), Color8(180, 148, 138)]
 const TELHAS := [Color8(80, 86, 94), Color8(152, 80, 54), Color8(98, 74, 60), Color8(72, 92, 78), Color8(130, 124, 114)]
+## material (TexturasParede) de cada cor de PAREDES_EXT e de TELHAS: tábuas pintadas, tijolo ou reboco; ardósia,
+## telha de barro ou zinco
+const MAT_EXT := ["madeira", "madeira", "madeira", "madeira", "madeira", "tijolo", "tijolo", "reboco", "reboco", "reboco"]
+const MAT_TELHA := ["ardosia", "telha", "telha", "ardosia", "zinco_telhado"]
 const PAPEIS := {"sala": Color8(150, 128, 98), "quarto": Color8(118, 122, 142), "cozinha": Color8(172, 168, 140),
 	"banheiro": Color8(140, 172, 174), "enfermaria": Color8(170, 186, 180), "nave": Color8(176, 164, 140), "_": Color8(164, 160, 150)}
 const PISOS := {"sala": Color8(112, 86, 60), "quarto": Color8(124, 98, 70), "cozinha": Color8(156, 150, 132),
@@ -126,6 +130,7 @@ var _sala_jogador: int = -1
 var _eixo: String = "x"
 var _cor_parede: Color
 var _cor_telha: Color
+var _mat_telha: String = "telha"
 var _cor_porta: Color
 var _R: float = 40.0
 var _wh: float = WH            ## altura das paredes (casa: WH; prédio: andares × pé-direito)
@@ -409,8 +414,12 @@ func _gerar_planta() -> void:
 	for i in salas.size():
 		_mobiliar(i)
 	# materiais e telhado
-	_cor_parede = _pick(PAREDES_EXT)
-	_cor_telha = _pick(TELHAS)
+	var ip := _ri(0, PAREDES_EXT.size() - 1)       # mesmo sorteio do _pick: as casas continuam iguais
+	_cor_parede = PAREDES_EXT[ip]
+	mat_tipo = MAT_EXT[ip]
+	var it := _ri(0, TELHAS.size() - 1)
+	_cor_telha = TELHAS[it]
+	_mat_telha = MAT_TELHA[it]
 	_cor_porta = _pick([Color8(58, 63, 68), Color8(90, 58, 42), Color8(46, 74, 58), Color8(106, 42, 34)])
 	_eixo = "x" if largura_tiles >= altura_tiles else "y"
 	var meia: float = (altura_tiles if _eixo == "x" else largura_tiles) * TILE / 2.0 / METRO
@@ -419,6 +428,8 @@ func _gerar_planta() -> void:
 		var m: Array = _pick(MAT_USO.get(uso, PAREDES_PREDIO))
 		_cor_parede = m[0]
 		mat_tipo = m[1]
+		if mat_tipo == "reboco" and absf(_cor_parede.r - _cor_parede.b) < 0.04:
+			mat_tipo = "concreto"                      # reboco cinza: painéis de concreto
 		_ph = pe_direito_m * VPM
 		_wh = altura_m * VPM if altura_m > 0.0 else andares * _ph
 		if dano < 0.0:
@@ -428,9 +439,11 @@ func _gerar_planta() -> void:
 			placa = PLACAS[uso]
 		if cobertura == "galpao":
 			_cor_telha = Color8(130, 124, 114)
+			_mat_telha = "zinco_telhado"
 			_R = roundf(meia * 0.22 * VPM)
 		elif cobertura == "igreja":
 			_cor_telha = Color8(80, 86, 94)
+			_mat_telha = "ardosia"
 			_R = roundf(meia * 0.95 * VPM)
 
 
@@ -639,21 +652,42 @@ func _trecho(p: Dictionary, t: int) -> void:
 		cor = PAPEIS.get(salas[sala_cam].tipo, PAPEIS["_"])
 	if not eh_x:
 		cor = cor.darkened(0.16)
+	# material da face: o do edifício por fora; por dentro papel de parede nas casas e apartamentos (listrado na sala
+	# e na nave) e reboco liso nos cômodos de trabalho
+	var mat: String = mat_tipo
+	if sala_cam >= 0:
+		var tsala: String = salas[sala_cam].tipo
+		if tsala in ["sala", "nave"]:
+			mat = "papel_listras"
+		elif tsala in ["quarto", "cozinha", "banheiro"]:
+			mat = "papel_motivo"
+		else:
+			mat = "reboco_liso"
+	# variação por trecho (sem emenda: o reboco é liso nas bordas da célula): espelho, fase vertical e, no reboco,
+	# buracos só em parte dos trechos (mais num prédio danificado)
+	var sorte := TerrenoTexturas._hash(t, p.c * 3 + (1 if eh_x else 0), semente)
+	var espelho := sorte < 0.5
+	# fase vertical em múltiplos do desenho, para as linhas continuarem alinhadas com o trecho vizinho
+	var passo: float = {"reboco": 16.0, "madeira": 8.0, "tijolo": TexturasParede.PERIODO / 6.0}.get(mat, 0.0)
+	var fase: float = floorf(TerrenoTexturas._hash(p.c, t, semente + 7) * 6.0) * passo
+	# reboco: cada fatia de altura sorteia se tem buracos (mais num prédio danificado)
+	var buracos: float = 0.15 + 0.35 * maxf(dano, 0.0) if predio() else 0.25
+	var sid: int = t * 131 + p.c * 7 + (1 if eh_x else 0)
 	var ab = null
 	for a in p.ab:
 		if a.t == t:
 			ab = a
 	var seg := {"no": no, "parede": p, "t": t, "sala_cam": sala_cam, "alfa": 1.0, "cobre": {}}
 	if ab == null:
-		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, _wh), P.call(0, _wh)], cor)
+		_face(no, P, 0, 0, 64, _wh, mat, cor, espelho, fase, buracos, sid)
 		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, 7), P.call(0, 7)], cor.darkened(0.22))     # rodapé
 		seg.ocl = _oclusor(_ret_parede(p, t * TILE, t * TILE + TILE))
 	elif ab.tipo == "porta":
 		var d: Dictionary = ab.ref
 		d.seg = seg
-		_poli(no, [P.call(0, 0), P.call(8, 0), P.call(8, _wh), P.call(0, _wh)], cor)
-		_poli(no, [P.call(56, 0), P.call(64, 0), P.call(64, _wh), P.call(56, _wh)], cor)
-		_poli(no, [P.call(8, ALT_PORTA), P.call(56, ALT_PORTA), P.call(56, _wh), P.call(8, _wh)], cor)
+		_face(no, P, 0, 0, 8, _wh, mat, cor, espelho, fase, buracos, sid)
+		_face(no, P, 56, 0, 64, _wh, mat, cor, espelho, fase, buracos, sid)
+		_face(no, P, 8, ALT_PORTA, 56, _wh, mat, cor, espelho, fase, buracos, sid)
 		_poli(no, [P.call(6, 0), P.call(8, 0), P.call(8, ALT_PORTA + 2), P.call(6, ALT_PORTA + 2)], Color8(74, 52, 36))
 		_poli(no, [P.call(56, 0), P.call(58, 0), P.call(58, ALT_PORTA + 2), P.call(56, ALT_PORTA + 2)], Color8(74, 52, 36))
 		_poli(no, [P.call(6, ALT_PORTA), P.call(58, ALT_PORTA), P.call(58, ALT_PORTA + 3), P.call(6, ALT_PORTA + 3)], Color8(74, 52, 36))
@@ -672,10 +706,10 @@ func _trecho(p: Dictionary, t: int) -> void:
 	else:
 		var j: Dictionary = ab.ref
 		j.seg = seg
-		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, JAN_V0), P.call(0, JAN_V0)], cor)
-		_poli(no, [P.call(0, JAN_V1), P.call(64, JAN_V1), P.call(64, _wh), P.call(0, _wh)], cor)
-		_poli(no, [P.call(0, JAN_V0), P.call(12, JAN_V0), P.call(12, JAN_V1), P.call(0, JAN_V0 + (JAN_V1 - JAN_V0))], cor)
-		_poli(no, [P.call(52, JAN_V0), P.call(64, JAN_V0), P.call(64, JAN_V1), P.call(52, JAN_V1)], cor)
+		_face(no, P, 0, 0, 64, JAN_V0, mat, cor, espelho, fase, buracos, sid)
+		_face(no, P, 0, JAN_V1, 64, _wh, mat, cor, espelho, fase, buracos, sid)
+		_face(no, P, 0, JAN_V0, 12, JAN_V1, mat, cor, espelho, fase, buracos, sid)
+		_face(no, P, 52, JAN_V0, 64, JAN_V1, mat, cor, espelho, fase, buracos, sid)
 		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, 7), P.call(0, 7)], cor.darkened(0.22))
 		_poli(no, [P.call(10, JAN_V0 - 3), P.call(54, JAN_V0 - 3), P.call(54, JAN_V0), P.call(10, JAN_V0)], Color8(184, 176, 154))   # peitoril
 		j.no_vidro = Desenho.new()
@@ -778,15 +812,14 @@ func _telhado(i: int) -> void:
 		if y1 > m:
 			faixas.append([maxf(y0, m), y1, 0.03])
 		for f in faixas:
-			_poli(no, [T.call(x0, f[0]), T.call(x1, f[0]), T.call(x1, f[1]), T.call(x0, f[1])], _cor_telha.darkened(f[2]))
-			_fiadas(no, T, true, x0, x1, f[0], f[1])
+			_plano(no, T, x0, x1, f[0], f[1], _mat_telha, _cor_telha.darkened(f[2]), true)
 		if s.x1 == largura_tiles:          # oitão na parede leste
 			var X := largura_tiles * TILE + ESP
-			var pts: Array = [_s3(X, s.y0 * TILE, _wh) - o, _s3(X, s.y1 * TILE, _wh) - o, T.call(X, s.y1 * TILE)]
+			var uv: Array = [Vector2(s.y0 * TILE, _wh), Vector2(s.y1 * TILE, _wh), Vector2(s.y1 * TILE, _alt_telhado(X, s.y1 * TILE))]
 			if s.y0 * TILE < m and s.y1 * TILE > m:
-				pts.append(T.call(X, m))
-			pts.append(T.call(X, s.y0 * TILE))
-			_poli(no, pts, _cor_parede.darkened(0.16))
+				uv.append(Vector2(m, _alt_telhado(X, m)))
+			uv.append(Vector2(s.y0 * TILE, _alt_telhado(X, s.y0 * TILE)))
+			_face_poli(no, uv, func(q: Vector2) -> Vector2: return _s3(X, q.x, q.y) - o, mat_tipo, _cor_parede.darkened(0.16))
 	else:
 		var mx := largura_tiles * TILE / 2.0
 		if x0 < mx:
@@ -794,15 +827,14 @@ func _telhado(i: int) -> void:
 		if x1 > mx:
 			faixas.append([maxf(x0, mx), x1, 0.12])
 		for f in faixas:
-			_poli(no, [T.call(f[0], y1), T.call(f[0], y0), T.call(f[1], y0), T.call(f[1], y1)], _cor_telha.darkened(f[2]))
-			_fiadas(no, T, false, f[0], f[1], y0, y1)
+			_plano(no, T, f[0], f[1], y0, y1, _mat_telha, _cor_telha.darkened(f[2]), false)
 		if s.y1 == altura_tiles:           # oitão na parede sul
 			var Y := altura_tiles * TILE + ESP
-			var pts2: Array = [_s3(s.x0 * TILE, Y, _wh) - o, _s3(s.x1 * TILE, Y, _wh) - o, T.call(s.x1 * TILE, Y)]
+			var uv2: Array = [Vector2(s.x0 * TILE, _wh), Vector2(s.x1 * TILE, _wh), Vector2(s.x1 * TILE, _alt_telhado(s.x1 * TILE, Y))]
 			if s.x0 * TILE < mx and s.x1 * TILE > mx:
-				pts2.append(T.call(mx, Y))
-			pts2.append(T.call(s.x0 * TILE, Y))
-			_poli(no, pts2, _cor_parede)
+				uv2.append(Vector2(mx, _alt_telhado(mx, Y)))
+			uv2.append(Vector2(s.x0 * TILE, _alt_telhado(s.x0 * TILE, Y)))
+			_face_poli(no, uv2, func(q: Vector2) -> Vector2: return _s3(q.x, Y, q.y) - o, mat_tipo, _cor_parede)
 	# cômodos que este pedaço de telhado taparia (o piso e quem estiver em pé nele)
 	var cobre := {i: true}
 	for kx in 5:
@@ -817,17 +849,92 @@ func _telhado(i: int) -> void:
 	_telhados.append({"no": no, "cobre": cobre, "alfa": 1.0})
 
 
-## Linhas das fiadas de telha, para o telhado não ficar chapado.
-func _fiadas(no: Desenho, T: Callable, ao_longo_x: bool, a0: float, a1: float, b0: float, b1: float) -> void:
-	var passo := 22.0
-	var v := (b0 if ao_longo_x else a0) + passo
-	var fim := b1 if ao_longo_x else a1
-	while v < fim - 4.0:
-		if ao_longo_x:
-			no.linha(PackedVector2Array([T.call(a0, v), T.call(a1, v)]), Color(0, 0, 0, 0.22))
-		else:
-			no.linha(PackedVector2Array([T.call(v, b0), T.call(v, b1)]), Color(0, 0, 0, 0.22))
-		v += passo
+## Retângulo da face de um trecho (u0..u1 ao longo dele, v0..v1 de altura) com material do atlas, fatiado no
+## período vertical da textura. espelho/fase variam a textura de um trecho para outro.
+## Fora de um Desenho (não acontece hoje) vira um polígono liso.
+func _face(no: Node, P: Callable, u0: float, v0: float, u1: float, v1: float, mat: String, cor: Color,
+		espelho: bool = false, fase: float = 0.0, buracos: float = 1.0, sid: int = 0) -> void:
+	if not no is Desenho:
+		_poli(no, [P.call(u0, v0), P.call(u1, v0), P.call(u1, v1), P.call(u0, v1)], cor)
+		return
+	var c := TexturasParede.tinta(cor)
+	var per := TexturasParede.PERIODO
+	var ta := (TILE - u0 if espelho else u0) / TILE
+	var tb := (TILE - u1 if espelho else u1) / TILE
+	var v := v0
+	while v < v1 - 0.01:
+		var w := v + fase                                # altura na textura
+		var base := floorf(w / per + 0.0001) * per
+		var vb := minf(v1, base + per - fase)
+		var fa := 1.0 - (w - base) / per
+		var fb := 1.0 - (vb + fase - base) / per
+		var m := mat
+		if mat == "reboco" and TerrenoTexturas._hash(sid, int(base / per), semente + 3) > buracos:
+			m = "reboco_liso"
+		(no as Desenho).poli_uv(PackedVector2Array([P.call(u0, v), P.call(u1, v), P.call(u1, vb), P.call(u0, vb)]),
+			PackedVector2Array([TexturasParede.uv(m, ta, fa), TexturasParede.uv(m, tb, fa),
+				TexturasParede.uv(m, tb, fb), TexturasParede.uv(m, ta, fb)]), c)
+		v = vb
+
+
+## Polígono qualquer de uma face plana com material: 'uvp' em coordenadas da face (u ao longo da parede, v altura),
+## recortado nas células do atlas (64 u × PERIODO px); 'tela' leva (u, v) para a tela local.
+func _face_poli(no: Desenho, uvp: Array, tela: Callable, mat: String, cor: Color) -> void:
+	var poli := PackedVector2Array(uvp)
+	var c := TexturasParede.tinta(cor)
+	var per := TexturasParede.PERIODO
+	var r := Rect2(poli[0], Vector2.ZERO)
+	for q in poli:
+		r = r.expand(q)
+	var cu := floorf(r.position.x / TILE) * TILE
+	while cu < r.end.x:
+		var cv := floorf(r.position.y / per) * per
+		while cv < r.end.y:
+			var cel := PackedVector2Array([Vector2(cu, cv), Vector2(cu + TILE, cv), Vector2(cu + TILE, cv + per), Vector2(cu, cv + per)])
+			for pedaco in Geometry2D.intersect_polygons(poli, cel):
+				var pts := PackedVector2Array()
+				var uvs := PackedVector2Array()
+				for q2 in (pedaco as PackedVector2Array):
+					pts.append(tela.call(q2))
+					uvs.append(TexturasParede.uv(mat, (q2.x - cu) / TILE, 1.0 - (q2.y - cv) / per))
+				no.poli_uv(pts, uvs, c)
+			cv += per
+		cu += TILE
+
+
+## Plano de telhado (ou laje) com material, em ladrilhos de 64 × 64 u alinhados à grade. T leva (x, y) à tela local.
+## linhas_em_x: as fiadas correm ao longo de x (cumeeira em x); senão, ao longo de y.
+func _plano(no: Desenho, T: Callable, xa: float, xb: float, ya: float, yb: float, mat: String, cor: Color, linhas_em_x: bool) -> void:
+	var c := TexturasParede.tinta(cor)
+	var xs := _cortes(xa, xb)
+	var ys := _cortes(ya, yb)
+	for i in xs.size() - 1:
+		var bx := floorf(xs[i] / TILE + 0.0001) * TILE
+		var u0 := (xs[i] - bx) / TILE
+		var u1 := (xs[i + 1] - bx) / TILE
+		for j in ys.size() - 1:
+			var by := floorf(ys[j] / TILE + 0.0001) * TILE
+			var w0 := (ys[j] - by) / TILE
+			var w1 := (ys[j + 1] - by) / TILE
+			var pts := PackedVector2Array([T.call(xs[i], ys[j]), T.call(xs[i + 1], ys[j]), T.call(xs[i + 1], ys[j + 1]), T.call(xs[i], ys[j + 1])])
+			var uvs: PackedVector2Array
+			if linhas_em_x:
+				uvs = PackedVector2Array([TexturasParede.uv(mat, u0, w0), TexturasParede.uv(mat, u1, w0), TexturasParede.uv(mat, u1, w1), TexturasParede.uv(mat, u0, w1)])
+			else:
+				uvs = PackedVector2Array([TexturasParede.uv(mat, w0, u0), TexturasParede.uv(mat, w0, u1), TexturasParede.uv(mat, w1, u1), TexturasParede.uv(mat, w1, u0)])
+			no.poli_uv(pts, uvs, c)
+
+
+## [a, múltiplos de 64 entre a e b, b]
+static func _cortes(a: float, b: float) -> PackedFloat32Array:
+	var out := PackedFloat32Array([a])
+	var k := floorf(a / TILE) * TILE + TILE
+	while k < b - 0.5:
+		if k > a + 0.5:
+			out.append(k)
+		k += TILE
+	out.append(b)
+	return out
 
 
 # =====================================================================
