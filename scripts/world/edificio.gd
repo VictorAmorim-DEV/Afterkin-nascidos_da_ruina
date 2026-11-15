@@ -882,6 +882,8 @@ func _physics_process(delta: float) -> void:
 	# longe e parado: nada a fazer (antes cada edifício recalculava tudo a cada tick e derrubava o FPS na cidade)
 	if not na_zona and not _animando and not _ocluindo and not _sujo:
 		return
+	if na_zona and pronto:
+		_ima_de_porta(j, p, delta)
 	var sala := sala_de(p) if na_zona else -1
 	if sala != _sala_jogador or _sujo:
 		_sala_jogador = sala
@@ -894,6 +896,28 @@ func _physics_process(delta: float) -> void:
 			_animando = true
 	if _animando:
 		_animando = _aplicar(delta)
+
+
+## Ímã de porta (V13, l.1184): andando em direção a um vão aberto, o jogador é puxado para o meio dele,
+## em vez de raspar no batente. p = posição do jogador no mundo local do edifício.
+func _ima_de_porta(j: Node2D, p: Vector2, delta: float) -> void:
+	if not "world_vel" in j or ("dirigindo" in j and j.dirigindo != null):
+		return
+	var v: Vector2 = j.world_vel
+	if v.length() < 8.0:
+		return
+	var d = _porta_perto(p)
+	if d == null or not d.open:
+		return
+	var X: bool = d.eixo == "x"                        # parede ao longo de x: atravessa-se em y
+	var perp: float = p.y - d.y if X else p.x - d.x
+	var lat: float = p.x - d.x if X else p.y - d.y
+	var vp: float = v.y if X else v.x
+	if absf(perp) >= 1.1 * METRO or absf(lat) >= 0.75 * METRO or vp * perp >= 0.0:
+		return                                         # longe, fora do vão ou se afastando da porta
+	var k := minf(1.0, delta * 9.0)
+	var novo := p - (Vector2(lat, 0.0) if X else Vector2(0.0, lat)) * k
+	j.global_position = to_global(IsoMath.mundo_para_tela(novo))
 
 
 ## Paredes e telhados desenhados por cima do jogador (ele está fora, atrás deles na tela). true = mudou algo.

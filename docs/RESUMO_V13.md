@@ -55,7 +55,7 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 
 ## Construções (já na Godot: `scripts/world/edificio.gd`)
 - ✅ `novoEdificio`, `bsp`, `porta`, `mobiliar`, `edifColisoes`, `EDIF_atualizar`
-- ✅ sujeira, hera, pichação, prédios com vários andares (`Fachada`) · ⬜ texturas procedurais das paredes (`tex`, `GTEX`: hoje cor lisa + detalhes desenhados), `ímã de porta`
+- ✅ sujeira, hera, pichação, prédios com vários andares (`Fachada`) · ✅ `ímã de porta` (l.1184) → `Edificio._ima_de_porta` · ⬜ texturas procedurais das paredes (`tex`, `GTEX`: hoje cor lisa + detalhes desenhados)
 
 ## Sistemas gerais
 - ✅ câmera, Y-Sort, movimento, fôlego, lanterna, ciclo dia/noite (`js/lighting.js`, `js/depth.js`)
