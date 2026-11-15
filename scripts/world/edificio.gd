@@ -105,6 +105,8 @@ const CORES_MOV := {"cama": [Color8(122, 90, 58), Color8(94, 74, 60)], "sofa": [
 ## Opacidade das paredes que ficam na frente da câmera quando o cômodo atrás delas está revelado.
 @export_range(0.0, 1.0, 0.01) var opacidade_frente: float = 0.2
 @export var velocidade_fade: float = 7.0
+## Opacidade das paredes e telhados que ficam na frente do jogador quando ele passa por trás do edifício.
+@export_range(0.0, 1.0, 0.01) var opacidade_oclusao: float = 0.28
 
 var salas: Array = []          ## {x0, y0, x1, y1 (tiles), tipo}
 var paredes: Array = []        ## {eixo, c, a, b, lado, ab: [{t, tipo, ref}]}
@@ -137,6 +139,10 @@ const ORCAMENTO_US := 3500
 static var _quadro: int = -1
 static var _gasto_us: int = 0
 var pronto := false
+var _animando := true                ## fades ainda convergindo: só então _aplicar roda
+var _ocluindo := false               ## alguma parede/telhado está na frente do jogador
+var _ps_ultima := Vector2(INF, INF)  ## posição do jogador (tela local) na última checagem de oclusão
+var _zona := Rect2()                 ## onde o jogador precisa estar para este edifício mudar algo (dentro ou atrás)
 var _t_fatia: int = 0
 var _grade := PackedInt32Array()   ## índice do cômodo por tile (-1 = fora): sala_idx em O(1)
 var _hs_cobre: Array = []
@@ -155,6 +161,15 @@ func _ready() -> void:
 	if _estourou():
 		await _pausa()
 	await _construir()
+	for seg in _segs:
+		seg.caixa = (seg.no as Desenho).caixa()
+		seg.ocl_j = false
+	for t in _telhados:
+		t.caixa = (t.no as Desenho).caixa()
+		t.ocl_j = false
+	# atrás do edifício: um ponto à altura h aparece sobre o chão em (x - 2h, y - 2h)
+	var m := 2.0 * _wh + 2.0 * _R + 128.0
+	_zona = Rect2(-m, -m, largura_tiles * TILE + m + 128.0, altura_tiles * TILE + m + 128.0)
 	_recalcular()
 	_aplicar(1000.0)
 	visible = true
@@ -856,18 +871,63 @@ func _recalcular() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	var sala := sala_de(_pos_jogador())
+	var j := _jogador()
+	if j == null:
+		return
+	var ps := to_local(j.global_position)              # tela local
+	var p := IsoMath.tela_para_mundo(ps)               # mundo local
+	var na_zona := _zona.has_point(p)
+	# longe e parado: nada a fazer (antes cada edifício recalculava tudo a cada tick e derrubava o FPS na cidade)
+	if not na_zona and not _animando and not _ocluindo and not _sujo:
+		return
+	var sala := sala_de(p) if na_zona else -1
 	if sala != _sala_jogador or _sujo:
 		_sala_jogador = sala
 		_sujo = false
 		_recalcular()
-	_aplicar(delta)
+		_animando = true
+	if ps.distance_squared_to(_ps_ultima) > 4.0 or not na_zona:
+		_ps_ultima = ps
+		if _atualizar_oclusao(ps if (na_zona and sala < 0) else Vector2(INF, INF)):
+			_animando = true
+	if _animando:
+		_animando = _aplicar(delta)
 
 
-func _aplicar(delta: float) -> void:
+## Paredes e telhados desenhados por cima do jogador (ele está fora, atrás deles na tela). true = mudou algo.
+func _atualizar_oclusao(ps: Vector2) -> bool:
+	var corpo := Rect2(ps.x - 32.0, ps.y - 70.0, 64.0, 76.0)      # o boneco, com folga (janela larga, sem "fresta")
+	var fora := ps.x == INF
+	var mudou := false
+	var algum := false
+	for seg in _segs:
+		var o: bool = not fora and seg.no.position.y > ps.y + 2.0 and (seg.caixa as Rect2).intersects(corpo)
+		if o != seg.ocl_j:
+			seg.ocl_j = o
+			mudou = true
+		algum = algum or o
+	for t in _telhados:
+		var o2: bool = not fora and t.no.position.y > ps.y + 2.0 and (t.caixa as Rect2).intersects(corpo)
+		if o2 != t.ocl_j:
+			t.ocl_j = o2
+			mudou = true
+		algum = algum or o2
+	_ocluindo = algum
+	return mudou
+
+
+## Aproxima 'a' de 'b' e encosta quando a diferença fica imperceptível.
+static func _rumo(a: float, b: float, k: float) -> float:
+	var r := lerpf(a, b, k)
+	return b if absf(r - b) < 0.01 else r
+
+
+## Aplica (com fade) telhados, escuro dos cômodos, móveis e paredes translúcidas. true = ainda convergindo.
+func _aplicar(delta: float) -> bool:
 	var k := minf(1.0, delta * velocidade_fade)
+	var mexendo := false
 	var sem_teto: Array = []
-	# telhado: some o do cômodo revelado (e o que taparia um cômodo revelado na tela)
+	# telhado: some o do cômodo revelado (e o que taparia um cômodo revelado na tela); fica translúcido sobre o jogador
 	for i in _telhados.size():
 		var t: Dictionary = _telhados[i]
 		var alvo := 1.0
@@ -875,39 +935,56 @@ func _aplicar(delta: float) -> void:
 			if _revelado[c]:
 				alvo = 0.0
 		sem_teto.append(alvo < 0.5)
-		t.alfa = lerpf(t.alfa, alvo, k)
-		t.no.modulate.a = t.alfa
-		t.no.visible = t.alfa > 0.01
+		if t.get("ocl_j", false):
+			alvo = minf(alvo, opacidade_oclusao)
+		var a := _rumo(t.alfa, alvo, k)
+		if a != t.alfa or t.no.modulate.a != a:
+			t.alfa = a
+			t.no.modulate.a = a
+			t.no.visible = a > 0.01
+		mexendo = mexendo or a != alvo
 	# cômodo sem telhado mas ainda não revelado: fica escuro, sem mostrar os móveis
 	for i in _escuros.size():
 		var e: Polygon2D = _escuros[i]
 		var alvo_e := 1.0 if (sem_teto[i] and not _revelado[i]) else 0.0
-		e.modulate.a = lerpf(e.modulate.a, alvo_e, k)
-	for m in moveis:
-		var no_m: Node2D = m.no
-		var alvo_m := 1.0 if _revelado[m.sala] else 0.0
-		no_m.modulate.a = lerpf(no_m.modulate.a, alvo_m, k)
-		no_m.visible = no_m.modulate.a > 0.01
+		var ae := _rumo(e.modulate.a, alvo_e, k)
+		if ae != e.modulate.a:
+			e.modulate.a = ae
+		mexendo = mexendo or ae != alvo_e
+	for mv in moveis:
+		var no_m: Node2D = mv.no
+		var alvo_m := 1.0 if _revelado[mv.sala] else 0.0
+		var am := _rumo(no_m.modulate.a, alvo_m, k)
+		if am != no_m.modulate.a:
+			no_m.modulate.a = am
+			no_m.visible = am > 0.01
+		mexendo = mexendo or am != alvo_m
 	# paredes na frente da câmera: translúcidas (portas e janelas continuam visíveis)
 	for seg in _segs:
 		var alvo_s := 1.0
 		for c in seg.cobre:
 			if _revelado[c]:
 				alvo_s = opacidade_frente
-		seg.alfa = lerpf(seg.alfa, alvo_s, k)
+		if seg.ocl_j:
+			alvo_s = minf(alvo_s, opacidade_oclusao)
 		var escuro: bool = seg.sala_cam >= 0 and sem_teto[seg.sala_cam] and not _revelado[seg.sala_cam]
 		var brilho := 0.12 if escuro else 1.0
 		var cor: Color = seg.no.modulate
-		seg.no.modulate = Color(lerpf(cor.r, brilho, k), lerpf(cor.g, brilho, k), lerpf(cor.b, brilho, k), seg.alfa)
+		var nova := Color(_rumo(cor.r, brilho, k), _rumo(cor.g, brilho, k), _rumo(cor.b, brilho, k), _rumo(seg.alfa, alvo_s, k))
+		seg.alfa = nova.a
+		if nova != cor:
+			seg.no.modulate = nova
+		mexendo = mexendo or nova.a != alvo_s or nova.r != brilho
 	for d in portas:
 		d.folha_fechada.visible = not d.open
 		d.folha_aberta.visible = d.open and not d.quebrada
 		d.no_ocl.occluder_light_mask = 0 if d.open else 1
-	for j in janelas:
-		j.no_vidro.visible = not j.aberta
-		j.no_aberta.visible = j.aberta
+	for jn in janelas:
+		jn.no_vidro.visible = not jn.aberta
+		jn.no_aberta.visible = jn.aberta
 		# como na V13, vidro deixa a luz passar; só as tábuas bloqueiam
-		j.no_ocl.occluder_light_mask = 1 if (j.estado == "tabuas" and not j.aberta) else 0
+		jn.no_ocl.occluder_light_mask = 1 if (jn.estado == "tabuas" and not jn.aberta) else 0
+	return mexendo
 
 
 # =====================================================================
@@ -1139,6 +1216,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif interagir and j != null and j.estado != "tabuas":
 		j.aberta = not j.aberta
+		_sujo = true
 		get_viewport().set_input_as_handled()
 	elif pular and d == null and j != null and j.aberta:
 		# a janela aberta não é um vão para andar: o jogador salta para o outro lado da parede

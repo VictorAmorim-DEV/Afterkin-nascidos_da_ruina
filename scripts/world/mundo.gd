@@ -61,6 +61,7 @@ func _ready() -> void:
 	if jogador != null:
 		jogador.position = IsoMath.mundo_para_tela(MundoGen.INICIO)
 	_criar_areas()
+	TerrenoTexturas.preparar_todas()
 	# carga inicial síncrona (limitada): o jogador já nasce com chão e a vizinhança de volta
 	var foco := _foco_mundo()
 	_cc = Vector2i(floori(foco.x / CH), floori(foco.y / CH))

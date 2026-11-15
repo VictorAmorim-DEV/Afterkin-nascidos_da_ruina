@@ -10,6 +10,16 @@ const MUNDO := 384.0                 ## tamanho do ladrilho no mundo, em u
 static var _cache: Dictionary = {}
 
 
+const NOMES := ["areia", "rachada", "terra", "lavrado", "asfalto", "calcada", "concreto", "agua", "madeira"]
+
+
+## Gera todas de uma vez (~600 ms) na carga inicial. Geradas sob demanda, cada uma travava o jogo de 40 a 160 ms
+## na primeira vez que aparecia na tela (água ao chegar no rio, solo rachado ao entrar no semiárido...).
+static func preparar_todas() -> void:
+	for n in NOMES:
+		obter(n)
+
+
 static func obter(nome: String) -> Texture2D:
 	if not _cache.has(nome):
 		_cache[nome] = ImageTexture.create_from_image(_gerar(nome))

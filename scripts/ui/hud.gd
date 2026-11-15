@@ -19,6 +19,7 @@ var _saude_texto := Label.new()
 var _sol_tela := TextureRect.new()
 var _toast := Label.new()
 var _toast_tween: Tween
+var _t_dica := 0.0                ## a dica de interação é recalculada 10× por segundo, não a cada quadro
 
 @onready var relogio: Label = $Painel/Relogio
 @onready var folego_texto: Label = $Painel/FolegoTexto
@@ -51,19 +52,11 @@ func _ready() -> void:
 	_montar_toast()
 
 
-func _process(_delta: float) -> void:
-	# dica de interação: primeiro objeto do grupo "interativo" que tiver algo a dizer
-	var texto := ""
-	var melhor := -1
-	for no in get_tree().get_nodes_in_group("interativo"):
-		if no.has_method("texto_interacao"):
-			var t: String = no.texto_interacao()
-			var pr: int = no.prioridade_interacao() if no.has_method("prioridade_interacao") else 0
-			if t != "" and pr > melhor:
-				texto = t
-				melhor = pr
-	dica.text = texto
-	dica.visible = texto != ""
+func _process(delta: float) -> void:
+	_t_dica -= delta
+	if _t_dica <= 0.0:
+		_t_dica = 0.1
+		_atualizar_dica()
 	if _ciclo != null:
 		relogio.text = _ciclo.texto_relogio()
 	if _jogador == null:
@@ -100,6 +93,22 @@ func _process(_delta: float) -> void:
 	_saude_texto.modulate = Color(1.0, 0.45, 0.4) if doente else Color(0.7, 1.0, 0.7)
 	_sol_tela.visible = _jogador.exposto_ao_sol()
 	_sol_tela.modulate.a = clampf(_jogador.sol / 30.0 + 0.35, 0.35, 1.0)
+
+
+## Dica de interação: o objeto do grupo "interativo" de maior prioridade que tiver algo a dizer.
+## Com ~80 interativos na cidade (alguns comparando-se com o próprio grupo), fazer isso todo quadro custava ~1 ms.
+func _atualizar_dica() -> void:
+	var texto := ""
+	var melhor := -1
+	for no in get_tree().get_nodes_in_group("interativo"):
+		if no.has_method("texto_interacao"):
+			var t: String = no.texto_interacao()
+			var pr: int = no.prioridade_interacao() if no.has_method("prioridade_interacao") else 0
+			if t != "" and pr > melhor:
+				texto = t
+				melhor = pr
+	dica.text = texto
+	dica.visible = texto != ""
 
 
 func _barra(b: ProgressBar, cor: Color) -> void:
