@@ -107,6 +107,8 @@ const CORES_MOV := {"cama": [Color8(122, 90, 58), Color8(94, 74, 60)], "sofa": [
 @export var velocidade_fade: float = 7.0
 ## Opacidade das paredes e telhados que ficam na frente do jogador quando ele passa por trás do edifício.
 @export_range(0.0, 1.0, 0.01) var opacidade_oclusao: float = 0.28
+## Tamanho (px de tela) da área em volta do jogador que fica visível através do edifício.
+@export var janela_oclusao := Vector2(240.0, 220.0)
 
 var salas: Array = []          ## {x0, y0, x1, y1 (tiles), tipo}
 var paredes: Array = []        ## {eixo, c, a, b, lado, ab: [{t, tipo, ref}]}
@@ -896,7 +898,8 @@ func _physics_process(delta: float) -> void:
 
 ## Paredes e telhados desenhados por cima do jogador (ele está fora, atrás deles na tela). true = mudou algo.
 func _atualizar_oclusao(ps: Vector2) -> bool:
-	var corpo := Rect2(ps.x - 32.0, ps.y - 70.0, 64.0, 76.0)      # o boneco, com folga (janela larga, sem "fresta")
+	# janela em volta do boneco: larga o bastante para ver o entorno, não só o personagem
+	var corpo := Rect2(ps.x - janela_oclusao.x * 0.5, ps.y - janela_oclusao.y * 0.75, janela_oclusao.x, janela_oclusao.y)
 	var fora := ps.x == INF
 	var mudou := false
 	var algum := false

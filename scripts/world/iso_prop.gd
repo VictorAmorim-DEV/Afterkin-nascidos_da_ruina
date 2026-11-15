@@ -176,6 +176,18 @@ func _criar_fatia(c0: float, c1: float, y_ordem: float, altura: float) -> void:
 	_fatias.append(s)
 
 
+## true se alguma fatia deste objeto é desenhada por cima de 'corpo' (retângulo global da cabeça/tronco de
+## alguém com os pés em pe_y): a fatia fica à frente na ordem de desenho e encobre o corpo na tela.
+func cobre(corpo: Rect2, pe_y: float) -> bool:
+	for s in _fatias:
+		if global_position.y + s.position.y <= pe_y + 2.0:
+			continue
+		var r := Rect2(global_position + s.position + Vector2(0.0, s.offset.y * escala), s.region_rect.size * escala)
+		if r.intersects(corpo):
+			return true
+	return false
+
+
 func _atualizar_colisao() -> void:
 	var forma := get_node_or_null("CollisionShape2D") as CollisionShape2D
 	if forma == null:

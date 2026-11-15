@@ -50,6 +50,10 @@ var _zona: int = -1                   ## 0 trop · 1 trans · 2 semi · 3 trans 
 var _bioma_anunciado: int = 0
 var _t_retintar: float = 0.0
 var _focando := true
+## objetos (árvores, carros...) translúcidos porque estão na frente do jogador: nó -> true enquanto encobrem
+var _desbotados: Dictionary = {}
+var _t_transp := 0.0
+const ALFA_PROP := 0.35
 
 
 func _ready() -> void:
@@ -110,12 +114,65 @@ func _process(delta: float) -> void:
 	while Time.get_ticks_usec() - t0 < ORCAMENTO_US:
 		if not _passo():
 			break
+	_t_transp -= delta
+	if _t_transp <= 0.0:
+		_t_transp = 0.1
+		_marcar_props_na_frente()
+	_animar_props(delta)
 	# dentro de uma faixa de transição a tinta acompanha a posição (suave, sem degrau)
 	if _zona == 1 or _zona == 3:
 		_t_retintar -= delta
 		if _t_retintar <= 0.0:
 			_t_retintar = 0.5
 			_tintar(_tinta_para(MundoGen.bioma_valor(foco.x, foco.y)), 1.6)
+
+
+# ───────────────────────────── objetos na frente do jogador ─────────────────────────────
+
+## Árvores e outros objetos que encobrem a cabeça/tronco do jogador ficam translúcidos (só os dos chunks vizinhos).
+func _marcar_props_na_frente() -> void:
+	var novos: Dictionary = {}
+	if jogador != null and not ("dirigindo" in jogador and jogador.dirigindo != null):
+		var pj := jogador.global_position
+		var corpo := Rect2(pj.x - 22.0, pj.y - 72.0, 44.0, 48.0)          # cabeça e tronco; pernas atrás de arbusto não contam
+		var pm := IsoMath.tela_para_mundo(pj)
+		var cj := Vector2i(floori(pm.x / CH), floori(pm.y / CH))
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				var ch: Chunk = _chunks.get(cj + Vector2i(dx, dy))
+				if ch == null:
+					continue
+				for no in ch.nos:
+					if not is_instance_valid(no) or not (no is IsoProp):
+						continue
+					var d: Vector2 = (no as Node2D).global_position - pj
+					if absf(d.x) > 420.0 or d.y < 0.0 or d.y > 650.0:
+						continue
+					if (no as IsoProp).cobre(corpo, pj.y):
+						novos[no] = true
+	for no in _desbotados.keys():
+		if not novos.has(no):
+			_desbotados[no] = false                  # volta a ficar opaco (o _animar_props tira da lista)
+	for no in novos:
+		_desbotados[no] = true
+
+
+func _animar_props(delta: float) -> void:
+	if _desbotados.is_empty():
+		return
+	var k := minf(1.0, delta * 8.0)
+	for no in _desbotados.keys():
+		if not is_instance_valid(no):
+			_desbotados.erase(no)
+			continue
+		var alvo := ALFA_PROP if _desbotados[no] else 1.0
+		var n2 := no as Node2D
+		var a := lerpf(n2.modulate.a, alvo, k)
+		if absf(a - alvo) < 0.01:
+			a = alvo
+		n2.modulate.a = a
+		if a == 1.0 and not _desbotados[no]:
+			_desbotados.erase(no)
 
 
 # ───────────────────────────── fila de chunks ─────────────────────────────
