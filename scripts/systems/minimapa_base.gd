@@ -39,25 +39,32 @@ const COR_CHAO := {"grama": Color("#5a7a3a"), "asfalto": Color("#3c3d40"), "conc
 ## Enche os caches na thread principal (a thread de geração só lê).
 static func preparar() -> void:
 	MundoGen.estradas()
-	for i in 3:
-		for j in 4:
-			Quadras._bloco(i, j)
+	for b in Quadras.blocos():
+		var bv: Vector3i = b
+		Quadras._bloco(bv.x, bv.y, bv.z)
 	Quadras.ruas_secundarias()
+	MundoGen.ligacoes()
 
 
 static func gerar() -> Image:
 	var dados := PackedByteArray()
 	dados.resize(W * H * 3)
-	var C := MundoGen.CIDADE
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
+	var areas: Array = []
+	for a in MundoGen.AREAS.size():
+		areas.append(MundoGen.area_rect(a))
 	var k := 0
 	for iy in H:
 		var y := (iy + 0.5) * PX
 		for ix in W:
 			var x := (ix + 0.5) * PX
 			var c: Color
-			if C.has_point(Vector2(x, y)):
+			var C := Rect2()
+			for ar in areas:
+				if (ar as Rect2).has_point(Vector2(x, y)):
+					C = ar
+			if C.size.x > 0.0:
 				var na_rua: bool = fposmod(x - C.position.x, B) < R or fposmod(y - C.position.y, B) < R \
 					or x >= C.end.x - R or y >= C.end.y - R
 				c = COR_ASFALTO if na_rua else COR_CONCRETO
@@ -121,20 +128,24 @@ static func gerar() -> Image:
 		var hh: float = cmd["hh"]
 		_ret(img, Rect2(cc.x - hw, cc.y - hh, hw * 2.0, hh * 2.0), COR_ACAMPAMENTO.darkened(0.35))
 		_ret(img, Rect2(cc.x - hw * 0.7, cc.y - hh * 0.75, hw * 1.4, hh * 0.5), COR_ACAMPAMENTO)
-	# cidade: chão dos quarteirões e edifícios pelo uso
-	for i in 3:
-		for j in 4:
-			var bd: Dictionary = Quadras._bloco(i, j)
-			for ch in bd["chao"]:
-				var chd: Dictionary = ch
-				var t: String = chd["t"]
-				if COR_CHAO.has(t) and (chd["r"] as Rect2).get_area() > 64.0 * 64.0 * 2.0:
-					_ret(img, chd["r"], COR_CHAO[t])
-			for s in bd["specs"]:
-				var sd: Dictionary = s
-				if sd["k"] == "edificio":
-					var uso: String = (sd["o"] as Dictionary).get("uso", "casa") if sd.has("o") else "casa"
-					_casa(img, Rect2(sd["p"], Vector2(sd["w"], sd["h"]) * 64.0), COR_USO.get(uso, COR_CASA))
+	# viaduto e ligações (o viaduto passa por cima do rio)
+	_ret(img, MundoGen.viaduto(), COR_ASFALTO)
+	for l in MundoGen.ligacoes():
+		_ret(img, (l as Dictionary)["r"], COR_ASFALTO)
+	# áreas urbanas: chão dos quarteirões e edifícios pelo uso
+	for b in Quadras.blocos():
+		var bv: Vector3i = b
+		var bd: Dictionary = Quadras._bloco(bv.x, bv.y, bv.z)
+		for ch in bd["chao"]:
+			var chd: Dictionary = ch
+			var t: String = chd["t"]
+			if COR_CHAO.has(t) and (chd["r"] as Rect2).get_area() > 64.0 * 64.0 * 2.0:
+				_ret(img, chd["r"], COR_CHAO[t])
+		for s in bd["specs"]:
+			var sd: Dictionary = s
+			if sd["k"] == "edificio":
+				var uso: String = (sd["o"] as Dictionary).get("uso", "casa") if sd.has("o") else "casa"
+				_casa(img, Rect2(sd["p"], Vector2(sd["w"], sd["h"]) * 64.0), COR_USO.get(uso, COR_CASA))
 	# ruas secundárias (dentro dos quarteirões)
 	for s in Quadras.ruas_secundarias():
 		_ret(img, (s as Dictionary)["asf"], COR_ASFALTO)

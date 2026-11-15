@@ -8,7 +8,8 @@ extends RefCounted
 ##   TROPICAL (mata, rio, cidade)  │ SEMIÁRIDO (cactos, solo rachado) │ DESERTO (areia, ruínas)
 ## Faixas de transição de 6144 u de largura entre os biomas, com a fronteira ondulada pelo ruído.
 ##
-## Tropical: cidade (grade de 3 × 4 quarteirões), rio N→S com cachoeira na nascente, ponte, dois vaus,
+## Tropical: cidade (grade de 3 × 4 quarteirões), cidade pequena ao norte e área industrial a nordeste (depois do
+## rio), viaduto leste–oeste entre elas e a cidade, rio N→S com cachoeira na nascente, ponte, dois vaus,
 ## estrada de terra para leste, vilarejo com roças, trilhas fechadas na mata ligando 2 acampamentos.
 ## Semiárido: vilarejo seco e casas isoladas. Deserto: ruínas ao longo da estrada.
 
@@ -24,10 +25,24 @@ const FRENTE2 := 43008.0          ## centro da transição semiárido → desert
 const FAIXA := 3072.0             ## meia largura de cada transição
 
 # cidade: 3 × 4 quarteirões de 3072 u, separados por ruas de 512 u (calçada 128 + asfalto 256 + calçada 128)
-const CIDADE := Rect2(1536.0, 7168.0, 9600.0, 12672.0)
+const CIDADE := Rect2(1536.0, 7168.0, 3.0 * 3072.0 + 512.0, 4.0 * 3072.0 + 512.0)
 const BLOCO := 3072.0
 const RUA := 512.0
 const CALCADA := 128.0
+
+## Áreas urbanas (V13: cidadesTWD): grades de nx × ny quarteirões com origem 'o'. 0 = cidade principal; 1 = cidade
+## pequena ao norte, alinhada à grade da cidade; 2 = área industrial, afastada a nordeste, depois do rio.
+const AREAS := [
+	{"o": Vector2(1536.0, 7168.0), "nx": 3, "ny": 4, "nome": "Cidade"},
+	{"o": Vector2(1536.0, 960.0), "nx": 2, "ny": 1, "nome": "Cidade pequena"},
+	{"o": Vector2(16896.0, 960.0), "nx": 2, "ny": 1, "nome": "Área industrial"},
+]
+
+## Viaduto (V13: viaduto, l.484): via expressa leste–oeste de 13 tiles entre as áreas do norte e a cidade,
+## atravessando o mapa todo; mureta dos dois lados (com vãos nas ruas e estradas que cruzam) e postes.
+const VIA_Y := 5376.0
+const VIA_MEIA := 416.0
+const VIA_ACOST := 64.0           ## acostamento de concreto em cada borda
 
 const ESTRADA_Y := 13504.0        ## a estrada principal sai pela rua do meio da cidade
 const INICIO := Vector2(900.0, 13504.0)
@@ -116,7 +131,7 @@ static func rio_meia(y: float) -> float:
 
 
 static func _sem_fundo() -> Array:
-	return [VAU1, Vector2(ESTRADA_Y - PONTE_MEIA, ESTRADA_Y + PONTE_MEIA), VAU2]
+	return [Vector2(VIA_Y - VIA_MEIA, VIA_Y + VIA_MEIA), VAU1, Vector2(ESTRADA_Y - PONTE_MEIA, ESTRADA_Y + PONTE_MEIA), VAU2]
 
 
 static func rio_funda(y: float) -> float:
@@ -181,8 +196,8 @@ static func agua_em(x: float, y: float) -> int:
 	var dx: float = absf(x - rio_x(y))
 	if dx > rio_meia(y):
 		return 0
-	if ponte().has_point(Vector2(x, y)):
-		return 0
+	if ponte().has_point(Vector2(x, y)) or viaduto().has_point(Vector2(x, y)):
+		return 0                                  # ponte e viaduto passam por cima
 	return 2 if dx < rio_funda(y) else 1
 
 
@@ -210,7 +225,7 @@ static func _dados() -> void:
 	]
 	# estrada principal de terra: sai da cidade, cruza a ponte e segue até o fim do deserto
 	_estradas.append({"pts": PackedVector2Array([
-		Vector2(11136.0, ESTRADA_Y), Vector2(30500.0, ESTRADA_Y), Vector2(33000.0, 13000.0),
+		Vector2(CIDADE.end.x, ESTRADA_Y), Vector2(30500.0, ESTRADA_Y), Vector2(33000.0, 13000.0),
 		Vector2(37000.0, 13900.0), Vector2(41500.0, 13300.0), Vector2(46000.0, ESTRADA_Y),
 		Vector2(49500.0, ESTRADA_Y), Vector2(53000.0, 14100.0), Vector2(58000.0, 13700.0),
 		Vector2(LARG, 13700.0)]), "w": 256.0, "t": "terra"})
@@ -234,6 +249,12 @@ static func _dados() -> void:
 		Vector2(cb.x, cb.y - 520.0), Vector2(cb.x + 900.0, cb.y - 500.0), Vector2(10900.0, 21200.0),
 		Vector2(rio_x(21450.0), 21450.0), Vector2(13500.0, 21450.0), Vector2(14600.0, 20800.0)]),
 		"w": 120.0, "t": "trilha"})
+	# estrada de terra entre a cidade pequena e a área industrial (V13: rua 'r' na l.947), ao norte da cachoeira
+	var cp := area_rect(1)
+	var ai := area_rect(2)
+	_estradas.append({"pts": PackedVector2Array([
+		Vector2(cp.end.x, cp.get_center().y), Vector2(11000.0, cp.get_center().y), Vector2(12600.0, 1700.0),
+		Vector2(15600.0, 1700.0), Vector2(ai.position.x, ai.get_center().y)]), "w": 256.0, "t": "terra"})
 	_aldeias = [
 		_aldeia("Vilarejo da Várzea", 15500.0, 6, 0, 101),
 		_aldeia("Fazenda Seca", 25400.0, 4, 1, 202),
@@ -392,7 +413,7 @@ static func dist_trilha(p: Vector2, segs: Array) -> float:
 static func livre(p: Vector2, m: float, segs: Array) -> bool:
 	if p.x < 120.0 or p.y < 120.0 or p.x > LARG - 120.0 or p.y > ALT - 120.0:
 		return false
-	if CIDADE.grow(m).has_point(p):
+	if urbano_em(p, m):
 		return false
 	if p.distance_to(INICIO) < 900.0:
 		return false
@@ -413,7 +434,7 @@ static func livre(p: Vector2, m: float, segs: Array) -> bool:
 
 static func zona(p: Vector2) -> String:
 	_dados()
-	if CIDADE.has_point(p):
+	if urbano_em(p, 0.0) and not viaduto().has_point(p):
 		return "urbano"
 	for a in _aldeias:
 		var ad: Dictionary = a
@@ -441,21 +462,154 @@ static func nome_bioma(b: int) -> String:
 ## asfalto; sec = rua secundária (Quadras.RUAS_SECUNDARIAS: sem faixa central nem faixa de pedestre).
 static func ruas(r: Rect2) -> Array:
 	var res: Array = []
-	if not CIDADE.intersects(r):
+	if not toca_urbano(r):
 		return res
-	for i in 4:
-		var b := Rect2(CIDADE.position.x + i * BLOCO, CIDADE.position.y, RUA, CIDADE.size.y)
-		if b.intersects(r):
-			res.append({"r": b, "v": true, "asf": b.grow(-CALCADA), "sec": false})
-	for j in 5:
-		var b2 := Rect2(CIDADE.position.x, CIDADE.position.y + j * BLOCO, CIDADE.size.x, RUA)
-		if b2.intersects(r):
-			res.append({"r": b2, "v": false, "asf": b2.grow(-CALCADA), "sec": false})
-	for s in Quadras.ruas_secundarias():
+	for a in AREAS.size():
+		var ar := area_rect(a)
+		if not ar.intersects(r):
+			continue
+		var nx: int = AREAS[a]["nx"]
+		var ny: int = AREAS[a]["ny"]
+		for i in nx + 1:
+			var b := Rect2(ar.position.x + i * BLOCO, ar.position.y, RUA, ar.size.y)
+			if b.intersects(r):
+				res.append({"r": b, "v": true, "asf": b.grow(-CALCADA), "sec": false})
+		for j in ny + 1:
+			var b2 := Rect2(ar.position.x, ar.position.y + j * BLOCO, ar.size.x, RUA)
+			if b2.intersects(r):
+				res.append({"r": b2, "v": false, "asf": b2.grow(-CALCADA), "sec": false})
+	for s in Quadras.ruas_secundarias() + ligacoes():
 		var sd: Dictionary = s
 		if (sd["r"] as Rect2).intersects(r):
 			res.append(sd)
 	return res
+
+
+static func area_rect(a: int) -> Rect2:
+	var o: Vector2 = AREAS[a]["o"]
+	var nx: int = AREAS[a]["nx"]
+	var ny: int = AREAS[a]["ny"]
+	return Rect2(o, Vector2(nx * BLOCO + RUA, ny * BLOCO + RUA))
+
+
+static func viaduto() -> Rect2:
+	return Rect2(0.0, VIA_Y - VIA_MEIA, LARG, VIA_MEIA * 2.0)
+
+
+static var _lig: Array = []
+
+
+## Ruas que ligam as áreas do norte ao viaduto e à cidade (V13: rua(90,58,90,110) e rua(210,58,210,110)): a da
+## cidade pequena desce pela rua N–S do meio até a cidade, cruzando o viaduto; a da área industrial desce até ele.
+## Mesmo formato de ruas(); o asfalto avança pelas calçadas da rua de chegada até o asfalto dela.
+static func ligacoes() -> Array:
+	if not _lig.is_empty():
+		return _lig
+	var cp := area_rect(1)
+	var x1 := cp.position.x + BLOCO
+	var r1 := Rect2(x1, cp.end.y, RUA, CIDADE.position.y - cp.end.y)
+	_lig.append({"r": r1, "v": true, "sec": false, "lig": true,
+		"asf": Rect2(x1 + CALCADA, r1.position.y - CALCADA, RUA - 2.0 * CALCADA, r1.size.y + 2.0 * CALCADA)})
+	var ai := area_rect(2)
+	var x2 := ai.position.x + BLOCO
+	var y2 := VIA_Y - VIA_MEIA
+	var r2 := Rect2(x2, ai.end.y, RUA, y2 - ai.end.y)
+	_lig.append({"r": r2, "v": true, "sec": false, "lig": true,
+		"asf": Rect2(x2 + CALCADA, r2.position.y - CALCADA, RUA - 2.0 * CALCADA, r2.size.y + CALCADA + VIA_ACOST)})
+	return _lig
+
+
+## p está numa área urbana, numa ligação ou no viaduto (com folga m)?
+static func urbano_em(p: Vector2, m: float) -> bool:
+	for a in AREAS.size():
+		if area_rect(a).grow(m).has_point(p):
+			return true
+	for l in ligacoes():
+		if ((l as Dictionary)["r"] as Rect2).grow(m).has_point(p):
+			return true
+	return viaduto().grow(m).has_point(p)
+
+
+## r toca alguma área urbana ou ligação (o viaduto é planejado à parte)?
+static func toca_urbano(r: Rect2) -> bool:
+	for a in AREAS.size():
+		if area_rect(a).intersects(r):
+			return true
+	for l in ligacoes():
+		if ((l as Dictionary)["r"] as Rect2).intersects(r):
+			return true
+	return false
+
+
+## Trechos de x onde a mureta do viaduto abre, de cada lado ("n" e "s"): ligações e estradas que o cruzam.
+static func vaos_viaduto() -> Dictionary:
+	var vaos := {"n": [], "s": []}
+	for l in ligacoes():
+		var lr: Rect2 = (l as Dictionary)["r"]
+		var v := Vector2(lr.position.x - 20.0, lr.end.x + 20.0)
+		if lr.position.y < VIA_Y:
+			(vaos["n"] as Array).append(v)
+		if lr.end.y > VIA_Y:
+			(vaos["s"] as Array).append(v)
+	for e in estradas():
+		var pts: PackedVector2Array = (e as Dictionary)["pts"]
+		var w: float = (e as Dictionary)["w"]
+		for i in range(pts.size() - 1):
+			for lado in ["n", "s"]:
+				var yb: float = VIA_Y - VIA_MEIA if lado == "n" else VIA_Y + VIA_MEIA
+				var a := pts[i]
+				var b := pts[i + 1]
+				if (a.y - yb) * (b.y - yb) <= 0.0 and absf(b.y - a.y) > 0.01:
+					var x := lerpf(a.x, b.x, (yb - a.y) / (b.y - a.y))
+					(vaos[lado] as Array).append(Vector2(x - w * 0.5 - 60.0, x + w * 0.5 + 60.0))
+	return vaos
+
+
+## Mureta, postes e carros abandonados do viaduto (V13: viaduto — mureta() e LAMP a cada 18 tiles alternando o lado).
+static func _planejar_viaduto(r: Rect2, rng: RandomNumberGenerator, specs: Array) -> void:
+	var vaos := vaos_viaduto()
+	for lado in ["n", "s"]:
+		var y: float = VIA_Y - VIA_MEIA + 10.0 if lado == "n" else VIA_Y + VIA_MEIA - 10.0
+		var lista: Array = vaos[lado]
+		# a mureta acompanha o chunk em pedaços de até 256 u, abrindo nos vãos
+		var trechos: Array = [Vector2(r.position.x, r.end.x)]
+		for v in lista:
+			var vv: Vector2 = v
+			var novos: Array = []
+			for t in trechos:
+				var tt: Vector2 = t
+				if vv.y <= tt.x or vv.x >= tt.y:
+					novos.append(tt)
+					continue
+				if vv.x > tt.x:
+					novos.append(Vector2(tt.x, vv.x))
+				if vv.y < tt.y:
+					novos.append(Vector2(vv.y, tt.y))
+			trechos = novos
+		for t in trechos:
+			var tt2: Vector2 = t
+			if tt2.y - tt2.x > 8.0:
+				for pedaco in _dividir(Vector2(tt2.x, y), Vector2(tt2.y, y), 256.0):
+					specs.append({"k": "cerca", "a": pedaco[0], "b": pedaco[1], "e": "mureta"})
+		# postes a cada 1152 u; o lado sul defasado meio passo
+		var passo := 1152.0
+		var x0: float = 576.0 if lado == "n" else 1152.0
+		var px := x0 + ceilf((r.position.x - x0) / passo) * passo
+		while px < r.end.x:
+			var livre := true
+			for v in lista:
+				var vv2: Vector2 = v
+				if px > vv2.x - 100.0 and px < vv2.y + 100.0:
+					livre = false
+			var pp := Vector2(px, y + (40.0 if lado == "n" else -40.0))
+			if livre:
+				Quadras._poste(pp, r, specs)
+			px += passo
+	# carros abandonados nas pistas
+	if rng.randf() < 0.35:
+		var mao := -1.0 if rng.randf() < 0.5 else 1.0
+		var p := Vector2(rng.randf_range(r.position.x + 150.0, r.end.x - 150.0), VIA_Y + mao * rng.randf_range(110.0, 290.0))
+		_carro(rng, p, (0.0 if mao > 0.0 else PI) + rng.randf_range(-0.25, 0.25), specs, 0.22)
 
 
 
@@ -497,8 +651,10 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 	var z := zona(centro)
 
 	# ---- cidade: lotes (casas e prédios modulares), entulho, carros nas ruas ----
-	if CIDADE.intersects(r):
+	if toca_urbano(r):
 		_planejar_cidade(c, r, rng, specs, vivos)
+	if viaduto().intersects(r):
+		_planejar_viaduto(r, rng, specs)
 	# ---- vilarejos ----
 	for a in _aldeias:
 		var ad: Dictionary = a

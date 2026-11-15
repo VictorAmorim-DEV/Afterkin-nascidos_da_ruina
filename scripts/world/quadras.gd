@@ -15,10 +15,15 @@ const N := 40                       ## tiles por lado do miolo (BLOCO - RUA = 25
 ## Papel de cada quarteirão (coluna oeste→leste, linha norte→sul): o programa da cidade principal da V13 (cidadesTWD).
 ## O ponto inicial fica a oeste da linha 2, então o jogador entra pela vizinhança residencial.
 const PAPEIS := {
-	Vector2i(0, 0): "escola", Vector2i(1, 0): "hospital", Vector2i(2, 0): "industrial",
+	Vector2i(0, 0): "escola", Vector2i(1, 0): "hospital", Vector2i(2, 0): "casas_dividida",
 	Vector2i(0, 1): "comercial_banco", Vector2i(1, 1): "comercial_farmacia", Vector2i(2, 1): "mercado",
 	Vector2i(0, 2): "casas", Vector2i(1, 2): "praca", Vector2i(2, 2): "comercial_delegacia",
 	Vector2i(0, 3): "posto", Vector2i(1, 3): "igreja", Vector2i(2, 3): "casas_dividida"}
+## Papéis por área urbana (MundoGen.AREAS): cidade principal; cidade pequena (V13: comércio com oficina, farmácia,
+## loja e mercado + praça e casas); área industrial (V13: dois quarteirões de galpões, só um com chaminé).
+const PAPEIS_AREAS := [PAPEIS,
+	{Vector2i(0, 0): "comercial_oficina", Vector2i(1, 0): "praca"},
+	{Vector2i(0, 0): "industrial_simples", Vector2i(1, 0): "industrial"}]
 
 ## Rua secundária N–S no meio dos quarteirões "casas_dividida" (V13: quadraResidencialDividida, via 's'):
 ## tiles [SEC_X0, SEC_X0 + SEC_LARG) do miolo; calçadas como as das ruas principais e asfalto mais estreito.
@@ -146,23 +151,36 @@ static func mt(m: float) -> float:
 
 # ═════════════════════════════════ consulta pelos chunks ═════════════════════════════════
 
-static func _bloco_rect(i: int, j: int) -> Rect2:
-	var x := MundoGen.CIDADE.position.x + i * MundoGen.BLOCO + MundoGen.RUA
-	var y := MundoGen.CIDADE.position.y + j * MundoGen.BLOCO + MundoGen.RUA
-	return Rect2(x, y, N * TILE, N * TILE)
+## Todos os quarteirões: Vector3i(i, j, área).
+static func blocos() -> Array:
+	var out: Array = []
+	for a in MundoGen.AREAS.size():
+		var nx: int = MundoGen.AREAS[a]["nx"]
+		var ny: int = MundoGen.AREAS[a]["ny"]
+		for i in nx:
+			for j in ny:
+				out.append(Vector3i(i, j, a))
+	return out
 
 
-static func _bloco(i: int, j: int) -> Dictionary:
-	var k := Vector2i(i, j)
+static func _bloco_rect(i: int, j: int, a: int = 0) -> Rect2:
+	var o := MundoGen.area_rect(a).position
+	return Rect2(o.x + i * MundoGen.BLOCO + MundoGen.RUA, o.y + j * MundoGen.BLOCO + MundoGen.RUA, N * TILE, N * TILE)
+
+
+static func _bloco(i: int, j: int, a: int = 0) -> Dictionary:
+	var k := Vector3i(i, j, a)
 	if _cache.has(k):
 		return _cache[k]
-	var r := _bloco_rect(i, j)
-	var q := Q.new(r.position.x, r.position.y, (((i * 7919) ^ (j * 104729)) + MundoGen.SEMENTE * 31337) & 0x7fffffff)
+	var r := _bloco_rect(i, j, a)
+	var q := Q.new(r.position.x, r.position.y, (((i * 7919) ^ (j * 104729)) + MundoGen.SEMENTE * 31337 + a * 7777) & 0x7fffffff)
 	_reservar_rotatoria(q)
-	match PAPEIS.get(k, "casas"):
+	match _papel(i, j, a):
 		"escola": _escola(q)
 		"hospital": _hospital(q)
 		"industrial": _industrial(q, true)
+		"industrial_simples": _industrial(q, false)
+		"comercial_oficina": _comercial(q, {"s": ["oficina", "farmacia", "loja"], "n": ["mercado"]}, ["loja", "loja", "apto"])
 		"comercial_banco": _comercial(q, {"s": ["banco", "apto"], "e": ["apto"]}, ["apto", "apto", "loja"])
 		"comercial_farmacia": _comercial(q, {"s": ["apto", "farmacia", "apto"], "w": ["loja"]}, ["apto", "apto", "loja"])
 		"comercial_delegacia": _comercial(q, {"s": ["delegacia", "loja"]}, ["apto", "loja"])
@@ -193,13 +211,13 @@ static func _ancora(s: Dictionary) -> Vector2:
 ## Specs dos quarteirões cuja âncora cai no retângulo 'r' (o chunk).
 static func specs_no(r: Rect2) -> Array:
 	var out: Array = []
-	for i in 3:
-		for j in 4:
-			if not _bloco_rect(i, j).grow(4.0 * TILE).intersects(r):
-				continue
-			for s in _bloco(i, j)["specs"]:
-				if r.has_point(_ancora(s)):
-					out.append((s as Dictionary).duplicate(true))
+	for b in blocos():
+		var bv: Vector3i = b
+		if not _bloco_rect(bv.x, bv.y, bv.z).grow(4.0 * TILE).intersects(r):
+			continue
+		for s in _bloco(bv.x, bv.y, bv.z)["specs"]:
+			if r.has_point(_ancora(s)):
+				out.append((s as Dictionary).duplicate(true))
 	_vias()
 	for s in _vias_specs:                             # rotatória e árvores de calçada
 		if r.has_point(_ancora(s)):
@@ -210,13 +228,13 @@ static func specs_no(r: Rect2) -> Array:
 ## Áreas de chão que tocam 'r'.
 static func chao_no(r: Rect2) -> Array:
 	var out: Array = []
-	for i in 3:
-		for j in 4:
-			if not _bloco_rect(i, j).intersects(r):
-				continue
-			for c in _bloco(i, j)["chao"]:
-				if (c["r"] as Rect2).intersects(r):
-					out.append(c)
+	for b in blocos():
+		var bv: Vector3i = b
+		if not _bloco_rect(bv.x, bv.y, bv.z).intersects(r):
+			continue
+		for c in _bloco(bv.x, bv.y, bv.z)["chao"]:
+			if (c["r"] as Rect2).intersects(r):
+				out.append(c)
 	return out
 
 
@@ -241,31 +259,43 @@ static func postes_no(r: Rect2, specs: Array) -> void:
 static func _postes() -> PackedVector2Array:
 	if not _postes_cache.is_empty():
 		return _postes_cache
-	var C := MundoGen.CIDADE
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
 	var lado_calcada := [POSTE_RECUO, R - POSTE_RECUO]
 	var out := PackedVector2Array()
-	for i in 4:                                       # ruas norte-sul
-		var x := C.position.x + i * B
-		var k := 0
-		var y := C.position.y + 512.0
-		while y < C.end.y:
-			var m := fposmod(y - C.position.y, B)
-			if m > R + 160.0 and m < B - 160.0:
-				out.append(Vector2(x + lado_calcada[k % 2], y))
-			y += 1024.0
-			k += 1
-	for j in 5:                                       # ruas leste-oeste
-		var y2 := C.position.y + j * B
-		var k2 := 1
-		var x2 := C.position.x + 512.0
-		while x2 < C.end.x:
-			var m2 := fposmod(x2 - C.position.x, B)
-			if m2 > R + 160.0 and m2 < B - 160.0:
-				out.append(Vector2(x2, y2 + lado_calcada[k2 % 2]))
-			x2 += 1024.0
-			k2 += 1
+	for a in MundoGen.AREAS.size():
+		var C := MundoGen.area_rect(a)
+		var nx: int = MundoGen.AREAS[a]["nx"]
+		var ny: int = MundoGen.AREAS[a]["ny"]
+		for i in nx + 1:                              # ruas norte-sul
+			var x := C.position.x + i * B
+			var k := 0
+			var y := C.position.y + 512.0
+			while y < C.end.y:
+				var m := fposmod(y - C.position.y, B)
+				if m > R + 160.0 and m < B - 160.0:
+					out.append(Vector2(x + lado_calcada[k % 2], y))
+				y += 1024.0
+				k += 1
+		for j in ny + 1:                              # ruas leste-oeste
+			var y2 := C.position.y + j * B
+			var k2 := 1
+			var x2 := C.position.x + 512.0
+			while x2 < C.end.x:
+				var m2 := fposmod(x2 - C.position.x, B)
+				if m2 > R + 160.0 and m2 < B - 160.0:
+					out.append(Vector2(x2, y2 + lado_calcada[k2 % 2]))
+				x2 += 1024.0
+				k2 += 1
+	for l in MundoGen.ligacoes():                     # ligações: fora do viaduto e das pontas
+		for r in _partes_ligacao((l as Dictionary)["r"]):
+			var rr: Rect2 = r
+			var k4 := 0
+			var y4 := rr.position.y + 300.0
+			while y4 < rr.end.y - 200.0:
+				out.append(Vector2(rr.position.x + POSTE_RECUO if k4 % 2 == 0 else rr.end.x - POSTE_RECUO, y4))
+				y4 += 1024.0
+				k4 += 1
 	for s in ruas_secundarias():                      # rua secundária: um poste a cada 1024 u, alternando o lado
 		var r: Rect2 = (s as Dictionary)["r"]
 		var k3 := 0
@@ -727,8 +757,21 @@ static func _lote(q: Q, lx0: int, ly0: int, lx1: int, ly1: int, frente: String, 
 # ═════════════════════════════════ ruas: rotatória, esquinas, árvores de calçada ═════════════════════════════════
 
 ## Centro (u) do cruzamento da rua N-S i com a rua L-O j.
-static func cruzamento(i: int, j: int) -> Vector2:
-	return MundoGen.CIDADE.position + Vector2(i, j) * MundoGen.BLOCO + Vector2.ONE * (MundoGen.RUA * 0.5)
+static func cruzamento(i: int, j: int, a: int = 0) -> Vector2:
+	return MundoGen.area_rect(a).position + Vector2(i, j) * MundoGen.BLOCO + Vector2.ONE * (MundoGen.RUA * 0.5)
+
+
+## Pedaços de uma ligação fora da faixa do viaduto.
+static func _partes_ligacao(r: Rect2) -> Array:
+	var v := MundoGen.viaduto()
+	if r.end.y <= v.position.y or r.position.y >= v.end.y:
+		return [r]
+	var out: Array = []
+	if r.position.y < v.position.y:
+		out.append(Rect2(r.position.x, r.position.y, r.size.x, v.position.y - r.position.y))
+	if r.end.y > v.end.y:
+		out.append(Rect2(r.position.x, v.end.y, r.size.x, r.end.y - v.end.y))
+	return out
 
 
 static func centro_rotatoria() -> Vector2:
@@ -739,10 +782,12 @@ static func perto_rotatoria(p: Vector2, raio_tiles: float) -> bool:
 	return p.distance_to(centro_rotatoria()) < raio_tiles * TILE
 
 
-static func _papel(i: int, j: int) -> String:
-	if i < 0 or i > 2 or j < 0 or j > 3:
+static func _papel(i: int, j: int, a: int = 0) -> String:
+	var nx: int = MundoGen.AREAS[a]["nx"]
+	var ny: int = MundoGen.AREAS[a]["ny"]
+	if i < 0 or i >= nx or j < 0 or j >= ny:
 		return ""
-	return PAPEIS.get(Vector2i(i, j), "casas")
+	return (PAPEIS_AREAS[a] as Dictionary).get(Vector2i(i, j), "casas")
 
 
 ## Reserva o canto do quarteirão tomado pela rotatória (V13: ocuparCirculo) e grama as pracinhas dos cantos.
@@ -818,19 +863,19 @@ static func _rotatoria(rng: RandomNumberGenerator) -> void:
 ## Esquinas (V13: esquina): lixo, folhas e mato acumulados no canto de cada calçada; às vezes uma poça no asfalto.
 static func _esquinas(rng: RandomNumberGenerator) -> void:
 	var canto := MundoGen.RUA * 0.5 - MundoGen.CALCADA * 0.5
-	for i in 4:
-		for j in 5:
-			if Vector2i(i, j) == ROTATORIA:
-				continue
-			var c := cruzamento(i, j)
-			for sx in [-1.0, 1.0]:
-				for sy in [-1.0, 1.0]:
-					var p: Vector2 = c + Vector2(sx, sy) * canto
-					for k in 7:
-						var ang := rng.randf_range(0.0, TAU)
-						_detalhe(LIXO_ESQUINA[rng.randi() % LIXO_ESQUINA.size()], p + Vector2.from_angle(ang) * rng.randf_range(0.0, 46.0), rng)
-					if rng.randf() < 0.5:
-						_detalhe("poca", c + Vector2(sx, sy) * 100.0, rng, 1.3)
+	for cz in cruzamentos():
+		var cd: Dictionary = cz
+		if cd["rot"]:
+			continue
+		var c: Vector2 = cd["c"]
+		for sx in [-1.0, 1.0]:
+			for sy in [-1.0, 1.0]:
+				var p: Vector2 = c + Vector2(sx, sy) * canto
+				for k in 7:
+					var ang := rng.randf_range(0.0, TAU)
+					_detalhe(LIXO_ESQUINA[rng.randi() % LIXO_ESQUINA.size()], p + Vector2.from_angle(ang) * rng.randf_range(0.0, 46.0), rng)
+				if rng.randf() < 0.5:
+					_detalhe("poca", c + Vector2(sx, sy) * 100.0, rng, 1.3)
 	for s in ruas_secundarias():                      # entroncamentos em T da rua secundária
 		var r: Rect2 = (s as Dictionary)["r"]
 		for y in [r.position.y + SEC_CALCADA * 0.5, r.end.y - SEC_CALCADA * 0.5]:
@@ -842,31 +887,39 @@ static func _esquinas(rng: RandomNumberGenerator) -> void:
 ## Árvores de calçada (V13: arvoresCalcada): a cada 9–14 tiles, alternando o lado, longe dos cruzamentos, da rotatória,
 ## dos postes e de outros objetos da calçada. Cada uma tem um canteiro de terra e rachaduras em volta.
 static func _arvores_calcada(rng: RandomNumberGenerator) -> void:
-	var C := MundoGen.CIDADE
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
 	var ocupados := PackedVector2Array(_postes())
-	var predios: Array = []                            # pegadas (u) de todos os edifícios da cidade
-	for i in 3:
-		for j in 4:
-			for s in _bloco(i, j)["specs"]:
-				var sd: Dictionary = s
-				if sd["k"] == "urbano" or sd["k"] == "carro" or sd["k"] == "prop":
-					ocupados.append(_ancora(sd))
-				elif sd["k"] == "edificio":
-					predios.append(Rect2(sd["p"], Vector2(sd["w"], sd["h"]) * TILE))
-	for i in 4:                                       # ruas norte-sul, um trecho por quarteirão
-		for j in 4:
-			var x := C.position.x + i * B
-			var y0 := C.position.y + j * B + R
-			_fila_arvores(rng, Vector2(x + ARV_RECUO, y0), Vector2(x + R - ARV_RECUO, y0), Vector2(0, 1), B - R,
-				[_papel(i - 1, j), _papel(i, j)], ocupados, predios)
-	for j in 5:                                       # ruas leste-oeste
-		for i in 3:
-			var y := C.position.y + j * B
-			var x0 := C.position.x + i * B + R
-			_fila_arvores(rng, Vector2(x0, y + ARV_RECUO), Vector2(x0, y + R - ARV_RECUO), Vector2(1, 0), B - R,
-				[_papel(i, j - 1), _papel(i, j)], ocupados, predios)
+	var predios: Array = []                            # pegadas (u) de todos os edifícios das áreas urbanas
+	for b in blocos():
+		var bv: Vector3i = b
+		for s in _bloco(bv.x, bv.y, bv.z)["specs"]:
+			var sd: Dictionary = s
+			if sd["k"] == "urbano" or sd["k"] == "carro" or sd["k"] == "prop":
+				ocupados.append(_ancora(sd))
+			elif sd["k"] == "edificio":
+				predios.append(Rect2(sd["p"], Vector2(sd["w"], sd["h"]) * TILE))
+	for a in MundoGen.AREAS.size():
+		var C := MundoGen.area_rect(a)
+		var nx: int = MundoGen.AREAS[a]["nx"]
+		var ny: int = MundoGen.AREAS[a]["ny"]
+		for i in nx + 1:                              # ruas norte-sul, um trecho por quarteirão
+			for j in ny:
+				var x := C.position.x + i * B
+				var y0 := C.position.y + j * B + R
+				_fila_arvores(rng, Vector2(x + ARV_RECUO, y0), Vector2(x + R - ARV_RECUO, y0), Vector2(0, 1), B - R,
+					[_papel(i - 1, j, a), _papel(i, j, a)], ocupados, predios)
+		for j in ny + 1:                              # ruas leste-oeste
+			for i in nx:
+				var y := C.position.y + j * B
+				var x0 := C.position.x + i * B + R
+				_fila_arvores(rng, Vector2(x0, y + ARV_RECUO), Vector2(x0, y + R - ARV_RECUO), Vector2(1, 0), B - R,
+					[_papel(i, j - 1, a), _papel(i, j, a)], ocupados, predios)
+	for l in MundoGen.ligacoes():                     # ligações
+		for r in _partes_ligacao((l as Dictionary)["r"]):
+			var rr: Rect2 = r
+			_fila_arvores(rng, Vector2(rr.position.x + ARV_RECUO, rr.position.y), Vector2(rr.end.x - ARV_RECUO, rr.position.y),
+				Vector2(0, 1), rr.size.y, ["", ""], ocupados, predios)
 	for s in ruas_secundarias():                      # rua secundária
 		var r: Rect2 = (s as Dictionary)["r"]
 		_fila_arvores(rng, Vector2(r.position.x + ARV_RECUO, r.position.y), Vector2(r.end.x - ARV_RECUO, r.position.y),
@@ -922,19 +975,27 @@ static func _folga_predio(p: Vector2, predios: Array) -> float:
 ## Trechos de rua entre dois cruzamentos: c = início no eixo da rua, dir = sentido, n = normal, comp = comprimento (u),
 ## meia = meia largura do asfalto, calc = largura da calçada.
 static func _trechos() -> Array:
-	var C := MundoGen.CIDADE
 	var B := MundoGen.BLOCO
 	var R := MundoGen.RUA
 	var meia := R * 0.5 - MundoGen.CALCADA
 	var out: Array = []
-	for i in 4:
-		for j in 4:
-			out.append({"c": Vector2(C.position.x + i * B + R * 0.5, C.position.y + j * B + R), "dir": Vector2(0, 1),
-				"n": Vector2(1, 0), "comp": B - R, "meia": meia, "calc": MundoGen.CALCADA})
-	for j in 5:
-		for i in 3:
-			out.append({"c": Vector2(C.position.x + i * B + R, C.position.y + j * B + R * 0.5), "dir": Vector2(1, 0),
-				"n": Vector2(0, 1), "comp": B - R, "meia": meia, "calc": MundoGen.CALCADA})
+	for a in MundoGen.AREAS.size():
+		var C := MundoGen.area_rect(a)
+		var nx: int = MundoGen.AREAS[a]["nx"]
+		var ny: int = MundoGen.AREAS[a]["ny"]
+		for i in nx + 1:
+			for j in ny:
+				out.append({"c": Vector2(C.position.x + i * B + R * 0.5, C.position.y + j * B + R), "dir": Vector2(0, 1),
+					"n": Vector2(1, 0), "comp": B - R, "meia": meia, "calc": MundoGen.CALCADA})
+		for j in ny + 1:
+			for i in nx:
+				out.append({"c": Vector2(C.position.x + i * B + R, C.position.y + j * B + R * 0.5), "dir": Vector2(1, 0),
+					"n": Vector2(0, 1), "comp": B - R, "meia": meia, "calc": MundoGen.CALCADA})
+	for l in MundoGen.ligacoes():
+		for r in _partes_ligacao((l as Dictionary)["r"]):
+			var rr: Rect2 = r
+			out.append({"c": Vector2(rr.get_center().x, rr.position.y), "dir": Vector2(0, 1), "n": Vector2(1, 0),
+				"comp": rr.size.y, "meia": meia, "calc": MundoGen.CALCADA})
 	for s in ruas_secundarias():
 		var r: Rect2 = (s as Dictionary)["r"]
 		out.append({"c": Vector2(r.get_center().x, r.position.y), "dir": Vector2(0, 1), "n": Vector2(1, 0),
@@ -1032,12 +1093,25 @@ static var _sec_cache: Array = []
 static func ruas_secundarias() -> Array:
 	if not _sec_cache.is_empty():
 		return _sec_cache
-	for k in PAPEIS:
-		if PAPEIS[k] != "casas_dividida":
+	for b0 in blocos():
+		var k: Vector3i = b0
+		if _papel(k.x, k.y, k.z) != "casas_dividida":
 			continue
-		var b := _bloco_rect(k.x, k.y)
+		var b := _bloco_rect(k.x, k.y, k.z)
 		var r := Rect2(b.position.x + SEC_X0 * TILE, b.position.y, SEC_LARG * TILE, b.size.y)
 		var asf := Rect2(r.position.x + SEC_CALCADA, r.position.y - MundoGen.CALCADA, r.size.x - 2.0 * SEC_CALCADA,
 			r.size.y + 2.0 * MundoGen.CALCADA)
 		_sec_cache.append({"r": r, "v": true, "asf": asf, "sec": true})
 	return _sec_cache
+
+
+## Cruzamentos de todas as áreas: {"c": centro, "a": área, "i", "j", "rot": é a rotatória}.
+static func cruzamentos() -> Array:
+	var out: Array = []
+	for a in MundoGen.AREAS.size():
+		var nx: int = MundoGen.AREAS[a]["nx"]
+		var ny: int = MundoGen.AREAS[a]["ny"]
+		for i in nx + 1:
+			for j in ny + 1:
+				out.append({"c": cruzamento(i, j, a), "a": a, "i": i, "j": j, "rot": a == 0 and Vector2i(i, j) == ROTATORIA})
+	return out

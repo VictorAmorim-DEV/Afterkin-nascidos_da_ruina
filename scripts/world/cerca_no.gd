@@ -2,7 +2,8 @@ class_name CercaNo
 extends StaticBody2D
 ## Trecho de cerca (até ~256 u) entre dois pontos do mundo. Desenhada por código:
 ## "madeira" (mourões e duas travas), "arame" (mourões finos e fios), "palicada" (toras pontudas),
-## "alambrado" (tela de aço da V13: chain) e "muro" (muro baixo de tijolo/reboco do cemitério e dos lotes).
+## "alambrado" (tela de aço da V13: chain), "muro" (muro baixo de tijolo/reboco do cemitério e dos lotes) e
+## "mureta" (barreira de concreto do viaduto, V13: rail).
 ## Origem do nó = meio do trecho; a colisão é uma tira fina ao longo dele.
 
 var a := Vector2.ZERO        ## extremos em coordenadas de MUNDO
@@ -33,6 +34,9 @@ func _draw() -> void:
 		return
 	if estilo == "alambrado":
 		_alambrado()
+		return
+	if estilo == "mureta":
+		_mureta()
 		return
 	var altura: float = 64.0 if estilo == "palicada" else (30.0 if estilo == "arame" else 34.0)
 	var cor_madeira := Color(0.42, 0.30, 0.18)
@@ -84,3 +88,23 @@ func _alambrado() -> void:
 	for i in range(n + 1):
 		var p := _la.lerp(_lb, float(i) / n)
 		draw_line(p, p + Vector2(0, -alt - 2.0), Color8(96, 98, 100), 3.0)
+
+
+## Barreira de concreto do viaduto (~0,8 m), base mais larga, manchas de sujeira e marcas de batida.
+func _mureta() -> void:
+	var alt := 24.0
+	var d := (_lb - _la).normalized()
+	var esp := Vector2(-d.y, d.x).normalized() * 4.0
+	var cor := Color8(156, 154, 146)
+	draw_colored_polygon(PackedVector2Array([_la + esp, _lb + esp, _lb + Vector2(0, -alt * 0.35) + esp * 0.6,
+		_la + Vector2(0, -alt * 0.35) + esp * 0.6]), cor.darkened(0.2))
+	draw_colored_polygon(PackedVector2Array([_la + Vector2(0, -alt * 0.35) + esp * 0.6, _lb + Vector2(0, -alt * 0.35) + esp * 0.6,
+		_lb + Vector2(0, -alt), _la + Vector2(0, -alt)]), cor.darkened(0.08))
+	draw_colored_polygon(PackedVector2Array([_la + Vector2(0, -alt) - esp * 0.5, _lb + Vector2(0, -alt) - esp * 0.5,
+		_lb + Vector2(0, -alt) + esp * 0.5, _la + Vector2(0, -alt) + esp * 0.5]), cor.lightened(0.12))
+	var sd := fmod(absf(a.x * 0.013 + a.y * 0.007), 1.0)
+	for k in 3:                                       # escorridos e marcas pretas de pneu
+		var t := fmod(sd * 7.3 + k * 0.37, 1.0)
+		var p := _la.lerp(_lb, t)
+		draw_line(p + Vector2(0, -alt + 2.0), p + Vector2(0, -alt * (0.3 + 0.2 * k)), Color(0.1, 0.09, 0.08, 0.18), 3.0)
+	draw_line(_la, _lb, Color(0.12, 0.1, 0.08, 0.35), 3.0)

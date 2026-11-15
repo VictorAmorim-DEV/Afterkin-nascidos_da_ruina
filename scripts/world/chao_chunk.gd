@@ -80,6 +80,7 @@ func _draw() -> void:
 	_agua()
 	_estradas()
 	_ruas()
+	_viaduto()
 	_ponte()
 
 
@@ -172,9 +173,10 @@ func _fazendas() -> void:
 # ───────────────────────────── cidade ─────────────────────────────
 
 func _cidade_chao() -> void:
-	if not MundoGen.CIDADE.intersects(_r):
+	if not MundoGen.toca_urbano(_r):
 		return
-	_ret(MundoGen.CIDADE, TerrenoTexturas.obter("concreto"), Color.WHITE)
+	for a in MundoGen.AREAS.size():
+		_ret(MundoGen.area_rect(a), TerrenoTexturas.obter("concreto"), Color.WHITE)
 	# chão dos quarteirões: lotes gramados, estacionamentos e vagas, quadra de esportes, cemitério, praça
 	for c in Quadras.chao_no(_r):
 		var t: String = c["t"]
@@ -203,8 +205,13 @@ func _ruas() -> void:
 		_ret((f as Dictionary)["asf"], asfalto, Color.WHITE)
 	if tem_rot:
 		_rotatoria(rc, calcada, asfalto)
-	var x0: float = MundoGen.CIDADE.position.x
-	var y0: float = MundoGen.CIDADE.position.y
+	var nos: Array = []                               # cruzamentos perto do chunk: sem faixa central neles
+	for cz in Quadras.cruzamentos():
+		var c0: Vector2 = (cz as Dictionary)["c"]
+		if _r.grow(1200.0).has_point(c0):
+			nos.append(c0)
+	var lim := MundoGen.RUA * 0.5 + 170.0
+	var via := MundoGen.viaduto().grow_individual(0.0, 170.0, 0.0, 170.0)
 	var amarelo := Color(0.85, 0.72, 0.2, 0.9)
 	for f in faixas:
 		var fd: Dictionary = f
@@ -217,9 +224,13 @@ func _ruas() -> void:
 		t = floorf(t / 192.0) * 192.0
 		while t < fim:
 			var cx := Vector2(fr.get_center().x, t + 40.0) if vertical else Vector2(t + 40.0, fr.get_center().y)
-			# sem faixa dentro dos cruzamentos, nas faixas de pedestre e no anel da rotatória
-			var m: float = fposmod((cx.y - y0) if vertical else (cx.x - x0), MundoGen.BLOCO)
-			var livre: bool = m > MundoGen.RUA + 170.0 and m < MundoGen.BLOCO - 170.0
+			# sem faixa dentro dos cruzamentos, nas faixas de pedestre, no viaduto e no anel da rotatória
+			var livre: bool = not via.has_point(cx)
+			for no in nos:
+				var nv: Vector2 = no
+				if absf(cx.x - nv.x) < lim and absf(cx.y - nv.y) < lim:
+					livre = false
+					break
 			if livre and cx.distance_to(rc) > (Quadras.ROT_RO + 5.0) * T:
 				var dash := Rect2(cx.x - 5.0, cx.y - 40.0, 10.0, 80.0) if vertical else Rect2(cx.x - 40.0, cx.y - 5.0, 80.0, 10.0)
 				_ret(dash, null, amarelo)
@@ -252,35 +263,35 @@ func _rotatoria(rc: Vector2, calcada: Texture2D, asfalto: Texture2D) -> void:
 ## Faixas de pedestre (V13: faixas): listras logo fora de cada cruzamento, em todos os braços que existem;
 ## na rotatória, depois da calçada do anel.
 func _faixas_pedestre(rc: Vector2) -> void:
-	var C := MundoGen.CIDADE
 	var meia := MundoGen.RUA * 0.5 - MundoGen.CALCADA      # meia largura do asfalto
 	var branco := Color(0.88, 0.87, 0.82, 0.8)
-	for i in 4:
-		for j in 5:
-			var c := Quadras.cruzamento(i, j)
-			if absf(c.x - _r.get_center().x) > 1400.0 or absf(c.y - _r.get_center().y) > 1400.0:
+	for cz in Quadras.cruzamentos():
+		var cd: Dictionary = cz
+		var c: Vector2 = cd["c"]
+		if absf(c.x - _r.get_center().x) > 1400.0 or absf(c.y - _r.get_center().y) > 1400.0:
+			continue
+		var C := MundoGen.area_rect(cd["a"])
+		var d0: float = MundoGen.RUA * 0.5 + 10.0
+		if cd["rot"]:
+			d0 = (Quadras.ROT_RO + Quadras.ROT_CALCADA + 0.4) * Quadras.TILE
+		for dir in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
+			var dv: Vector2 = dir
+			if not C.has_point(c + dv * (d0 + 200.0)):
 				continue
-			var d0: float = MundoGen.RUA * 0.5 + 10.0
-			if Vector2i(i, j) == Quadras.ROTATORIA:
-				d0 = (Quadras.ROT_RO + Quadras.ROT_CALCADA + 0.4) * Quadras.TILE
-			for dir in [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]:
-				var dv: Vector2 = dir
-				if not C.has_point(c + dv * (d0 + 200.0)):
-					continue
-				var w := dv.orthogonal()
-				var s := -meia + 14.0
-				while s < meia - 30.0:
-					var a: Vector2 = c + dv * d0 + w * s
-					var b: Vector2 = c + dv * (d0 + 110.0) + w * (s + 26.0)
-					_ret(Rect2(Vector2(minf(a.x, b.x), minf(a.y, b.y)), (b - a).abs()), null, branco)
-					s += 48.0
+			var w := dv.orthogonal()
+			var s := -meia + 14.0
+			while s < meia - 30.0:
+				var a: Vector2 = c + dv * d0 + w * s
+				var b: Vector2 = c + dv * (d0 + 110.0) + w * (s + 26.0)
+				_ret(Rect2(Vector2(minf(a.x, b.x), minf(a.y, b.y)), (b - a).abs()), null, branco)
+				s += 48.0
 
 
 ## Lixo, folhas, poças, mato e rachaduras pintados no chão (V13: decais das esquinas e das árvores de calçada).
 ## Cada detalhe é desenhado inteiro, sem recorte, pelo chunk onde está o centro, num Desenho filho um z acima do
 ## chão: o chão do chunk vizinho não o corta e nada é pintado duas vezes.
 func _detalhes() -> void:
-	if not MundoGen.CIDADE.grow(200.0).intersects(_r):
+	if not MundoGen.toca_urbano(_r.grow(200.0)):
 		return
 	var lista := Quadras.detalhes_no(_r)
 	if lista.is_empty():
@@ -396,6 +407,29 @@ func _rachadura(p: Vector2, a: float, s: float, rng: RandomNumberGenerator, cor:
 		var n := (q2 - q).normalized().orthogonal() * 1.6
 		_dp(PackedVector2Array([q - n, q2 - n, q2 + n, q + n]), cor)
 		q = q2
+
+
+## Viaduto (V13: viaduto): acostamento de concreto, asfalto, faixa dupla amarela no meio, faixas tracejadas entre
+## as pistas e linha de bordo. Desenhado depois das ruas: as ligações que o cruzam passam por baixo da pintura.
+func _viaduto() -> void:
+	var v := MundoGen.viaduto()
+	if not v.intersects(_r):
+		return
+	var y := MundoGen.VIA_Y
+	_ret(v, TerrenoTexturas.obter("calcada"), Color(0.9, 0.9, 0.88))
+	var asf := v.grow_individual(0.0, -MundoGen.VIA_ACOST, 0.0, -MundoGen.VIA_ACOST)
+	_ret(asf, TerrenoTexturas.obter("asfalto"), Color(0.93, 0.93, 0.96))
+	var amarelo := Color(0.85, 0.72, 0.2, 0.9)
+	var branco := Color(0.88, 0.87, 0.82, 0.75)
+	_ret(Rect2(_r.position.x, y - 14.0, _r.size.x, 7.0), null, amarelo)
+	_ret(Rect2(_r.position.x, y + 7.0, _r.size.x, 7.0), null, amarelo)
+	_ret(Rect2(_r.position.x, asf.position.y + 14.0, _r.size.x, 6.0), null, branco)
+	_ret(Rect2(_r.position.x, asf.end.y - 20.0, _r.size.x, 6.0), null, branco)
+	for off in [-176.0, 176.0]:
+		var x := floorf(_r.position.x / 256.0) * 256.0
+		while x < _r.end.x:
+			_ret(Rect2(x + 40.0, y + off - 4.0, 120.0, 8.0), null, branco)
+			x += 256.0
 
 
 # ───────────────────────────── água, estradas, ponte ─────────────────────────────
