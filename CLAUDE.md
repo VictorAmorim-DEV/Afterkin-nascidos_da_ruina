@@ -18,7 +18,7 @@ HTML/JS (V13, em docs/prototipo_html_v13/) para Godot 4.7, renderizador GL Compa
 - Ao terminar uma etapa, marque ✅ no RESUMO_V13.md e faça o commit.
 
 ## Testes
-- Godot instalado em: C:\CAMINHO\DA\GODOT\Godot_v4.7-stable_win64.exe  (AJUSTE)
+- Godot instalado em: C:\Users\victo\OneDrive\Área de Trabalho\Godot\Godot_v4.7.2-stable_win64_console.exe
 - Rodar o projeto sem janela: <exe> --headless --path . --quit-after 300
 - Sempre rodar o projeto e ler os erros ANTES de commitar.
 
@@ -28,7 +28,9 @@ HTML/JS (V13, em docs/prototipo_html_v13/) para Godot 4.7, renderizador GL Compa
 - Quem dá `git push` sou eu; não faça push sem eu pedir.
 
 ## Estado atual
-- Migrado: construções, inventário/loot, combate/inimigos, raças/doenças,
-  veículos/totem, mundo aberto por chunks e biomas (ainda NUNCA executado na Godot).
-- Pendente: ver ⬜ em docs/RESUMO_V13.md (quarteirões especiais, prédios altos,
-  portões, minimapa, menu).
+- Migrado e rodando na Godot: construções, inventário/loot, combate/inimigos, raças/doenças,
+  veículos/totem, mundo aberto por chunks e biomas, galhos/pedras, portões, HUD completo,
+  cidade completa (prédios de vários andares, quarteirões especiais, objetos urbanos, postes).
+- Prédios: `Edificio` constrói fatiado (orçamento por quadro comum a todos) e fica invisível até
+  `pronto`; os polígonos vão para um `Desenho` (um _draw por nó), não um Polygon2D por face.
+- Pendente: ver ⬜ em docs/RESUMO_V13.md (minimapa, menu/remapeamento, detalhes de ruas).

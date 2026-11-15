@@ -170,8 +170,18 @@ func _fazendas() -> void:
 # ───────────────────────────── cidade ─────────────────────────────
 
 func _cidade_chao() -> void:
-	if MundoGen.CIDADE.intersects(_r):
-		_ret(MundoGen.CIDADE, TerrenoTexturas.obter("concreto"), Color.WHITE)
+	if not MundoGen.CIDADE.intersects(_r):
+		return
+	_ret(MundoGen.CIDADE, TerrenoTexturas.obter("concreto"), Color.WHITE)
+	# chão dos quarteirões: lotes gramados, estacionamentos e vagas, quadra de esportes, cemitério, praça
+	for c in Quadras.chao_no(_r):
+		var t: String = c["t"]
+		var tex: Texture2D = null
+		if t == "grama":
+			tex = grama
+		elif t != "":
+			tex = TerrenoTexturas.obter(t)
+		_ret(c["r"], tex, c["c"])
 
 
 func _ruas() -> void:

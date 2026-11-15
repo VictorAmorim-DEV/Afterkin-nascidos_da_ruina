@@ -453,9 +453,6 @@ static func ruas(r: Rect2) -> Array:
 	return res
 
 
-static func _seed_lote(i: int, j: int, a: int, b: int) -> int:
-	return (((i * 131 + j) * 131 + a) * 131 + b) * 7919 + SEMENTE * 1000003
-
 
 # ───────────────────────────── planejamento do chunk ─────────────────────────────
 
@@ -530,48 +527,9 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 
 
 static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, specs: Array) -> void:
-	var x0: float = CIDADE.position.x
-	var y0: float = CIDADE.position.y
-	for i in 3:
-		for j in 4:
-			var bx: float = x0 + i * BLOCO + RUA
-			var by: float = y0 + j * BLOCO + RUA
-			if not Rect2(bx, by, BLOCO - RUA, BLOCO - RUA).intersects(r):
-				continue
-			for a in 5:
-				for b in 5:
-					var lot := Rect2(bx + 64.0 + a * 512.0, by + 64.0 + b * 512.0, 512.0, 512.0)
-					if not r.has_point(lot.get_center()):
-						continue
-					var lr := RandomNumberGenerator.new()
-					lr.seed = _seed_lote(i, j, a, b) & 0x7fffffff
-					var u: float = lr.randf()
-					var cen := lot.get_center()
-					if u < 0.50:
-						var f: String
-						var da: int = mini(a, 4 - a)
-						var db: int = mini(b, 4 - b)
-						if da < db or (da == db and lr.randf() < 0.5):
-							f = "w" if a <= 2 else "e"
-						else:
-							f = "n" if b <= 2 else "s"
-						var w: int = 7 if (f == "n" or f == "s") else 6
-						var h: int = 6 if (f == "n" or f == "s") else 7
-						specs.append({"k": "edificio", "p": cen - Vector2(w, h) * 32.0, "w": w, "h": h, "f": f,
-							"sem": lr.randi() % 100000, "mor": lr.randi_range(0, 2)})
-					elif u < 0.62:
-						for k in lr.randi_range(2, 4):
-							var q: Vector2 = cen + Vector2(lr.randf_range(-170.0, 170.0), lr.randf_range(-170.0, 170.0))
-							var nome: String = ["caixote", "barril_azul", "entulho_pedras", "sacos_areia_a", "caixa_madeira"][lr.randi() % 5]
-							var loot: String = "caixa" if (nome == "caixote" or nome == "caixa_madeira") else ""
-							specs.append({"k": "prop", "n": nome, "p": q, "loot": loot})
-					elif u < 0.74:
-						specs.append({"k": "prop", "n": "arvore_jovem", "p": cen + Vector2(lr.randf_range(-120.0, 120.0), lr.randf_range(-120.0, 120.0))})
-						specs.append({"k": "prop", "n": "mato_alto", "p": cen + Vector2(lr.randf_range(-200.0, 200.0), lr.randf_range(-200.0, 200.0))})
-					else:
-						for k in 3:
-							var nm: String = ["mato_alto", "capim_alto", "arbusto_largo", "mato_fino"][lr.randi() % 4]
-							specs.append({"k": "prop", "n": nm, "p": cen + Vector2(lr.randf_range(-220.0, 220.0), lr.randf_range(-220.0, 220.0))})
+	# quarteirões especiais (Quadras: escola, hospital, comércio, igreja, posto...) e postes nas calçadas
+	specs.append_array(Quadras.specs_no(r))
+	Quadras.postes_no(r, specs)
 	# carros abandonados e entulho nas ruas
 	var faixas := ruas(r)
 	if faixas.is_empty():

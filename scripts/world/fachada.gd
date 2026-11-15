@@ -585,7 +585,8 @@ static func torre_igreja(e: Edificio) -> Dictionary:
 	var H := e.altura_paredes()
 	var hT := H + zm(4.0)
 	var no := Desenho.new()
-	no.position = e._s3(T.end.x, T.end.y) + Vector2(0, 4)
+	# ordena pelo canto da frente do PRÉDIO: com o canto da própria torre o telhado do cômodo da frente a cobria
+	no.position = e._s3(W, D) + Vector2(0, 6)
 	e.add_child(no)
 	var o := no.position
 	var S := func(x: float, y: float, z: float) -> Vector2: return e._s3(x, y, z) - o
