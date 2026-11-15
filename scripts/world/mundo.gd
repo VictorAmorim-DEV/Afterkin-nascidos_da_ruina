@@ -367,6 +367,7 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			if cena != null:
 				var v := cena.instantiate() as Veiculo
 				v.proa = spec["proa"]
+				v.queimado = spec.get("queimado", false)
 				v.position = IsoMath.mundo_para_tela(spec["p"])
 				v.set_meta("origem", v.position)
 				add_child(v)

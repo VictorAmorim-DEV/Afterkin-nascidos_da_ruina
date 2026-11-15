@@ -563,7 +563,7 @@ static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, 
 		colocados.append(p)
 		var proa: float = (PI * 0.5 if lado > 0.0 else -PI * 0.5) if vertical else (0.0 if lado > 0.0 else PI)
 		proa += rng.randf_range(-0.18, 0.18)
-		_carro(rng, p, proa, specs)
+		_carro(rng, p, proa, specs, 0.22)
 	if rng.randf() < 0.3:
 		var fd2: Dictionary = faixas[rng.randi() % faixas.size()]
 		var fr2: Rect2 = fd2["r"]
@@ -575,12 +575,16 @@ static func _planejar_cidade(c: Vector2i, r: Rect2, rng: RandomNumberGenerator, 
 				specs.append({"k": "prop", "n": nome, "p": pb})
 
 
-static func _carro(rng: RandomNumberGenerator, p: Vector2, proa: float, specs: Array) -> void:
+## 'queimado' = chance de ser uma carcaça queimada (V13: 22% dos carros das vias; estacionamentos não).
+static func _carro(rng: RandomNumberGenerator, p: Vector2, proa: float, specs: Array, queimado: float = 0.0) -> void:
 	if rng.randf() < 0.18:
 		specs.append({"k": "prop", "n": "carro_capo_aberto", "p": p})
 		return
 	var modelo: String = ["kombi", "picape", "jipe", "sedan_amarelo", "sedan_enferrujado"][rng.randi() % 5]
-	specs.append({"k": "carro", "n": modelo, "p": p, "proa": proa})
+	var s := {"k": "carro", "n": modelo, "p": p, "proa": proa}
+	if queimado > 0.0 and rng.randf() < queimado:
+		s["queimado"] = true
+	specs.append(s)
 
 
 static func _planejar_acampamento(cm: Dictionary, r: Rect2, rng: RandomNumberGenerator, specs: Array) -> void:
@@ -670,7 +674,7 @@ static func _carros_estrada(r: Rect2, rng: RandomNumberGenerator, segs: Array, s
 	var p: Vector2 = a.lerp(b, t) + dir.orthogonal() * 60.0 * lado
 	if not r.has_point(p) or ponte().grow(300.0).has_point(p):
 		return
-	_carro(rng, p, dir.angle() + (0.0 if rng.randf() < 0.5 else PI) + rng.randf_range(-0.2, 0.2), specs)
+	_carro(rng, p, dir.angle() + (0.0 if rng.randf() < 0.5 else PI) + rng.randf_range(-0.2, 0.2), specs, 0.22)
 
 
 static func _natureza(r: Rect2, rng: RandomNumberGenerator, segs: Array, specs: Array, z: String) -> void:

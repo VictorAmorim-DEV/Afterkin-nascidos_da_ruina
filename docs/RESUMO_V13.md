@@ -61,6 +61,6 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ câmera, Y-Sort, movimento, fôlego, lanterna, ciclo dia/noite (`js/lighting.js`, `js/depth.js`)
 - ⬜ sombras do sol: `sol`, `sombraSol`, `sombraChar`, `silhueta` (l.1520-1530) — silhueta escura de objetos, totem e personagens esticada conforme a hora (longa de manhã e à tarde, some à noite)
 - ⬜ qualidade automática `gfxAuto` (l.69): com FPS baixo por 3 s desliga gradiente e sombras do sol e avisa
-- ⬜ carros queimados: 22% dos carros de rua com `queimado` (l.334), sprite escurecido por `queimar` (l.1499)
+- ✅ carros queimados: 22% dos carros de rua com `queimado` (l.334), sprite escurecido por `queimar` (l.1499) → `Veiculo.queimado` (shader com a mesma mistura da V13; carcaça não liga nem anda), nas ruas e estradas
 - ✅ menu/ajustes e remapeamento de teclas (`bindings`, `setBinding`, `resetBindings`, `showModal`, l.1852-1880) → `MenuConfig` (ESC; abas Controles/Vídeo/Áudio) + `Controles` (InputMap, conflito tira a tecla da outra ação, `user://configuracoes.cfg`); a linha de ajuda do HUD segue as teclas; `toast` = `HUD.aviso` · ⬜ `guard` (mirar/guarda) não existe na Godot ainda
 - ⬜ save/load (não existe na V13)

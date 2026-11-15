@@ -5,6 +5,7 @@ extends CharacterBody2D
 ##
 ## Física em "mundo" (u/s), como o jogador: ângulo de proa + velocidade com sinal. A arte só existe de um
 ## lado (vista da frente em +Y); a proa mais próxima de X espelha o sprite. Colisão e luz seguem a proa real.
+## Queimado (V13: queimar/queimado): carcaça escurecida, que não liga nem anda.
 
 @export var nome: String = "Veículo"
 @export var textura: Texture2D
@@ -30,6 +31,16 @@ var proa: float = PI / 2.0                  ## ângulo no mundo; a arte original
 var vel: float = 0.0
 var motorista: Node2D = null
 var farol_ligado: bool = true
+var queimado: bool = false
+
+## V13 (queimar): pinta o sprite com rgba(20, 15, 12, .72) por cima, mantendo a transparência.
+const SHADER_QUEIMADO := "shader_type canvas_item;
+void fragment() {
+	vec4 c = texture(TEXTURE, UV) * COLOR;
+	COLOR = vec4(mix(c.rgb, vec3(0.078, 0.059, 0.047), 0.72), c.a);
+}
+"
+static var _mat_queimado: ShaderMaterial = null
 
 var _sprite := Sprite2D.new()
 var _col := CollisionPolygon2D.new()
@@ -48,6 +59,14 @@ func _ready() -> void:
 	_sprite.texture = textura
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	_sprite.light_mask = 2
+	if queimado:
+		if _mat_queimado == null:
+			var sh := Shader.new()
+			sh.code = SHADER_QUEIMADO
+			_mat_queimado = ShaderMaterial.new()
+			_mat_queimado.shader = sh
+		_sprite.material = _mat_queimado
+		nome = "Carcaça queimada"
 	add_child(_sprite)
 	add_child(_col)
 	_ocl.occluder = OccluderPolygon2D.new()
@@ -113,7 +132,7 @@ func _distancia_jogador() -> float:
 
 func _e_o_alvo() -> bool:
 	var j := _jogador()
-	if j == null or j.dirigindo != null or j.morto:
+	if queimado or j == null or j.dirigindo != null or j.morto:
 		return false
 	var d := _distancia_jogador()
 	if d > 1.2 * M:
