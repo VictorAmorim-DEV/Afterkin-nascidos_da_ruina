@@ -172,6 +172,8 @@ func usar(i: int) -> void:
 				remover("comida", 1)
 		"antibiotico":
 			jogador.usar_antibiotico()
+		"antidoto":
+			jogador.usar_antidoto()
 		"totem":
 			jogador.territorio.colocar_totem(i)
 

@@ -39,6 +39,7 @@ var _chunks: Dictionary = {}          ## Vector2i -> Chunk
 var _estado: Dictionary = {}          ## Vector2i -> inimigos que restavam ao descarregar
 var _coletados: Dictionary = {}       ## Vector2i (posição de mundo arredondada) -> galho/pedra já pego
 var _portoes: Dictionary = {}         ## Vector2i (meio do vão) -> aberto, depois que o jogador mexeu
+var _saqueados: Dictionary = {}       ## Vector2i -> recipiente fixo já vasculhado (ninhos de morcegos)
 var _fila_chao: Array[Vector2i] = []
 var _fila_obj: Array[Vector2i] = []
 var _obra: Chunk = null
@@ -339,6 +340,11 @@ func marcar_coletado(p_mundo: Vector2) -> void:
 	_coletados[Vector2i(p_mundo)] = true
 
 
+## Recipiente fixo vasculhado (Lootavel.chave): não enche de novo ao recarregar o chunk.
+func lembrar_saque(chave: Vector2i) -> void:
+	_saqueados[chave] = true
+
+
 ## Portão aberto/fechado pelo jogador: o estado sobrevive ao descarregar o chunk.
 func lembrar_portao(meio_mundo: Vector2, aberto: bool) -> void:
 	_portoes[Vector2i(meio_mundo)] = aberto
@@ -408,6 +414,21 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			fo.position = IsoMath.mundo_para_tela(spec["p"])
 			add_child(fo)
 			no = fo
+		"ninho":
+			var ni := NinhoMorcegos.new()
+			var p_ni: Vector2 = spec["p"]
+			ni.semente = p_ni.x * 0.001 + p_ni.y * 0.0007
+			ni.position = IsoMath.mundo_para_tela(p_ni)
+			var lt := Lootavel.new()
+			lt.name = "Loot"
+			lt.tipo = "ninho"
+			lt.alcance_m = 2.6
+			lt.chave = Vector2i(p_ni)
+			lt.usado = _saqueados.has(lt.chave)
+			lt.position = IsoMath.mundo_para_tela(Vector2(0.0, NinhoMorcegos.RAIO * 0.75))
+			ni.add_child(lt)
+			add_child(ni)
+			no = ni
 		"cachoeira":
 			var ca := Cachoeira.new()
 			ca.position = IsoMath.mundo_para_tela(spec["p"])

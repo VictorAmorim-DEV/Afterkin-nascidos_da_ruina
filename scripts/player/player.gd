@@ -64,7 +64,7 @@ var dirigindo: Node2D = null             ## veículo que está dirigindo (o joga
 var territorio: Territorio
 var raca: String = "human"               ## human, rat, vampire ou zombie (V13: player.race)
 var forma: String = "human"              ## só o rato alterna: "human" ou "rat" (V13: player.form)
-var doenca: Dictionary = {}              ## vazio = saudável; {tipo, horas, estagio, origem}
+var doenca: Dictionary = {}              ## vazio = saudável; {tipo, horas, total, estagio, origem}
 var sol: float = 0.0                     ## exposição solar do vampiro (0 a 60; acima disso queima)
 
 var _passo: float = 0.0
@@ -254,6 +254,7 @@ func _physics_process(delta: float) -> void:
 ## Velocidade máxima do estado atual (u/s).
 func velocidade_atual() -> float:
 	var v := run_speed if correndo else walk_speed
+	v *= sintoma(1)
 	if postura == Postura.AGACHADO:
 		v = crouch_speed
 	elif postura == Postura.DEITADO:
@@ -292,6 +293,7 @@ func _atualizar_folego(delta: float, rapidez: float) -> void:
 		regen = 18.0
 	if exausto:
 		regen *= 0.8
+	regen *= sintoma(0)
 	stamina = minf(stamina_max, stamina + regen * delta)
 	if exausto and stamina >= limite_exaustao:
 		exausto = false
@@ -414,7 +416,7 @@ func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 func _atualizar_vitais(delta: float) -> void:
 	ataque_cd = maxf(0.0, ataque_cd - delta)
 	golpe_t = maxf(0.0, golpe_t - delta)
-	fome = maxf(0.0, fome - delta * 0.13)
+	fome = maxf(0.0, fome - delta * 0.13 * sintoma(2))
 	if fome <= 0.0:
 		vida = maxf(0.0, vida - delta * 0.7)
 	_atualizar_sol(delta)
@@ -618,15 +620,21 @@ func _dentro_de_casa() -> bool:
 ## Vampiro de dia, a céu aberto. Protegem: o alcance do totem (V13) e, por decisão desta
 ## versão, estar dentro de uma casa.
 func exposto_ao_sol() -> bool:
-	return raca == "vampire" and not _eh_noite() and not _dentro_de_casa() and not territorio.protege(global_position)
+	return _sente_sol() and not _eh_noite() and not _dentro_de_casa() and not territorio.protege(global_position)
+
+
+## Vampiro, ou humano com a mutação vampírica do estágio 2 em diante (já sente o sol, pela metade).
+func _sente_sol() -> bool:
+	return raca == "vampire" or (doenca.get("tipo", "") == "Mutação vampírica" and int(doenca.estagio) >= 2)
 
 
 func _atualizar_sol(delta: float) -> void:
-	if raca == "vampire" and not _eh_noite():
+	if _sente_sol() and not _eh_noite():
+		var k := 1.0 if raca == "vampire" else 0.5
 		if exposto_ao_sol():
-			sol += delta * _min_por_s() / 60.0
+			sol += delta * _min_por_s() / 60.0 * k
 			if sol > 60.0:
-				vida = maxf(0.0, vida - delta * 3.0)
+				vida = maxf(0.0, vida - delta * 3.0 * k)
 		else:
 			sol = maxf(0.0, sol - delta * 0.2)
 	elif _eh_noite():
@@ -646,14 +654,39 @@ func infectar(origem: String) -> void:
 		return
 	match origem:
 		"rat":
-			doenca = {"tipo": "Leptospirose", "horas": 48.0, "estagio": 0.0, "origem": "rat"}
+			doenca = {"tipo": "Leptospirose", "horas": 48.0, "total": 48.0, "estagio": 0.0, "origem": "rat"}
 			aviso("Mordida contaminada! Leptospirose contraída. Procure antibióticos.")
 		"vampire":
-			doenca = {"tipo": "Mutação vampírica", "horas": 24.0, "estagio": 0.0, "origem": "vampire"}
+			doenca = {"tipo": "Mutação vampírica", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "vampire"}
 			aviso("Você foi mordido. A mutação começou: encontre um antídoto em ninhos de morcegos.")
 		_:
-			doenca = {"tipo": "Infecção zumbi", "horas": 24.0, "estagio": 0.0, "origem": "zombie"}
+			doenca = {"tipo": "Infecção zumbi", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "zombie"}
 			aviso("Infecção zumbi contraída. A transformação ou morte pode ocorrer em 24h.")
+
+
+## Sintomas por estágio (RECURSO NOVO: a V13 só conta o estágio). Por doença, um quádruplo por estágio 0–3:
+## [recuperação do fôlego ×, velocidade ×, fome ×, vida perdida por segundo].
+const SINTOMAS := {
+	"Leptospirose": [[1.0, 1.0, 1.0, 0.0], [0.8, 1.0, 1.0, 0.0], [0.6, 0.92, 1.2, 0.0], [0.45, 0.85, 1.3, 0.12]],
+	"Mutação vampírica": [[1.0, 1.0, 1.0, 0.0], [1.0, 1.0, 1.3, 0.0], [0.85, 1.0, 1.6, 0.0], [0.75, 1.0, 2.0, 0.05]],
+	"Infecção zumbi": [[1.0, 1.0, 1.0, 0.0], [0.9, 0.95, 1.2, 0.0], [0.75, 0.9, 1.5, 0.0], [0.6, 0.85, 1.8, 0.1]],
+}
+const AVISOS_ESTAGIO := {
+	"Leptospirose": ["", "Febre e dores: o fôlego volta mais devagar.", "Febre alta: você está mais lento.",
+		"Estado grave: a leptospirose está consumindo sua vida."],
+	"Mutação vampírica": ["", "Fome estranha: você precisa comer mais.", "A luz do sol começa a queimar sua pele.",
+		"A mutação está quase completa. Encontre um antídoto!"],
+	"Infecção zumbi": ["", "Pele fria e passos pesados.", "Músculos rígidos: você está mais lento e faminto.",
+		"A infecção está tomando seu corpo."],
+}
+
+
+## Fator do sintoma 'i' (0 fôlego, 1 velocidade, 2 fome, 3 vida/s) no estágio atual; 1 (ou 0) sem doença.
+func sintoma(i: int) -> float:
+	if doenca.is_empty() or not SINTOMAS.has(doenca.tipo):
+		return 0.0 if i == 3 else 1.0
+	var t: Array = SINTOMAS[doenca.tipo][clampi(int(doenca.estagio), 0, 3)]
+	return t[i]
 
 
 func _atualizar_doenca(delta: float) -> void:
@@ -661,7 +694,14 @@ func _atualizar_doenca(delta: float) -> void:
 		return
 	# a V13 tira 24 "horas" por segundo real (esgota em 2 s); aqui a doença corre com o relógio do jogo
 	doenca.horas -= delta * _min_por_s() / 60.0
-	doenca.estagio = minf(3.0, (48.0 - doenca.horas) / 12.0)
+	var total: float = doenca.get("total", 48.0)
+	var antes := int(doenca.estagio)
+	doenca.estagio = clampf((total - doenca.horas) / total * 4.0, 0.0, 3.0)   # 4 quartos do prazo; o último é o 3
+	if int(doenca.estagio) > antes:
+		var msg: String = (AVISOS_ESTAGIO.get(doenca.tipo, ["", "", "", ""]) as Array)[int(doenca.estagio)]
+		if msg != "":
+			aviso(msg)
+	vida = maxf(0.0, vida - sintoma(3) * delta)
 	if doenca.horas > 0.0:
 		return
 	if doenca.tipo == "Leptospirose":
@@ -684,7 +724,21 @@ func _atualizar_doenca(delta: float) -> void:
 func texto_doenca() -> String:
 	if doenca.is_empty():
 		return "Saudável"
-	return "%s · estágio %d · %dh restantes" % [doenca.tipo, int(doenca.estagio), maxi(0, ceili(doenca.horas))]
+	var txt := "%s · estágio %d · %dh restantes" % [doenca.tipo, int(doenca.estagio), maxi(0, ceili(doenca.horas))]
+	var sintomas: PackedStringArray = []
+	if sintoma(0) < 1.0:
+		sintomas.append("fôlego −%d%%" % roundi((1.0 - sintoma(0)) * 100.0))
+	if sintoma(1) < 1.0:
+		sintomas.append("velocidade −%d%%" % roundi((1.0 - sintoma(1)) * 100.0))
+	if sintoma(2) > 1.0:
+		sintomas.append("fome +%d%%" % roundi((sintoma(2) - 1.0) * 100.0))
+	if sintoma(3) > 0.0:
+		sintomas.append("perdendo vida")
+	if _sente_sol() and raca != "vampire":
+		sintomas.append("o sol queima")
+	if not sintomas.is_empty():
+		txt += " · " + ", ".join(sintomas)
+	return txt
 
 
 ## Antibiótico (V13: useMed): sem doença não é gasto. Leptospirose pede 2 para curar; 1 só alivia.
@@ -702,9 +756,29 @@ func usar_antibiotico() -> void:
 			doenca = {}
 			aviso("Dois antibióticos eliminaram a leptospirose.")
 		else:
-			doenca.horas += 12.0
-			doenca.estagio = maxf(0.0, doenca.estagio - 1.0)
+			_aliviar(12.0)
 			aviso("Um antibiótico reduziu os sintomas e prolongou o prazo em 12h.")
+	elif doenca.tipo == "Mutação vampírica":
+		_aliviar(6.0)                          # só o antídoto dos ninhos de morcegos cura
+		aviso("O antibiótico só retardou a mutação (+6h). Procure um antídoto em ninhos de morcegos.")
 	else:
 		doenca = {}
 		aviso("O tratamento interrompeu a mutação.")
+
+
+## Devolve 'h' horas ao prazo da doença (sem passar do total) e recalcula o estágio.
+func _aliviar(h: float) -> void:
+	var total: float = doenca.get("total", 48.0)
+	doenca.horas = minf(total, doenca.horas + h)
+	doenca.estagio = clampf((total - doenca.horas) / total * 4.0, 0.0, 3.0)
+
+
+## Antídoto dos ninhos de morcegos: cura a mutação vampírica. Para outras doenças não é gasto.
+func usar_antidoto() -> void:
+	if doenca.get("tipo", "") != "Mutação vampírica":
+		aviso("O antídoto só age contra a mutação vampírica.")
+		return
+	inventario.remover("antidoto", 1)
+	doenca = {}
+	sol = 0.0
+	aviso("O antídoto interrompeu a mutação vampírica.")

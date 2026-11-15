@@ -485,6 +485,33 @@ static func ruas(r: Rect2) -> Array:
 	return res
 
 
+static var _ninhos := PackedVector2Array()
+
+
+## Ninhos de morcegos (RECURSO NOVO): até 7 tocas na mata fechada da floresta tropical, longe umas das outras,
+## das estradas, da água e das áreas urbanas. Posições fixas pela semente.
+static func ninhos() -> PackedVector2Array:
+	if not _ninhos.is_empty():
+		return _ninhos
+	var g := RandomNumberGenerator.new()
+	g.seed = SEMENTE * 977 + 13
+	var tent := 0
+	while _ninhos.size() < 7 and tent < 4000:
+		tent += 1
+		var p := Vector2(g.randf_range(600.0, FRENTE1 - FAIXA), g.randf_range(600.0, ALT - 600.0))
+		if floresta(p) < 0.55 or bioma_valor(p.x, p.y) > 0.4:
+			continue
+		if not livre(p, 260.0, segmentos(Rect2(p - Vector2(600, 600), Vector2(1200, 1200)))):
+			continue
+		var perto := false
+		for q in _ninhos:
+			if q.distance_to(p) < 4500.0:
+				perto = true
+		if not perto:
+			_ninhos.append(p)
+	return _ninhos
+
+
 static func area_rect(a: int) -> Rect2:
 	var o: Vector2 = AREAS[a]["o"]
 	var nx: int = AREAS[a]["nx"]
@@ -673,6 +700,14 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 	var cach := cachoeira_pos()
 	if r.has_point(cach):
 		specs.append({"k": "cachoeira", "p": cach})
+	# ---- ninhos de morcegos (antídoto da mutação vampírica), com vampiros dormindo perto na primeira visita ----
+	for nh in ninhos():
+		var np: Vector2 = nh
+		if r.has_point(np):
+			specs.append({"k": "ninho", "p": np})
+			if vivos < 0:
+				for k in 2:
+					specs.append({"k": "inimigo", "raca": "vampire", "p": np + Vector2.from_angle(rng.randf() * TAU) * rng.randf_range(260.0, 420.0)})
 	# ---- casa isolada na roça (rural: margem leste e semiárido) ----
 	if z == "mata" or z == "semiarido":
 		_casa_isolada(c, specs)

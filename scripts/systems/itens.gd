@@ -10,6 +10,7 @@ const DB := {
 	"sucata": {"nome": "Sucata", "stack": 32, "desc": "Peças para totens e abrigos."},
 	"comida": {"nome": "Comida", "stack": 16, "uso": true, "desc": "Recupera fome e um pouco de vida."},
 	"antibiotico": {"nome": "Antibiótico", "stack": 8, "uso": true, "desc": "Trata doenças."},
+	"antidoto": {"nome": "Antídoto", "stack": 4, "uso": true, "desc": "Tirado de ninhos de morcegos. Interrompe a mutação vampírica."},
 	"machado": {"nome": "Machado", "stack": 1, "ferramenta": true, "desc": "Equipado, corta árvores com o botão esquerdo."},
 	"picareta": {"nome": "Picareta", "stack": 1, "ferramenta": true, "desc": "Equipada, quebra pedras grandes com o botão esquerdo."},
 	"totem": {"nome": "Totem de território", "stack": 1, "uso": true, "desc": "Use para posicionar seu totem aqui."},
@@ -27,7 +28,7 @@ const CONTEM := {
 	"estante": "estante", "armario": "guarda-roupa", "comoda": "cômoda", "geladeira": "geladeira",
 	"balcao": "armário da cozinha", "armario_med": "armário de remédios", "prateleira": "prateleira",
 	"arquivo": "arquivo", "caixa": "caixa", "mesa_esc": "gaveta da mesa", "scrap": "sucata",
-	"esgoto": "acesso ao esgoto",
+	"esgoto": "acesso ao esgoto", "ninho": "ninho de morcegos",
 }
 
 static var _cache: Dictionary = {}
@@ -95,6 +96,8 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 			l = [["sucata", rng.randi_range(1, 3)]]
 		"esgoto":
 			l = [["sucata", 2]]
+		"ninho":
+			l = [["antidoto", 2 if rng.randf() < 0.25 else 1]]
 	return l.filter(func(x): return x[1] > 0)
 
 

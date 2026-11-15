@@ -4,9 +4,11 @@ extends Node2D
 ## Tabelas da V13: "caixa" (madeira e sucata), "scrap" (sucata) e "esgoto" (bueiro: 2 sucatas). Veículos não são
 ## lootáveis na V13, então ficam de fora.
 
-@export_enum("caixa", "scrap", "esgoto") var tipo: String = "caixa"
+@export_enum("caixa", "scrap", "esgoto", "ninho") var tipo: String = "caixa"
 @export var alcance_m: float = 1.6
 var usado: bool = false
+## Posição (u de mundo) que o Mundo lembra depois de vasculhado: não enche de novo ao recarregar o chunk nem a partida.
+var chave := Vector2i(-1, -1)
 var _rng := RandomNumberGenerator.new()
 
 
@@ -54,4 +56,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if j == null or not "inventario" in j or j.dirigindo != null:
 		return
 	get_viewport().set_input_as_handled()
-	Loot.vasculhar(j, tipo, _rng, func(): usado = true)
+	Loot.vasculhar(j, tipo, _rng, func():
+		usado = true
+		if chave != Vector2i(-1, -1):
+			get_tree().call_group("mundo", "lembrar_saque", chave))

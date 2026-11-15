@@ -27,8 +27,8 @@ Legenda: ✅ já na Godot · ⬜ falta migrar.
 - ✅ `race()`, `formRat()`, `transform` (l.1446), `maxLife` (l.153), `speed` (l.152) → `Player.definir_raca` etc.
 - ✅ tela de seleção (`start`, `descriptions`, l.23-24, 1384-1389) → `SelecaoRaca` (F9 troca nos testes)
 - ✅ ataque por raça (l.1419-1420), `recipeCost` humano (l.107-108)
-- ✅ vampiro jogável: `player.sun`, vinheta e dano do sol (l.1745, 1845); ✅ proteção pelo totem; ⬜ antídoto de ninho de morcegos
-- ✅ `player.disease` (Leptospirose, Mutação vampírica, Infecção zumbi, l.1846), mutação de raça ao fim; ⬜ efeitos do estágio (a V13 não tem)
+- ✅ vampiro jogável: `player.sun`, vinheta e dano do sol (l.1745, 1845); ✅ proteção pelo totem; ✅ antídoto de ninho de morcegos (novo: a V13 só cita) → `NinhoMorcegos` + `MundoGen.ninhos` (7 tocas na mata fechada, vampiros dormindo perto na 1ª visita, vasculhar dá 1–2 antídotos uma única vez: `Mundo._saqueados`); antídoto cura a mutação vampírica, antibiótico só a retarda (+6h)
+- ✅ `player.disease` (Leptospirose, Mutação vampírica, Infecção zumbi, l.1846), mutação de raça ao fim; ✅ efeitos do estágio (novo) → `Player.SINTOMAS`: estágio 0–3 pelos quartos do prazo, fôlego/velocidade/fome/vida por doença, avisos ao piorar; mutação vampírica do estágio 2 em diante já sente o sol (pela metade); HUD lista os sintomas
 - ✅ fome: `player.food` decai 0,13/s (l.1844) → feito junto do inventário
 
 ## Veículos / cenário (objetos `COD`, l.691-727) → `ObjetoUrbano`
