@@ -319,6 +319,8 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			e.frente = spec["f"]
 			e.semente = spec["sem"]
 			e.moradores = spec["mor"]
+			if spec.has("o"):
+				e.configurar(spec["o"])          # prédio: uso, andares, cobertura, placa...
 			e.position = IsoMath.mundo_para_tela(spec["p"])
 			add_child(e)
 			no = e

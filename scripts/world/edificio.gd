@@ -28,25 +28,76 @@ const PAREDES_EXT := [Color8(196, 188, 170), Color8(112, 130, 98), Color8(110, 1
 	Color8(190, 170, 118), Color8(152, 74, 54), Color8(112, 64, 50), Color8(188, 174, 150), Color8(152, 150, 142), Color8(180, 148, 138)]
 const TELHAS := [Color8(80, 86, 94), Color8(152, 80, 54), Color8(98, 74, 60), Color8(72, 92, 78), Color8(130, 124, 114)]
 const PAPEIS := {"sala": Color8(150, 128, 98), "quarto": Color8(118, 122, 142), "cozinha": Color8(172, 168, 140),
-	"banheiro": Color8(140, 172, 174), "_": Color8(164, 160, 150)}
+	"banheiro": Color8(140, 172, 174), "enfermaria": Color8(170, 186, 180), "nave": Color8(176, 164, 140), "_": Color8(164, 160, 150)}
 const PISOS := {"sala": Color8(112, 86, 60), "quarto": Color8(124, 98, 70), "cozinha": Color8(156, 150, 132),
-	"banheiro": Color8(150, 168, 170), "_": Color8(120, 116, 108)}
+	"banheiro": Color8(150, 168, 170), "loja": Color8(150, 148, 140), "escritorio": Color8(128, 124, 116),
+	"enfermaria": Color8(170, 176, 172), "aula": Color8(130, 104, 74), "nave": Color8(104, 80, 58),
+	"deposito": Color8(110, 108, 100), "_": Color8(120, 116, 108)}
 ## móveis: [largura ao longo da parede, profundidade, altura] em metros
 const MOV := {"cama": [1.5, 2.05, 0.55], "sofa": [2.0, 0.9, 0.85], "estante": [1.0, 0.38, 1.9], "armario": [1.3, 0.6, 2.0],
 	"comoda": [1.0, 0.5, 0.9], "geladeira": [0.75, 0.7, 1.8], "fogao": [0.65, 0.62, 0.9], "balcao": [1.9, 0.62, 0.9],
-	"pia": [0.6, 0.45, 0.85], "vaso": [0.42, 0.65, 0.42], "banheira": [1.6, 0.75, 0.55], "mesa": [1.3, 0.85, 0.76]}
+	"pia": [0.6, 0.45, 0.85], "vaso": [0.42, 0.65, 0.42], "banheira": [1.6, 0.75, 0.55], "mesa": [1.3, 0.85, 0.76],
+	"maca": [0.95, 2.0, 0.7], "armario_med": [1.0, 0.45, 1.9], "prateleira": [2.4, 0.6, 1.6], "mesa_esc": [1.4, 0.75, 0.76],
+	"arquivo": [0.5, 0.65, 1.3], "carteira": [0.65, 0.5, 0.72], "banco_ig": [2.6, 0.55, 0.9], "caixa": [1.0, 1.0, 0.9]}
 const SALAS_MOV := {"sala": ["sofa", "estante", "comoda", "mesa"], "quarto": ["cama", "armario", "comoda"],
-	"cozinha": ["balcao", "geladeira", "fogao", "mesa"], "banheiro": ["vaso", "pia", "banheira"]}
+	"cozinha": ["balcao", "geladeira", "fogao", "mesa"], "banheiro": ["vaso", "pia", "banheira"],
+	"enfermaria": ["maca", "maca", "maca", "armario_med", "armario_med"],
+	"escritorio": ["mesa_esc", "mesa_esc", "arquivo", "arquivo", "estante"],
+	"loja": ["prateleira", "prateleira", "prateleira", "balcao"],
+	"aula": ["carteira", "carteira", "carteira", "carteira", "carteira", "carteira", "mesa_esc"],
+	"nave": ["banco_ig", "banco_ig", "banco_ig", "banco_ig"], "deposito": ["caixa", "caixa", "prateleira", "caixa", "caixa"]}
+## móveis enfileirados no meio do cômodo (V13: CENTRO): prateleiras, carteiras, bancos de igreja, caixas
+const FILEIRA := ["prateleira", "carteira", "banco_ig", "caixa"]
+## cômodos por uso do prédio (V13: USO_SALAS); o primeiro é o da porta de entrada
+const USO_SALAS := {"apartamentos": ["sala", "quarto", "cozinha", "banheiro"], "loja": ["loja", "deposito"],
+	"farmacia": ["loja", "enfermaria"], "posto": ["loja", "deposito"], "galpao": ["deposito"], "igreja": ["nave"],
+	"hospital": ["enfermaria", "escritorio"], "delegacia": ["escritorio"], "mercado": ["loja", "deposito"],
+	"oficina": ["deposito"], "escola": ["aula", "escritorio"], "banco": ["escritorio"]}
+## materiais de prédio (V13: PAREDES_PREDIO, MAT_USO) — [cor, tipo]; o tipo muda o desenho da fachada
+const PAREDES_PREDIO := [[Color8(152, 74, 54), "tijolo"], [Color8(112, 64, 50), "tijolo"], [Color8(176, 128, 92), "tijolo"],
+	[Color8(188, 174, 150), "reboco"], [Color8(152, 150, 142), "reboco"], [Color8(206, 202, 192), "reboco"],
+	[Color8(128, 146, 164), "reboco"], [Color8(146, 160, 136), "reboco"], [Color8(136, 134, 128), "reboco"]]
+const MAT_USO := {"hospital": [[Color8(206, 202, 192), "reboco"]], "banco": [[Color8(186, 178, 160), "reboco"]],
+	"delegacia": [[Color8(152, 74, 54), "tijolo"]], "escola": [[Color8(176, 128, 92), "tijolo"], [Color8(152, 74, 54), "tijolo"]],
+	"igreja": [[Color8(196, 188, 170), "madeira"]],
+	"galpao": [[Color8(128, 126, 118), "zinco"], [Color8(96, 112, 130), "zinco"], [Color8(134, 100, 78), "zinco"]],
+	"oficina": [[Color8(136, 134, 128), "reboco"], [Color8(128, 126, 118), "zinco"]],
+	"mercado": [[Color8(188, 174, 150), "reboco"], [Color8(206, 202, 192), "reboco"]],
+	"posto": [[Color8(206, 202, 192), "reboco"]], "farmacia": [[Color8(206, 202, 192), "reboco"], [Color8(146, 160, 136), "reboco"]]}
+## placas por uso (V13: PLACAS) — [texto, fundo, letra]
+const PLACAS := {"hospital": ["HOSPITAL", Color("#e8e6de"), Color("#b01e1e")], "farmacia": ["FARMÁCIA", Color("#1e7a46"), Color("#f0f0e8")],
+	"mercado": ["SUPERMERCADO", Color("#b42a24"), Color("#f4efe0")], "banco": ["BANCO", Color("#24385e"), Color("#e2d6a0")],
+	"delegacia": ["DELEGACIA", Color("#1a326e"), Color("#eeeeee")], "escola": ["ESCOLA ESTADUAL", Color("#82281e"), Color("#ecdcb4")],
+	"oficina": ["OFICINA", Color("#28282c"), Color("#e6b428")], "posto": ["CONVENIÊNCIA", Color("#c8281e"), Color("#f5f0e6")],
+	"galpao": ["DEPÓSITO", Color("#3a4a3a"), Color("#d8d8c8")]}
 const CORES_MOV := {"cama": [Color8(122, 90, 58), Color8(94, 74, 60)], "sofa": [Color8(106, 74, 58), Color8(76, 90, 70), Color8(90, 78, 102)],
 	"estante": [Color8(110, 78, 52)], "armario": [Color8(110, 78, 52), Color8(124, 96, 68)], "comoda": [Color8(124, 90, 62)],
 	"geladeira": [Color8(200, 198, 188)], "fogao": [Color8(184, 180, 170)], "balcao": [Color8(138, 106, 72), Color8(196, 188, 168)],
-	"mesa": [Color8(122, 90, 62)], "pia": [Color8(216, 216, 208)], "vaso": [Color8(224, 224, 216)], "banheira": [Color8(220, 220, 210)]}
+	"mesa": [Color8(122, 90, 62)], "pia": [Color8(216, 216, 208)], "vaso": [Color8(224, 224, 216)], "banheira": [Color8(220, 220, 210)],
+	"maca": [Color8(192, 196, 196)], "armario_med": [Color8(212, 216, 212)], "prateleira": [Color8(138, 142, 144)],
+	"mesa_esc": [Color8(110, 84, 64), Color8(138, 128, 112)], "arquivo": [Color8(126, 132, 134)], "carteira": [Color8(138, 106, 72)],
+	"banco_ig": [Color8(106, 74, 48)], "caixa": [Color8(154, 122, 82), Color8(138, 108, 72)]}
 
 @export_group("Planta")
 @export var largura_tiles: int = 10
 @export var altura_tiles: int = 8
 @export_enum("s", "e", "n", "w") var frente: String = "s"
 @export var semente: int = 7
+@export_group("Prédio")
+## "casa" (V13: casaProc) ou "predio" (V13: predio — vários andares, uso, fachada decorada).
+@export_enum("casa", "predio") var tipo: String = "casa"
+@export var uso: String = "apartamentos"
+@export_range(1, 8) var andares: int = 1
+@export var pe_direito_m: float = 3.0         ## altura de cada andar
+@export var altura_m: float = 0.0             ## > 0 substitui andares × pé-direito (igreja, galpão)
+@export_enum("duas_aguas", "plana", "galpao", "igreja") var cobertura: String = "duas_aguas"
+@export var loja: bool = false                ## térreo com vitrines e toldo na frente
+@export var dano: float = -1.0                ## 0..1 (< 0 = sorteado); quebra janelas, abre buracos, apaga a placa
+## [texto, fundo, letra] da placa da fachada; vazio = a do uso (PLACAS) ou nenhuma
+@export var placa: Array = []
+@export var extras: Dictionary = {}           ## {varanda: bool, incendio: "s"/"e", socorro: bool}
+@export var bsp_prof: int = 4
+@export var bsp_min: int = 4
 @export_group("Moradores")
 ## Inimigos que dormem dentro da casa ao começar (V13: povoarEdificios).
 @export var moradores: int = 0
@@ -73,9 +124,22 @@ var _cor_parede: Color
 var _cor_telha: Color
 var _cor_porta: Color
 var _R: float = 40.0
+var _wh: float = WH            ## altura das paredes (casa: WH; prédio: andares × pé-direito)
+var _ph: float = WH            ## altura de um andar
+var mat_tipo: String = "reboco"
+var musgo: float = 0.0
 var _corpo: StaticBody2D
 var _sujo: bool = true
 var _rng_loot := RandomNumberGenerator.new()
+## Construção fatiada: todos os edifícios dividem um orçamento por quadro, para um hospital de 4 andares
+## (~27 ms) não travar o jogo ao entrar no raio de carregamento. Fica invisível até terminar.
+const ORCAMENTO_US := 3500
+static var _quadro: int = -1
+static var _gasto_us: int = 0
+var pronto := false
+var _t_fatia: int = 0
+var _grade := PackedInt32Array()   ## índice do cômodo por tile (-1 = fora): sala_idx em O(1)
+var _hs_cobre: Array = []
 
 
 func _ready() -> void:
@@ -84,17 +148,69 @@ func _ready() -> void:
 	add_to_group("edificio")
 	_rng.seed = semente
 	_rng_loot.randomize()
+	visible = false
+	set_physics_process(false)
+	_t_fatia = Time.get_ticks_usec()
 	_gerar_planta()
-	_construir()
+	if _estourou():
+		await _pausa()
+	await _construir()
 	_recalcular()
 	_aplicar(1000.0)
+	visible = true
+	pronto = true
+	set_physics_process(true)
 	if moradores > 0:
-		call_deferred("_povoar")
+		_povoar()
+
+
+## Soma o tempo desde a última fatia ao gasto do quadro; true = estourou o orçamento comum.
+func _estourou() -> bool:
+	var f := Engine.get_process_frames()
+	if f != _quadro:
+		_quadro = f
+		_gasto_us = 0
+	var agora := Time.get_ticks_usec()
+	_gasto_us += agora - _t_fatia
+	_t_fatia = agora
+	return _gasto_us > ORCAMENTO_US
+
+
+func _pausa() -> void:
+	await get_tree().process_frame
+	_t_fatia = Time.get_ticks_usec()
 
 
 # =====================================================================
 # GERAÇÃO (novoEdificio / bsp / porta / mobiliar da V13)
 # =====================================================================
+## Opções de prédio vindas do MundoGen (spec "o"). Chamar antes de entrar na árvore.
+func configurar(o: Dictionary) -> void:
+	for k in o:
+		if k in self:
+			set(k, o[k])
+
+
+func predio() -> bool:
+	return tipo == "predio"
+
+
+func altura_paredes() -> float:
+	return _wh
+
+
+func altura_andar() -> float:
+	return _ph
+
+
+func cor_parede() -> Color:
+	return _cor_parede
+
+
+func cor_porta() -> Color:
+	return _cor_porta
+
+
 func _ri(a: int, b: int) -> int:
 	return _rng.randi_range(a, b)
 
@@ -126,6 +242,10 @@ func _bsp(r: Dictionary, d: int, internas: Array, max_d: int, min_t: int) -> voi
 
 
 func sala_idx(tx: int, ty: int) -> int:
+	if not _grade.is_empty():
+		if tx < 0 or ty < 0 or tx >= largura_tiles or ty >= altura_tiles:
+			return -1
+		return _grade[ty * largura_tiles + tx]
 	for i in salas.size():
 		var s: Dictionary = salas[i]
 		if tx >= s.x0 and tx < s.x1 and ty >= s.y0 and ty < s.y1:
@@ -136,6 +256,16 @@ func sala_idx(tx: int, ty: int) -> int:
 ## Cômodo que contém o ponto (unidades de mundo locais); -1 = fora.
 func sala_de(p: Vector2) -> int:
 	return sala_idx(int(floor(p.x / TILE)), int(floor(p.y / TILE)))
+
+
+func _montar_grade() -> void:
+	_grade.resize(largura_tiles * altura_tiles)
+	_grade.fill(-1)
+	for i in salas.size():
+		var s: Dictionary = salas[i]
+		for ty in range(s.y0, s.y1):
+			for tx in range(s.x0, s.x1):
+				_grade[ty * largura_tiles + tx] = i
 
 
 func _parede(eixo: String, c: int, a: int, b: int, lado: String) -> Dictionary:
@@ -180,7 +310,11 @@ func _area(s: Dictionary) -> int:
 
 func _gerar_planta() -> void:
 	var internas: Array = []
-	_bsp({"x0": 0, "y0": 0, "x1": largura_tiles, "y1": altura_tiles}, 0, internas, 3, 3)
+	if predio():
+		_bsp({"x0": 0, "y0": 0, "x1": largura_tiles, "y1": altura_tiles}, 0, internas, bsp_prof, bsp_min)
+	else:
+		_bsp({"x0": 0, "y0": 0, "x1": largura_tiles, "y1": altura_tiles}, 0, internas, 3, 3)
+	_montar_grade()
 	var pn := _parede("x", 0, 0, largura_tiles, "n")
 	var ps := _parede("x", altura_tiles, 0, largura_tiles, "s")
 	var pw := _parede("y", 0, 0, altura_tiles, "w")
@@ -211,15 +345,17 @@ func _gerar_planta() -> void:
 	if not cand_f.is_empty():
 		tf = cand_f[mini(cand_f.size() - 1, _ri(0, mini(3, cand_f.size()) - 1))]
 	var porta_ext := _porta(pf, tf, true)
-	# janelas
+	# janelas (loja: vitrine na frente; igreja: vitrais desenhados na fachada)
 	for p in [pn, ps, pw, pe]:
+		if predio() and (cobertura == "igreja" or (loja and p == pf)):
+			continue
 		var t: int = p.a + 1
 		while t < p.b - 1:
 			var ocupado := false
 			for a in p.ab:
 				if absi(a.t - t) <= 1:
 					ocupado = true
-			if _livre(p, t) and not ocupado and _rng.randf() >= 0.2:
+			if _livre(p, t) and not ocupado and _rng.randf() >= (0.12 if predio() else 0.2):
 				var r := _rng.randf()
 				var j := {"parede": p, "t": t, "estado": "ok" if r < 0.45 else ("quebrada" if r < 0.8 else "tabuas"), "aberta": false}
 				j.x = t * TILE + 32.0 if p.eixo == "x" else p.c * TILE
@@ -227,20 +363,25 @@ func _gerar_planta() -> void:
 				p.ab.append({"t": t, "tipo": "janela", "ref": j})
 				janelas.append(j)
 			t += 2
-	# tipos de cômodo (casa)
+	# tipos de cômodo
 	var ent: int = porta_ext.sala
-	var ordem: Array = []
-	for i in salas.size():
-		salas[i].tipo = "quarto"
-		if i != ent:
-			ordem.append(i)
-	ordem.sort_custom(func(i, j): return _area(salas[i]) < _area(salas[j]))
-	if ent >= 0:
-		salas[ent].tipo = "sala"
-	if ordem.size() >= 3 and _area(salas[ordem[0]]) <= 12:
-		salas[ordem.pop_front()].tipo = "banheiro"
-	if not ordem.is_empty():
-		salas[ordem.pop_back()].tipo = "cozinha"
+	if predio() and uso != "apartamentos":
+		var us: Array = USO_SALAS.get(uso, ["escritorio", "deposito"])
+		for i in salas.size():
+			salas[i].tipo = us[0] if i == ent else _pick(us)
+	else:
+		var ordem: Array = []
+		for i in salas.size():
+			salas[i].tipo = "quarto"
+			if i != ent:
+				ordem.append(i)
+		ordem.sort_custom(func(i, j): return _area(salas[i]) < _area(salas[j]))
+		if ent >= 0:
+			salas[ent].tipo = "sala"
+		if ordem.size() >= 3 and _area(salas[ordem[0]]) <= 12:
+			salas[ordem.pop_front()].tipo = "banheiro"
+		if not ordem.is_empty():
+			salas[ordem.pop_back()].tipo = "cozinha"
 	# grafo de cômodos (portas internas)
 	for i in salas.size():
 		grafo.append([])
@@ -257,6 +398,23 @@ func _gerar_planta() -> void:
 	_eixo = "x" if largura_tiles >= altura_tiles else "y"
 	var meia: float = (altura_tiles if _eixo == "x" else largura_tiles) * TILE / 2.0 / METRO
 	_R = roundf(meia * 0.55 * VPM)
+	if predio():
+		var m: Array = _pick(MAT_USO.get(uso, PAREDES_PREDIO))
+		_cor_parede = m[0]
+		mat_tipo = m[1]
+		_ph = pe_direito_m * VPM
+		_wh = altura_m * VPM if altura_m > 0.0 else andares * _ph
+		if dano < 0.0:
+			dano = _rng.randf_range(0.2, 0.75)
+		musgo = _rng.randf()
+		if placa.is_empty() and PLACAS.has(uso):
+			placa = PLACAS[uso]
+		if cobertura == "galpao":
+			_cor_telha = Color8(130, 124, 114)
+			_R = roundf(meia * 0.22 * VPM)
+		elif cobertura == "igreja":
+			_cor_telha = Color8(80, 86, 94)
+			_R = roundf(meia * 0.95 * VPM)
 
 
 func _sobrepoe(a: Rect2, b: Rect2, m: float) -> bool:
@@ -273,12 +431,19 @@ func _mobiliar(i: int) -> void:
 	for d in portas:
 		if d.salas.has(i):
 			zonas.append(Rect2(d.x - 0.75 * METRO, d.y - 0.75 * METRO, 1.5 * METRO, 1.5 * METRO))
+	var filas := 0
 	for tipo in SALAS_MOV.get(s.tipo, []):
 		var w: float = MOV[tipo][0] * METRO
 		var dd: float = MOV[tipo][1] * METRO
 		for k in 24:
 			var r: Rect2
-			if tipo == "mesa":
+			if tipo in FILEIRA:               # V13: fileiras de prateleiras, carteiras, bancos e caixas
+				var cols: int = maxi(1, int((x1 - x0) / (w + METRO)))
+				var col: int = filas % cols
+				var lin: int = filas / cols
+				filas += 1
+				r = Rect2(x0 + 0.9 * METRO + col * (w + METRO) + _rng.randf_range(-4.0, 4.0), y0 + METRO + lin * (dd + 1.1 * METRO), w, dd)
+			elif tipo == "mesa":
 				var giro := _rng.randf() < 0.5
 				var tam := Vector2(dd, w) if giro else Vector2(w, dd)
 				var c := Vector2((x0 + x1) / 2 + _rng.randf_range(-0.6, 0.6) * METRO, (y0 + y1) / 2 + _rng.randf_range(-0.6, 0.6) * METRO)
@@ -316,13 +481,16 @@ func _s3(x: float, y: float, z: float = 0.0) -> Vector2:
 	return Vector2((x - y) * 0.5, (x + y) * 0.25 - z)
 
 
-func _poli(pai: Node, pts: Array, cor: Color) -> Polygon2D:
+## Polígono em 'pai': num Desenho vira mais uma peça do mesmo _draw (barato); noutro nó, um Polygon2D.
+func _poli(pai: Node, pts: Array, cor: Color) -> void:
+	if pai is Desenho:
+		(pai as Desenho).poli(PackedVector2Array(pts), cor)
+		return
 	var p := Polygon2D.new()
 	p.polygon = PackedVector2Array(pts)
 	p.color = cor
 	p.light_mask = 2
 	pai.add_child(p)
-	return p
 
 
 func _ret_iso(r: Rect2, rel: Vector2 = Vector2.ZERO) -> PackedVector2Array:
@@ -361,17 +529,38 @@ func _subtrair(a: float, b: float, vaos: Array) -> Array:
 
 ## Altura do telhado sobre o ponto (x, y): duas águas com a cumeeira no meio.
 func _alt_telhado(x: float, y: float) -> float:
+	if cobertura == "plana" and predio():
+		return _wh
 	var ov := 0.42 * METRO
 	if _eixo == "x":
 		var meia := altura_tiles * TILE / 2.0
-		return WH + _R * (1.0 - absf(y - meia) / (meia + ov))
+		return _wh + _R * (1.0 - absf(y - meia) / (meia + ov))
 	var meia_x := largura_tiles * TILE / 2.0
-	return WH + _R * (1.0 - absf(x - meia_x) / (meia_x + ov))
+	return _wh + _R * (1.0 - absf(x - meia_x) / (meia_x + ov))
 
 
 func _construir() -> void:
 	_corpo = StaticBody2D.new()
 	add_child(_corpo)
+	# ---------- colisão primeiro: o edifício já é sólido no primeiro quadro ----------
+	for p in paredes:
+		var vaos: Array = []
+		for a in p.ab:
+			if a.tipo == "porta":
+				vaos.append([a.t * TILE + 3, a.t * TILE + 61])
+		for u in _subtrair(p.a * TILE - ESP, p.b * TILE + ESP, vaos):
+			if p.eixo == "x":
+				_colisor(Rect2(u[0], p.c * TILE - ESP, u[1] - u[0], ESP * 2))
+			else:
+				_colisor(Rect2(p.c * TILE - ESP, u[0], ESP * 2, u[1] - u[0]))
+	for d in portas:
+		d.no_col = _colisor(d.col)
+		d.no_col.disabled = d.open
+	for m in moveis:
+		if m.tipo != "carteira":                     # V13: carteiras não bloqueiam
+			_colisor(Rect2(m.x0, m.y0, m.x1 - m.x0, m.y1 - m.y0))
+	if _estourou():
+		await _pausa()
 	# ---------- pisos e sombras dos cômodos ----------
 	for i in salas.size():
 		var s: Dictionary = salas[i]
@@ -391,29 +580,27 @@ func _construir() -> void:
 		add_child(e)
 		_escuros.append(e)
 		_revelado.append(false)
-	# ---------- paredes: colisão (paredes menos os vãos de porta) ----------
+	# ---------- paredes (desenho), fatiado ----------
 	for p in paredes:
-		var vaos: Array = []
-		for a in p.ab:
-			if a.tipo == "porta":
-				vaos.append([a.t * TILE + 3, a.t * TILE + 61])
-		for u in _subtrair(p.a * TILE - ESP, p.b * TILE + ESP, vaos):
-			if p.eixo == "x":
-				_colisor(Rect2(u[0], p.c * TILE - ESP, u[1] - u[0], ESP * 2))
-			else:
-				_colisor(Rect2(p.c * TILE - ESP, u[0], ESP * 2, u[1] - u[0]))
 		for t in range(p.a, p.b):
 			_trecho(p, t)
-	for d in portas:
-		d.no_col = _colisor(d.col)
-		d.no_col.disabled = d.open
+			if _estourou():
+				await _pausa()
 	# ---------- móveis ----------
 	for m in moveis:
-		_colisor(Rect2(m.x0, m.y0, m.x1 - m.x0, m.y1 - m.y0))
 		_movel(m)
+		if _estourou():
+			await _pausa()
 	# ---------- telhado, um pedaço por cômodo ----------
 	for i in salas.size():
-		_telhado(i)
+		if predio() and cobertura == "plana":
+			_telhados.append(Fachada.telhado_plano(self, i))
+		else:
+			_telhado(i)
+		if _estourou():
+			await _pausa()
+	if predio() and cobertura == "igreja":
+		_telhados.append(Fachada.torre_igreja(self))
 
 
 ## Um tile de parede: face, topo e a porta/janela que houver nele.
@@ -422,7 +609,7 @@ func _trecho(p: Dictionary, t: int) -> void:
 	var centro := Vector2(t * TILE + 32.0, p.c * TILE) if eh_x else Vector2(p.c * TILE, t * TILE + 32.0)
 	var dir := Vector2(1, 0) if eh_x else Vector2(0, 1)
 	var cam := Vector2(0, 1) if eh_x else Vector2(1, 0)          # lado da parede virado para a câmera
-	var no := Node2D.new()
+	var no := Desenho.new()
 	no.position = _s3(centro.x, centro.y)
 	add_child(no)
 	# ponto da face: u ao longo da parede (0..64), v = altura (px), w = afastamento para a câmera (u)
@@ -441,26 +628,26 @@ func _trecho(p: Dictionary, t: int) -> void:
 			ab = a
 	var seg := {"no": no, "parede": p, "t": t, "sala_cam": sala_cam, "alfa": 1.0, "cobre": {}}
 	if ab == null:
-		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, WH), P.call(0, WH)], cor)
+		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, _wh), P.call(0, _wh)], cor)
 		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, 7), P.call(0, 7)], cor.darkened(0.22))     # rodapé
 		seg.ocl = _oclusor(_ret_parede(p, t * TILE, t * TILE + TILE))
 	elif ab.tipo == "porta":
 		var d: Dictionary = ab.ref
 		d.seg = seg
-		_poli(no, [P.call(0, 0), P.call(8, 0), P.call(8, WH), P.call(0, WH)], cor)
-		_poli(no, [P.call(56, 0), P.call(64, 0), P.call(64, WH), P.call(56, WH)], cor)
-		_poli(no, [P.call(8, ALT_PORTA), P.call(56, ALT_PORTA), P.call(56, WH), P.call(8, WH)], cor)
+		_poli(no, [P.call(0, 0), P.call(8, 0), P.call(8, _wh), P.call(0, _wh)], cor)
+		_poli(no, [P.call(56, 0), P.call(64, 0), P.call(64, _wh), P.call(56, _wh)], cor)
+		_poli(no, [P.call(8, ALT_PORTA), P.call(56, ALT_PORTA), P.call(56, _wh), P.call(8, _wh)], cor)
 		_poli(no, [P.call(6, 0), P.call(8, 0), P.call(8, ALT_PORTA + 2), P.call(6, ALT_PORTA + 2)], Color8(74, 52, 36))
 		_poli(no, [P.call(56, 0), P.call(58, 0), P.call(58, ALT_PORTA + 2), P.call(56, ALT_PORTA + 2)], Color8(74, 52, 36))
 		_poli(no, [P.call(6, ALT_PORTA), P.call(58, ALT_PORTA), P.call(58, ALT_PORTA + 3), P.call(6, ALT_PORTA + 3)], Color8(74, 52, 36))
 		# folha fechada (no plano da parede) e folha aberta (girada 90° para dentro, na dobradiça)
-		d.folha_fechada = Node2D.new()
+		d.folha_fechada = Desenho.new()
 		no.add_child(d.folha_fechada)
 		_poli(d.folha_fechada, [P.call(8, 0, 0), P.call(56, 0, 0), P.call(56, ALT_PORTA, 0), P.call(8, ALT_PORTA, 0)], _cor_porta)
 		_poli(d.folha_fechada, [P.call(13, 6, 0), P.call(51, 6, 0), P.call(51, 28, 0), P.call(13, 28, 0)], _cor_porta.darkened(0.18))
 		_poli(d.folha_fechada, [P.call(13, 34, 0), P.call(51, 34, 0), P.call(51, 58, 0), P.call(13, 58, 0)], _cor_porta.darkened(0.18))
 		_poli(d.folha_fechada, [P.call(48, 30, 0), P.call(52, 30, 0), P.call(52, 34, 0), P.call(48, 34, 0)], Color8(200, 180, 110))
-		d.folha_aberta = Node2D.new()
+		d.folha_aberta = Desenho.new()
 		no.add_child(d.folha_aberta)
 		_poli(d.folha_aberta, [P.call(8, 0, 0), P.call(8, 0, -46), P.call(8, ALT_PORTA, -46), P.call(8, ALT_PORTA, 0)], _cor_porta.darkened(0.3))
 		d.no_ocl = _oclusor(d.col)
@@ -469,14 +656,14 @@ func _trecho(p: Dictionary, t: int) -> void:
 		var j: Dictionary = ab.ref
 		j.seg = seg
 		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, JAN_V0), P.call(0, JAN_V0)], cor)
-		_poli(no, [P.call(0, JAN_V1), P.call(64, JAN_V1), P.call(64, WH), P.call(0, WH)], cor)
+		_poli(no, [P.call(0, JAN_V1), P.call(64, JAN_V1), P.call(64, _wh), P.call(0, _wh)], cor)
 		_poli(no, [P.call(0, JAN_V0), P.call(12, JAN_V0), P.call(12, JAN_V1), P.call(0, JAN_V0 + (JAN_V1 - JAN_V0))], cor)
 		_poli(no, [P.call(52, JAN_V0), P.call(64, JAN_V0), P.call(64, JAN_V1), P.call(52, JAN_V1)], cor)
 		_poli(no, [P.call(0, 0), P.call(64, 0), P.call(64, 7), P.call(0, 7)], cor.darkened(0.22))
 		_poli(no, [P.call(10, JAN_V0 - 3), P.call(54, JAN_V0 - 3), P.call(54, JAN_V0), P.call(10, JAN_V0)], Color8(184, 176, 154))   # peitoril
-		j.no_vidro = Node2D.new()
+		j.no_vidro = Desenho.new()
 		no.add_child(j.no_vidro)
-		j.no_aberta = Node2D.new()
+		j.no_aberta = Desenho.new()
 		no.add_child(j.no_aberta)
 		var v0 := JAN_V0
 		var v1 := JAN_V1
@@ -502,16 +689,31 @@ func _trecho(p: Dictionary, t: int) -> void:
 		j.no_aberta.visible = false
 		j.no_ocl = _oclusor(_ret_parede(p, t * TILE + 5, t * TILE + 59))
 		seg.ocl = null
+	if predio() and (p.lado == "s" or p.lado == "e"):
+		Fachada.trecho(self, no, p, t, P, ab)       # fachada visível: andares, vitrines, placa, desgaste
 	# topo da parede
-	_poli(no, [P.call(0, WH, -ESP), P.call(64, WH, -ESP), P.call(64, WH, ESP), P.call(0, WH, ESP)], cor.lightened(0.18))
+	_poli(no, [P.call(0, _wh, -ESP), P.call(64, _wh, -ESP), P.call(64, _wh, ESP), P.call(0, _wh, ESP)], cor.lightened(0.18))
 	# cômodos que esta parede taparia na tela: um ponto à altura h aparece sobre o piso em (x - 2h, y - 2h)
 	for u in [6.0, 32.0, 58.0]:
-		for h in [14.0, 36.0, 60.0, WH]:
+		for h in _alturas_cobre():
 			var q: Vector2 = centro + dir * (u - 32.0) - Vector2(2.0 * h, 2.0 * h)
 			var si := sala_de(q)
 			if si >= 0:
 				seg.cobre[si] = true
 	_segs.append(seg)
+
+
+## Alturas testadas para saber que cômodos uma parede tapa na tela (paredes altas tapam mais longe).
+func _alturas_cobre() -> Array:
+	if not _hs_cobre.is_empty():
+		return _hs_cobre
+	_hs_cobre = [14.0, 36.0, 60.0]
+	var h := 120.0
+	while h < _wh:
+		_hs_cobre.append(h)
+		h += 96.0
+	_hs_cobre.append(_wh)
+	return _hs_cobre
 
 
 func _ret_parede(p: Dictionary, u0: float, u1: float) -> Rect2:
@@ -521,7 +723,7 @@ func _ret_parede(p: Dictionary, u0: float, u1: float) -> Rect2:
 
 
 func _movel(m: Dictionary) -> void:
-	var no := Node2D.new()
+	var no := Desenho.new()
 	var base := Vector2((m.x0 + m.x1) / 2.0, (m.y0 + m.y1) / 2.0)
 	no.position = _s3(base.x, base.y)
 	add_child(no)
@@ -545,7 +747,7 @@ func _telhado(i: int) -> void:
 	var y0: float = s.y0 * TILE - (ov if s.y0 == 0 else 0.0)
 	var x1: float = s.x1 * TILE + (ov if s.x1 == largura_tiles else 0.0)
 	var y1: float = s.y1 * TILE + (ov if s.y1 == altura_tiles else 0.0)
-	var no := Node2D.new()
+	var no := Desenho.new()
 	no.position = _s3(s.x1 * TILE, s.y1 * TILE) + Vector2(0, 2)
 	add_child(no)
 	var o: Vector2 = no.position
@@ -563,11 +765,11 @@ func _telhado(i: int) -> void:
 			_fiadas(no, T, true, x0, x1, f[0], f[1])
 		if s.x1 == largura_tiles:          # oitão na parede leste
 			var X := largura_tiles * TILE + ESP
-			var pts: Array = [_s3(X, s.y0 * TILE, WH) - o, _s3(X, s.y1 * TILE, WH) - o, T.call(X, s.y1 * TILE)]
+			var pts: Array = [_s3(X, s.y0 * TILE, _wh) - o, _s3(X, s.y1 * TILE, _wh) - o, T.call(X, s.y1 * TILE)]
 			if s.y0 * TILE < m and s.y1 * TILE > m:
 				pts.append(T.call(X, m))
 			pts.append(T.call(X, s.y0 * TILE))
-			_poli(no, pts, _cor_parede.darkened(0.16)).z_index = 0
+			_poli(no, pts, _cor_parede.darkened(0.16))
 	else:
 		var mx := largura_tiles * TILE / 2.0
 		if x0 < mx:
@@ -579,7 +781,7 @@ func _telhado(i: int) -> void:
 			_fiadas(no, T, false, f[0], f[1], y0, y1)
 		if s.y1 == altura_tiles:           # oitão na parede sul
 			var Y := altura_tiles * TILE + ESP
-			var pts2: Array = [_s3(s.x0 * TILE, Y, WH) - o, _s3(s.x1 * TILE, Y, WH) - o, T.call(s.x1 * TILE, Y)]
+			var pts2: Array = [_s3(s.x0 * TILE, Y, _wh) - o, _s3(s.x1 * TILE, Y, _wh) - o, T.call(s.x1 * TILE, Y)]
 			if s.x0 * TILE < mx and s.x1 * TILE > mx:
 				pts2.append(T.call(mx, Y))
 			pts2.append(T.call(s.x0 * TILE, Y))
@@ -599,20 +801,15 @@ func _telhado(i: int) -> void:
 
 
 ## Linhas das fiadas de telha, para o telhado não ficar chapado.
-func _fiadas(no: Node2D, T: Callable, ao_longo_x: bool, a0: float, a1: float, b0: float, b1: float) -> void:
+func _fiadas(no: Desenho, T: Callable, ao_longo_x: bool, a0: float, a1: float, b0: float, b1: float) -> void:
 	var passo := 22.0
 	var v := (b0 if ao_longo_x else a0) + passo
 	var fim := b1 if ao_longo_x else a1
 	while v < fim - 4.0:
-		var l := Line2D.new()
-		l.width = 1.0
-		l.default_color = Color(0, 0, 0, 0.22)
-		l.light_mask = 2
 		if ao_longo_x:
-			l.points = PackedVector2Array([T.call(a0, v), T.call(a1, v)])
+			no.linha(PackedVector2Array([T.call(a0, v), T.call(a1, v)]), Color(0, 0, 0, 0.22))
 		else:
-			l.points = PackedVector2Array([T.call(v, b0), T.call(v, b1)])
-		no.add_child(l)
+			no.linha(PackedVector2Array([T.call(v, b0), T.call(v, b1)]), Color(0, 0, 0, 0.22))
 		v += passo
 
 
@@ -838,7 +1035,8 @@ func abrir_porta(d: Dictionary) -> void:
 	if d.open:
 		return
 	d.open = true
-	d.no_col.set_deferred("disabled", true)
+	if d.has("no_col"):
+		d.no_col.set_deferred("disabled", true)
 	_sujo = true
 
 
@@ -891,6 +1089,8 @@ func _janela_perto(p: Vector2):
 
 ## Texto que o HUD mostra quando há algo para interagir (vazio = nada).
 func texto_interacao() -> String:
+	if not pronto:
+		return ""
 	var p := _pos_jogador()
 	var mv = _movel_perto(p)
 	if mv != null:
@@ -911,7 +1111,7 @@ func texto_interacao() -> String:
 func _unhandled_input(event: InputEvent) -> void:
 	var interagir := event.is_action_pressed("interact")
 	var pular := event.is_action_pressed("jump")
-	if not interagir and not pular:
+	if not pronto or (not interagir and not pular):
 		return
 	var jg := _jogador()
 	if jg != null and "dirigindo" in jg and jg.dirigindo != null:
