@@ -24,7 +24,8 @@ HTML/JS (V13, em docs/prototipo_html_v13/) para Godot 4.7, renderizador GL Compa
 
 ## Git
 - Commits no padrão `feat: ...`, `fix: ...`, `docs: ...`, em português.
-- NÃO commitar arquivos .import e .uid (a Godot os gera sozinha).
+- Commitar os arquivos .uid e .import junto com o script/asset correspondente (cenas e scripts
+  se referenciam pelos UIDs). Só a pasta .godot/ fica fora do Git (já está no .gitignore).
 - Quem dá `git push` sou eu; não faça push sem eu pedir.
 
 ## Estado atual
