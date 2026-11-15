@@ -1,7 +1,8 @@
 class_name CercaNo
 extends StaticBody2D
 ## Trecho de cerca (até ~256 u) entre dois pontos do mundo. Desenhada por código:
-## "madeira" (mourões e duas travas), "arame" (mourões finos e fios) e "palicada" (toras pontudas).
+## "madeira" (mourões e duas travas), "arame" (mourões finos e fios), "palicada" (toras pontudas),
+## "alambrado" (tela de aço da V13: chain) e "muro" (muro baixo de tijolo/reboco do cemitério e dos lotes).
 ## Origem do nó = meio do trecho; a colisão é uma tira fina ao longo dele.
 
 var a := Vector2.ZERO        ## extremos em coordenadas de MUNDO
@@ -27,6 +28,12 @@ func _ready() -> void:
 
 
 func _draw() -> void:
+	if estilo == "muro":
+		_muro()
+		return
+	if estilo == "alambrado":
+		_alambrado()
+		return
 	var altura: float = 64.0 if estilo == "palicada" else (30.0 if estilo == "arame" else 34.0)
 	var cor_madeira := Color(0.42, 0.30, 0.18)
 	var escuro := cor_madeira.darkened(0.35)
@@ -43,3 +50,37 @@ func _draw() -> void:
 	for p in [_la, (_la + _lb) * 0.5, _lb]:
 		var pp: Vector2 = p
 		draw_line(pp, pp + Vector2(0, -altura), escuro if estilo == "madeira" else Color(0.4, 0.33, 0.27), 5.0 if estilo == "madeira" else 3.0)
+
+
+func _muro() -> void:
+	var alt := 36.0                                   # ~1,2 m
+	var tijolo := fmod(absf(a.x * 0.13 + a.y * 0.07), 1.0) < 0.5
+	var cor := Color8(150, 82, 62) if tijolo else Color8(170, 166, 154)
+	var d := (_lb - _la).normalized()
+	var esp := Vector2(-d.y, d.x).normalized() * 3.0  # meia espessura na tela
+	draw_colored_polygon(PackedVector2Array([_la, _lb, _lb + Vector2(0, -alt), _la + Vector2(0, -alt)]), cor.darkened(0.12))
+	draw_colored_polygon(PackedVector2Array([_la + Vector2(0, -alt) - esp, _lb + Vector2(0, -alt) - esp, _lb + Vector2(0, -alt) + esp, _la + Vector2(0, -alt) + esp]), cor.lightened(0.12))
+	if tijolo:
+		for k in range(1, 5):
+			var y := -alt * k / 5.0
+			draw_line(_la + Vector2(0, y), _lb + Vector2(0, y), Color(0, 0, 0, 0.15), 1.0)
+	draw_line(_la, _lb, Color(0.15, 0.12, 0.09, 0.35), 3.0)           # sujeira no pé
+
+
+func _alambrado() -> void:
+	var alt := 58.0                                   # ~1,9 m
+	var n: int = maxi(1, int(a.distance_to(b) / 96.0))
+	draw_colored_polygon(PackedVector2Array([_la, _lb, _lb + Vector2(0, -alt), _la + Vector2(0, -alt)]), Color(0.62, 0.64, 0.64, 0.16))
+	var passo := 9.0
+	var comp := _la.distance_to(_lb)
+	var x := 0.0
+	while x < comp:                                   # trama em losango
+		var p0 := _la.lerp(_lb, x / comp)
+		var p1 := _la.lerp(_lb, minf(1.0, (x + alt * 0.5) / comp))
+		draw_line(p0, p1 + Vector2(0, -alt), Color(0.7, 0.72, 0.72, 0.28), 1.0)
+		draw_line(p0 + Vector2(0, -alt), p1, Color(0.7, 0.72, 0.72, 0.28), 1.0)
+		x += passo * 2.0
+	draw_line(_la + Vector2(0, -alt), _lb + Vector2(0, -alt), Color8(110, 112, 112), 2.0)
+	for i in range(n + 1):
+		var p := _la.lerp(_lb, float(i) / n)
+		draw_line(p, p + Vector2(0, -alt - 2.0), Color8(96, 98, 100), 3.0)

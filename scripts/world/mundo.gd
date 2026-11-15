@@ -353,6 +353,15 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			ca.position = IsoMath.mundo_para_tela(spec["p"])
 			add_child(ca)
 			no = ca
+		"urbano":
+			var ou := ObjetoUrbano.new()
+			ou.tipo = spec["t"]
+			ou.fp = spec["r"]
+			ou.h = spec["h"]
+			ou.solido = spec.get("s", true)
+			ou.extra = spec.get("x", {})
+			add_child(ou)
+			no = ou
 		"portao":
 			var pt := PortaoNo.new()
 			pt.a = spec["a"]
