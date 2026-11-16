@@ -17,6 +17,11 @@ HTML/JS (V13, em docs/prototipo_html_v13/) para Godot 4.7, renderizador GL Compa
   da V13, com ✅ feito / ⬜ falta). Consulte o index.html com `sed -n 'A,Bp'`, sem relê-lo inteiro.
 - Ao terminar uma etapa, marque ✅ no RESUMO_V13.md e faça o commit.
 
+## Pendências
+- `docs/PENDENCIAS.md` é a lista viva do que falta fazer. Leia no começo de cada sessão.
+- A cada pedido novo, acrescente o item (⬜); ao começar, marque 🔄; ao terminar, ✅ com o hash do commit.
+- Ideias que eu ainda estou avaliando ficam como 💭 e só começam quando eu confirmar.
+
 ## Testes
 - Godot instalado em: C:\Users\victo\OneDrive\Área de Trabalho\Godot\Godot_v4.7.2-stable_win64_console.exe
 - Rodar o projeto sem janela: <exe> --headless --path . --quit-after 300
@@ -42,4 +47,4 @@ HTML/JS (V13, em docs/prototipo_html_v13/) para Godot 4.7, renderizador GL Compa
   `pronto`; os polígonos vão para um `Desenho` (um draw call por nó, sempre com o atlas `TexturasParede`).
 - Gráficos nunca mudam sozinhos: efeitos pesados ficam atrás de uma flag (ex.: `SombraSol.ativo`) que vira
   opção no menu de configurações.
-- Único ⬜ que resta no RESUMO: guarda/mirar (na V13 é só um anel, sem efeito).
+- Único ⬜ que resta no RESUMO: guarda/mirar (na V13 é só um anel, sem efeito). Próximos passos: docs/PENDENCIAS.md.
