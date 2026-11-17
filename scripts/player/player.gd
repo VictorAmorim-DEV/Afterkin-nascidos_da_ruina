@@ -63,7 +63,7 @@ var territorio: Territorio
 var raca: String = "human"               ## human, rat, vampire ou zombie (V13: player.race)
 var forma: String = "human"              ## só o rato alterna: "human" ou "rat" (V13: player.form)
 var doenca: Dictionary = {}              ## vazio = saudável; {tipo, horas, total, estagio, origem}
-var sol: float = 0.0                     ## exposição solar do vampiro (0 a 60; acima disso queima)
+var sol: float = 0.0                     ## exposição solar do vampiro, em segundos ao sol direto (acima de 60 queima)
 
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
@@ -618,7 +618,7 @@ func _min_por_s() -> float:
 	if _ciclo == null:
 		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
 	if _ciclo == null:
-		return 24.0
+		return 0.6
 	return 0.0 if _ciclo.pausado else _ciclo.minutos_por_segundo
 
 
@@ -644,7 +644,7 @@ func _atualizar_sol(delta: float) -> void:
 	if _sente_sol() and not _eh_noite():
 		var k := 1.0 if raca == "vampire" else 0.5
 		if exposto_ao_sol():
-			sol += delta * _min_por_s() / 60.0 * k
+			sol += delta * k                     # em segundos reais: não depende da velocidade do relógio
 			if sol > 60.0:
 				vida = maxf(0.0, vida - delta * 3.0 * k)
 		else:

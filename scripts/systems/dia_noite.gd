@@ -1,7 +1,7 @@
 extends CanvasModulate
 ## Relógio e ciclo de dia e noite.
 ## A cor do CanvasModulate escurece o mundo à noite e clareia ao amanhecer.
-## Na V13 um dia durava 60 s; aqui dura ~40 min reais (36 minutos de jogo por segundo, docs/DECISOES_DESIGN.md Q17).
+## Na V13 um dia durava 60 s; aqui dura 40 min reais (0,6 minuto de jogo por segundo, docs/DECISOES_DESIGN.md Q17).
 ##
 ## Seis fases (Q27), cada uma muda o que é sensato fazer. Os efeitos físicos são contínuos (sem saltos na troca
 ## de fase): temperatura por uma curva diária, alcance de visão pela luz ambiente, neblina no amanhecer e o som
@@ -16,7 +16,7 @@ const AMBIENTE: Array = [
 
 @export_range(0.0, 1439.0, 1.0) var minutos: float = 480.0   ## hora atual em minutos (480 = 08:00)
 @export var dia: int = 1
-@export var minutos_por_segundo: float = 36.0                 ## velocidade do relógio (36 = dia de 40 min)
+@export var minutos_por_segundo: float = 0.6                  ## velocidade do relógio: 1440 / 0,6 = 2400 s = dia de 40 min
 @export var pausado: bool = false
 
 @export_group("Clima")

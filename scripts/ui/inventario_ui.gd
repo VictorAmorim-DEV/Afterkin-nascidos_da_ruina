@@ -176,7 +176,7 @@ func _montar_cartoes() -> void:
 	var dados := [
 		["Raça", j.NOMES_RACA[j.raca]], ["Forma", "Rato" if j.forma_rato() else "Humano"],
 		["Vida", "%d / %d" % [ceili(j.vida), int(j.vida_max)]], ["Fome", "%d%%" % int(j.fome)],
-		["Exposição solar", "%d / 60 min" % int(j.sol)], ["Doença", j.doenca.tipo if not j.doenca.is_empty() else "Nenhuma"],
+		["Exposição solar", "%d / 60 s" % int(j.sol)], ["Doença", j.doenca.tipo if not j.doenca.is_empty() else "Nenhuma"],
 		["Totem", ("Nível %d" % t.totem.nivel) if t.tem_totem() else "Nenhum"]]
 	for d in dados:
 		var cartao := PanelContainer.new()
