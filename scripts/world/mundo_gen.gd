@@ -23,35 +23,37 @@ const RUA := 512.0
 const CALCADA := 128.0
 
 ## Áreas urbanas onde o mapa tem cidade (origem em px do mapa; nx × ny quarteirões de BLOCO com ruas de RUA).
-## A 0 (o Porto) leva o programa da cidade da V13 (rotatória, praça, hospital, escola...) e o cais a oeste.
+## A 0 (Porto Atlântico) leva o programa da cidade da V13 (rotatória, praça, hospital, escola...) e o cais a oeste.
+## "cat" (categoria, para o mapa): cidade_grande, cidade, povoado (1–2 quarteirões de asfalto) ou especial.
+## Nomes e categorias de 17/11/2026 (docs/DECISOES_DESIGN.md, ajustes do playtest), sujeitos a mudança.
 const AREAS := [
-	{"m": Vector2(168, 488), "nx": 7, "ny": 5, "nome": "Porto Velho"},
-	{"m": Vector2(518, 270), "nx": 5, "ny": 3, "nome": "Cidade Norte"},
-	{"m": Vector2(860, 150), "nx": 2, "ny": 1, "nome": "Vila do Lago"},
-	{"m": Vector2(1063, 255), "nx": 3, "ny": 3, "nome": "Base Militar"},
-	{"m": Vector2(1060, 548), "nx": 3, "ny": 1, "nome": "Aeroporto"},
-	{"m": Vector2(668, 548), "nx": 2, "ny": 2, "nome": "Encruzilhada"},
-	{"m": Vector2(419, 693), "nx": 3, "ny": 2, "nome": "São Jorge"},
-	{"m": Vector2(556, 1010), "nx": 2, "ny": 1, "nome": "Baía do Sul"},
-	{"m": Vector2(600, 955), "nx": 2, "ny": 1, "nome": "Cruzeiro"},
-	{"m": Vector2(965, 1000), "nx": 2, "ny": 1, "nome": "Poeira"},
-	{"m": Vector2(1150, 995), "nx": 1, "ny": 1, "nome": "Forte do Leste"},
-	{"m": Vector2(698, 316), "nx": 1, "ny": 1, "nome": "Vila do Rio"},
-	{"m": Vector2(786, 648), "nx": 1, "ny": 1, "nome": "Posto da Estrada"},
-	{"m": Vector2(917, 724), "nx": 1, "ny": 1, "nome": "Mirante"},
-	{"m": Vector2(1153, 711), "nx": 1, "ny": 1, "nome": "Areal"},
-	{"m": Vector2(343, 990), "nx": 1, "ny": 1, "nome": "Delta"},
+	{"m": Vector2(168, 488), "nx": 7, "ny": 5, "nome": "Porto Atlântico", "cat": "cidade_grande"},
+	{"m": Vector2(518, 270), "nx": 5, "ny": 3, "nome": "Baía Dourada", "cat": "cidade_grande"},
+	{"m": Vector2(860, 150), "nx": 2, "ny": 1, "nome": "Vila do Lago", "cat": "povoado"},
+	{"m": Vector2(1063, 255), "nx": 3, "ny": 3, "nome": "Base Militar Sentinela", "cat": "especial"},
+	{"m": Vector2(1060, 548), "nx": 3, "ny": 1, "nome": "Aeroporto Costa Leste", "cat": "especial"},
+	{"m": Vector2(668, 548), "nx": 2, "ny": 2, "nome": "Cruz das Almas", "cat": "cidade"},
+	{"m": Vector2(419, 693), "nx": 3, "ny": 2, "nome": "São Jorge", "cat": "cidade"},
+	{"m": Vector2(556, 1010), "nx": 2, "ny": 1, "nome": "Enseada do Sul", "cat": "cidade"},
+	{"m": Vector2(600, 955), "nx": 2, "ny": 1, "nome": "Cruzeiro", "cat": "cidade"},
+	{"m": Vector2(965, 1000), "nx": 2, "ny": 1, "nome": "Poeira", "cat": "cidade"},
+	{"m": Vector2(1150, 995), "nx": 1, "ny": 1, "nome": "Forte do Leste", "cat": "especial"},
+	{"m": Vector2(698, 316), "nx": 1, "ny": 1, "nome": "Recanto dos Ipês", "cat": "povoado"},
+	{"m": Vector2(786, 648), "nx": 1, "ny": 1, "nome": "Posto da Estrada", "cat": "povoado"},
+	{"m": Vector2(917, 724), "nx": 1, "ny": 1, "nome": "Mirante do Vale", "cat": "povoado"},
+	{"m": Vector2(1153, 711), "nx": 1, "ny": 1, "nome": "Areal", "cat": "povoado"},
+	{"m": Vector2(343, 990), "nx": 1, "ny": 1, "nome": "Vila do Delta", "cat": "povoado"},
 ]
 const CIDADE := Rect2(168.0 * 192.0, 488.0 * 192.0, 7.0 * 3072.0 + 512.0, 5.0 * 3072.0 + 512.0)   ## = area_rect(0)
 
 ## Vilarejos (V13: vilarejo): casas dos dois lados de uma estrada de terra leste–oeste e roças cercadas ao sul.
 ## [nome, px do mapa do começo da rua, nº de lotes, bioma das roças (0 verde, 1 seco)]
-const VILAREJOS := [["Vila das Roças", Vector2(196, 712), 6, 0], ["Vila do Norte", Vector2(380, 230), 5, 0],
-	["Sítio da Serra", Vector2(300, 340), 4, 0], ["Vila do Leste", Vector2(1180, 420), 4, 0],
+const VILAREJOS := [["Vila das Roças", Vector2(196, 712), 6, 0], ["Vila Nova da Serra", Vector2(380, 230), 5, 0],
+	["Sítio da Serra", Vector2(300, 340), 4, 0], ["Vila dos Pescadores", Vector2(1180, 420), 4, 0],
 	["Fazenda Seca", Vector2(760, 700), 4, 1], ["Rancho do Cânion", Vector2(880, 790), 3, 1]]
 ## Acampamentos (V13: acampamento) perto da água: [nome, px aproximado; o ponto exato é achado na margem]
-const ACAMPAMENTOS := [["Acampamento da Represa", Vector2(815, 250)], ["Acampamento do Rio", Vector2(565, 445)],
-	["Acampamento do Delta", Vector2(265, 845)]]
+const ACAMPAMENTOS := [["Acampamento Lago da Águia", Vector2(815, 250)], ["Acampamento Santuário do Sol", Vector2(565, 445)],
+	["Acampamento Mangue Vermelho", Vector2(265, 845)]]
 ## Cachoeira na saída do lago norte (px do mapa).
 const CACHOEIRA_M := Vector2(820, 175)
 

@@ -162,3 +162,29 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 2. ~~**Peso da mochila**~~ — decidido: 25 kg; acima disso, até −50% de velocidade, o dobro de fôlego e +80 de ruído andando (marco 1, etapa 4).
 3. **Receitas por especialização**: definir no balanceamento de cada marco.
 4. **Cura do vampirismo**: conteúdo tardio, fora do MVP.
+
+---
+
+## Ajustes do playtest do marco 1 (17/11/2026)
+
+1. **Onde você estava quando tudo começou** (escolha depois da origem, livre; a origem só sugere o padrão):
+   delegacia, hospital, supermercado, oficina/posto (prédios reais de Porto Atlântico), um acampamento ou em casa
+   (uma casa de vilarejo). A tela dessa escolha mostra o **mapa** com os nomes e os ícones dos locais; a casa não tem
+   ícone (não é um ponto fixo). Policial → delegacia, Enfermeiro(a) → hospital, Mecânico → oficina,
+   Mestre de Obras → acampamento.
+2. **Começo seguro**: dentro do prédio escolhido, às 08:00, sem inimigos lá dentro. O perigo está do lado de fora.
+3. **Mapa do mundo** (M, no meio da tela; o minimapa fica com um tamanho só, área pequena ao redor):
+   - nomes de cidades e vilarejos visíveis desde o início;
+   - **acampamentos começam como "?"** numa cor própria ("Local desconhecido" na legenda); ao chegar perto,
+     "Local descoberto: Acampamento ...". O acampamento onde você começou já vem descoberto;
+   - terreno e ícones aparecem conforme você passa perto ou entra (e, no marco 2, por rumores);
+   - ícones: hospital, farmácia, supermercado, delegacia, posto, oficina, escola, igreja, restaurante (novo tipo de
+     loja), acampamento, vilarejo, cidade, você, totem e abrigo; **NPC principal** reservado para o marco 2;
+   - marcador próprio: clicar no mapa para marcar um ponto.
+4. **Nomes e categorias** dos lugares (cidade grande, cidade, povoado, vilarejo, acampamento, local especial) em
+   `MundoGen.AREAS`, `VILAREJOS` e `ACAMPAMENTOS`; categorias provisórias, sujeitas a mudança.
+5. **Começo guiado**, sem travar o jogo (compatível com a Q32): prólogo de 2–3 telas escrito para a combinação local
+   + origem (pode pular) e uma lista de **primeiros passos** na voz do personagem (água → juntar coisas → fogo →
+   ferver → lugar seguro antes de escurecer → sobreviver à primeira noite), com dica de tecla só na primeira vez.
+   Opção de pular e chave no menu. A lista vira a primeira página do diário (Q24, marco 3).
+6. Ordem: nomes → início → prólogo e primeiros passos → mapa.
