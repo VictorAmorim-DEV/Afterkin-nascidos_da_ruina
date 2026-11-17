@@ -195,13 +195,15 @@ func usar(i: int) -> void:
 			jogador.beber_garrafa(x.id)
 		"fogueira":
 			jogador.acender_fogueira()
+		"bandagem":
+			jogador.usar_bandagem()
 
 
 func fabricar(id: String) -> void:
 	if id == "totem" and (jogador.territorio.tem_totem() or contar("totem") > 0):
 		aviso.emit("Você já possui um totem (ativo ou no inventário).")
 		return
-	var custo := Itens.custo_receita(id)
+	var custo := Itens.custo_receita(id, jogador.origem)
 	for c in custo:
 		if contar(c[0]) < c[1]:
 			aviso.emit("Materiais insuficientes.")

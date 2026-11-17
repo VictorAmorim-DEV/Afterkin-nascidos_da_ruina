@@ -1,7 +1,8 @@
 class_name SelecaoRaca
 extends CanvasLayer
 ## Tela inicial (V13: #startCard). O jogo fica pausado até confirmar.
-## Toda partida começa como Humano (docs/DECISOES_DESIGN.md, Q3): na abertura a grade de raças fica escondida.
+## Toda partida começa como Humano (docs/DECISOES_DESIGN.md, Q3): na abertura se escolhe a ORIGEM (Origens, Q5/Q18)
+## e a grade de raças fica escondida.
 ## F9 abre de novo durante a partida, com a grade, para trocar de raça nos testes (mantém mochila e posição).
 
 ## Título da próxima abertura (ex.: depois de morrer). Sobrevive ao recarregamento da cena.
@@ -30,6 +31,9 @@ var _botoes: Dictionary = {}
 var _titulo := Label.new()
 var _descricao := Label.new()
 var _grade := GridContainer.new()       ## botões de raça: só aparecem no F9 (teste)
+var _grade_origem := GridContainer.new()  ## botões de origem: só no começo da partida
+var _botoes_origem: Dictionary = {}
+var origem: String = "policial"
 var _comecar := Button.new()
 var _continuar := Button.new()
 var _raiz := Control.new()
@@ -93,6 +97,23 @@ func _montar() -> void:
 		b.pressed.connect(_escolher.bind(r))
 		grade.add_child(b)
 		_botoes[r] = b
+	_grade_origem.columns = 2
+	_grade_origem.add_theme_constant_override("h_separation", 10)
+	_grade_origem.add_theme_constant_override("v_separation", 10)
+	col.add_child(_grade_origem)
+	var grupo_o := ButtonGroup.new()
+	for o in Origens.IDS:
+		var d: Dictionary = Origens.DADOS[o]
+		var b := Button.new()
+		b.toggle_mode = true
+		b.button_group = grupo_o
+		b.text = "%s\n%s" % [d["nome"], d["resumo"]]
+		b.custom_minimum_size = Vector2(300, 64)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		b.pressed.connect(_escolher_origem.bind(o))
+		_grade_origem.add_child(b)
+		_botoes_origem[o] = b
 	_descricao.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_descricao.custom_minimum_size = Vector2(0, 60)
 	col.add_child(_descricao)
@@ -117,6 +138,11 @@ func _escolher(r: String) -> void:
 	_descricao.text = DESCRICOES[r]
 
 
+func _escolher_origem(o: String) -> void:
+	origem = o
+	_descricao.text = "Origem: o que você era antes da queda.\n" + str((Origens.DADOS[o] as Dictionary)["descricao"])
+
+
 func abrir(reiniciar: bool) -> void:
 	_reiniciar = reiniciar
 	_titulo.text = titulo_proximo if titulo_proximo != "" else \
@@ -126,8 +152,12 @@ func abrir(reiniciar: bool) -> void:
 	var j := get_tree().get_first_node_in_group("jogador")
 	escolhida = j.raca if (j != null and not reiniciar) else "human"
 	_grade.visible = not reiniciar
+	_grade_origem.visible = reiniciar
 	_botoes[escolhida].button_pressed = true
 	_escolher(escolhida)
+	if reiniciar:
+		_botoes_origem[origem].button_pressed = true
+		_escolher_origem(origem)
 	_continuar.visible = reiniciar and SaveJogo.existe()
 	_raiz.visible = true
 	get_tree().paused = true
@@ -137,7 +167,10 @@ func confirmar() -> void:
 	var j := get_tree().get_first_node_in_group("jogador")
 	if j != null:
 		j.definir_raca(escolhida, _reiniciar)
-		j.aviso("Você acordou no meio do colapso. Encontre recursos e sobreviva." if _reiniciar else "Agora você é %s." % NOMES[escolhida])
+		if _reiniciar:
+			j.definir_origem(origem)
+		j.aviso(("Você era %s. O mundo acabou; encontre água, comida e abrigo." % Origens.nome(origem).to_lower())
+			if _reiniciar else "Agora você é %s." % NOMES[escolhida])
 	_raiz.visible = false
 	get_tree().paused = false
 

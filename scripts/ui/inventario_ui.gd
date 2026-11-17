@@ -203,7 +203,7 @@ func _montar_cartoes() -> void:
 
 func _montar_territorio() -> void:
 	var t: Territorio = _jogador.territorio
-	_terr_info.text = "Totem: %s\nAbrigo básico: requer totem, 8 madeira e 4 sucata." % t.resumo()
+	_terr_info.text = "Totem: %s\nAbrigo básico: requer totem, %s." % [t.resumo(), Itens.texto_lista(t.custo_abrigo())]
 	for c in _terr_botoes.get_children():
 		c.queue_free()
 	var b1 := Button.new()
@@ -256,7 +256,7 @@ func _montar_receitas() -> void:
 	for c in _receitas.get_children():
 		c.queue_free()
 	for r in Itens.RECEITAS:
-		var custo := Itens.custo_receita(r.id)
+		var custo := Itens.custo_receita(r.id, _jogador.origem)
 		var linha := HBoxContainer.new()
 		var txt := Label.new()
 		txt.size_flags_horizontal = Control.SIZE_EXPAND_FILL

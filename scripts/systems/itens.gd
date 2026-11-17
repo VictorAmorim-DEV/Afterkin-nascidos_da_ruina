@@ -18,6 +18,10 @@ const DB := {
 	"agua_suja": {"nome": "Água suja", "stack": 4, "peso": 1.0, "uso": true,
 		"desc": "Mata a sede, mas pode causar disenteria. Ferva numa fogueira para ficar limpa."},
 	"agua_limpa": {"nome": "Água limpa", "stack": 4, "peso": 1.0, "uso": true, "desc": "Mata a sede sem risco."},
+	"bandagem": {"nome": "Bandagem", "stack": 8, "peso": 0.05, "uso": true, "desc": "Recupera 15 de vida."},
+	"pistola": {"nome": "Pistola", "stack": 1, "peso": 0.9, "ferramenta": true,
+		"desc": "Equipada, atira com o botão esquerdo (alcance 12 m). O estampido acorda e atrai tudo por perto."},
+	"municao": {"nome": "Munição", "stack": 30, "peso": 0.012, "desc": "Bala de pistola. Rara."},
 	"fogueira": {"nome": "Fogueira", "stack": 2, "peso": 3.0, "uso": true,
 		"desc": "Use para acender à sua frente. Ferve água suja, mas faz luz e barulho. Apaga em ~3 h de jogo."},
 }
@@ -64,15 +68,23 @@ static func peso(id: String) -> float:
 	return float((DB[id] as Dictionary).get("peso", 0.5))
 
 
-## Custo da receita. Não depende mais de nível nem de raça (docs/DECISOES_DESIGN.md, Q4 e Q28);
-## descontos de fabricação passam a vir da origem.
-static func custo_receita(id: String) -> Array:
+## Custo da receita. Não depende de nível nem de raça (docs/DECISOES_DESIGN.md, Q4 e Q28); os descontos vêm da
+## origem: o Mecânico gasta 25% menos sucata e o Mestre de Obras paga 25% menos pelo totem.
+static func custo_receita(id: String, origem: String = "") -> Array:
+	var base: Array = []
 	if id == "totem":
-		return [["madeira", 10], ["sucata", 5]]
-	for r in RECEITAS:
-		if r.id == id:
-			return (r.custo as Array).duplicate(true)
-	return []
+		base = [["madeira", 10], ["sucata", 5]]   # na lista RECEITAS o totem aparece com custo vazio
+	else:
+		for r in RECEITAS:
+			if r.id == id:
+				base = (r.custo as Array).duplicate(true)
+	var out: Array = []
+	for c in base:
+		var qtd: int = c[1]
+		if (origem == "mecanico" and c[0] == "sucata") or (origem == "mestre_obras" and id == "totem"):
+			qtd = Origens.desconto(qtd)
+		out.append([c[0], qtd])
+	return out
 
 
 ## Tabela de saque (V13: SAQUE). Devolve [[id, qtd], ...] já sorteado, sem as quantidades 0.
@@ -85,14 +97,16 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 			l = [["sucata", rng.randi_range(0, 2)], ["antibiotico", 1 if rng.randf() < 0.06 else 0],
 				["agua_limpa", 1 if rng.randf() < 0.06 else 0]]
 		"comoda":
-			l = [["antibiotico", 1 if rng.randf() < 0.12 else 0], ["sucata", rng.randi_range(0, 1)]]
+			l = [["antibiotico", 1 if rng.randf() < 0.12 else 0], ["sucata", rng.randi_range(0, 1)],
+				["municao", rng.randi_range(1, 3) if rng.randf() < 0.05 else 0]]
 		"estante":
 			l = [["madeira", rng.randi_range(0, 2)], ["sucata", rng.randi_range(0, 1)]]
 		"balcao":
 			l = [["comida", rng.randi_range(0, 1)], ["sucata", rng.randi_range(0, 1)],
 				["agua_limpa", 1 if rng.randf() < 0.1 else 0], ["garrafa", 1 if rng.randf() < 0.25 else 0]]
 		"armario_med":
-			l = [["antibiotico", rng.randi_range(1, 2) if rng.randf() < 0.4 else 0]]
+			l = [["antibiotico", rng.randi_range(1, 2) if rng.randf() < 0.4 else 0],
+				["bandagem", rng.randi_range(1, 2) if rng.randf() < 0.5 else 0]]
 		"prateleira":
 			l = [["comida", rng.randi_range(0, 2)], ["sucata", rng.randi_range(0, 1)]]
 		"arquivo":

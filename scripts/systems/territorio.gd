@@ -34,7 +34,8 @@ func colocar_totem(slot: int) -> void:
 	jogador.get_parent().add_child(no)
 	no.global_position = jogador.global_position
 	no.alcance = ALCANCES[t]
-	totem = {"no": no, "tier": t, "nivel": NIVEIS[t], "hp": VIDAS[t], "max": VIDAS[t], "alcance": ALCANCES[t]}
+	var vida: float = VIDAS[t] * (1.5 if jogador.origem == "mestre_obras" else 1.0)   # Mestre de Obras: +50%
+	totem = {"no": no, "tier": t, "nivel": NIVEIS[t], "hp": vida, "max": vida, "alcance": ALCANCES[t]}
 	jogador.aviso("Totem de nível %d colocado. Proteção em raio de %.1f m." % [NIVEIS[t], ALCANCES[t] / M])
 
 
@@ -62,6 +63,14 @@ func remover_totem() -> void:
 
 
 ## Abrigo básico: ao lado do totem, 3 m para o sul-leste do mundo (V13: build).
+## Custo do abrigo; o Mestre de Obras paga 25% menos.
+func custo_abrigo() -> Array:
+	var out: Array = []
+	for c in CUSTO_ABRIGO:
+		out.append([c[0], Origens.desconto(c[1]) if jogador.origem == "mestre_obras" else int(c[1])])
+	return out
+
+
 func construir_abrigo() -> void:
 	if not tem_totem():
 		jogador.aviso("É necessário colocar um totem antes de estabelecer um esconderijo.")
@@ -70,11 +79,12 @@ func construir_abrigo() -> void:
 		jogador.aviso("Você já possui um abrigo vinculado ao totem.")
 		return
 	var inv: Inventario = jogador.inventario
-	for c in CUSTO_ABRIGO:
+	var custo := custo_abrigo()
+	for c in custo:
 		if inv.contar(c[0]) < c[1]:
-			jogador.aviso("Para construir: 8 madeira e 4 sucata.")
+			jogador.aviso("Para construir: %s." % Itens.texto_lista(custo))
 			return
-	for c in CUSTO_ABRIGO:
+	for c in custo:
 		inv.remover(c[0], c[1])
 	abrigo = true
 	_no_abrigo = AbrigoNo.new()

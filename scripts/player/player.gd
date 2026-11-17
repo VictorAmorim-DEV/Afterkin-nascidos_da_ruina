@@ -68,6 +68,8 @@ var ruido_piso: float = 0.0              ## barulho mínimo imposto de fora nest
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
+var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
+var _tiro_t: float = 0.0                 ## tempo restante do estampido do último tiro (barulho)
 var morto: bool = false
 var dirigindo: Node2D = null             ## veículo que está dirigindo (o jogador fica escondido)
 var territorio: Territorio
@@ -356,6 +358,8 @@ func _atualizar_ruido(delta: float, rapidez: float) -> void:
 	alvo = maxf(alvo, ruido_piso)
 	ruido_piso = 0.0
 	ruido += (alvo - ruido) * minf(1.0, delta * 5.0)
+	if _tiro_t > 0.0:
+		ruido = maxf(ruido, RUIDO_TIRO)
 
 
 func _animar(olhar: Vector2, rapidez: float) -> void:
@@ -462,6 +466,7 @@ func _atualizar_vitais(delta: float) -> void:
 	_carga = inventario.sobrecarga()
 	ataque_cd = maxf(0.0, ataque_cd - delta)
 	golpe_t = maxf(0.0, golpe_t - delta)
+	_tiro_t = maxf(0.0, _tiro_t - delta)
 	var horas := delta * _min_por_s() / 60.0
 	fome = maxf(0.0, fome - horas * fome_por_hora * sintoma(2))
 	if fome <= 0.0:
@@ -582,6 +587,9 @@ func _inimigo_perto() -> Inimigo:
 func atacar() -> void:
 	if ataque_cd > 0.0 or morto or _saltando:
 		return
+	if inventario.id_equipado() == "pistola":
+		_atirar()
+		return
 	postura = Postura.EM_PE if postura == Postura.AGACHADO else postura
 	var alvo := _inimigo_perto()
 	if alvo == null:
@@ -615,6 +623,81 @@ func atacar() -> void:
 	alvo.receber_dano(dano)
 	if not alvo.morto and alvo.raca != "zombie" and randf() < 0.18:
 		infectar(alvo.raca)
+
+
+# =====================================================================
+# PISTOLA MÍNIMA (provisória, marco 1: testar o custo do barulho; docs/DECISOES_DESIGN.md)
+# =====================================================================
+const ALCANCE_TIRO_M := 12.0
+const DANO_TIRO := 30.0                  ## de perto; cai até 60% disso no alcance máximo
+const ANGULO_TIRO := 7.0                 ## graus de tolerância da mira
+const RUIDO_TIRO := 900.0                ## u de mundo (~18 m de dia, mais à noite)
+
+
+func _atirar() -> void:
+	if inventario.contar("municao") <= 0:
+		aviso("Clique. Sem munição.")
+		ataque_cd = 0.4
+		return
+	inventario.remover("municao", 1)
+	ataque_cd = 0.55
+	golpe_t = 0.15
+	_tiro_t = 0.35
+	var olhar := Vector2.from_angle(face)
+	var alcance := ALCANCE_TIRO_M * IsoMath.METRO
+	var alvo: Inimigo = null
+	var dist := alcance
+	for e in get_tree().get_nodes_in_group("inimigo"):
+		var v: Vector2 = IsoMath.tela_para_mundo(e.global_position - global_position)
+		var d := v.length()
+		if d > 1.0 and d < dist and v.normalized().dot(olhar) > cos(deg_to_rad(ANGULO_TIRO)):
+			dist = d
+			alvo = e
+	_rastro_tiro(olhar * dist)
+	var balas: int = inventario.contar("municao")
+	if alvo == null:
+		aviso("Tiro! Errou. O estampido ecoa pela rua. (%d bala(s))" % balas)
+		return
+	var dano := DANO_TIRO * lerpf(1.0, 0.6, dist / alcance)
+	alvo.receber_dano(dano)
+	aviso("Tiro! Acertou um %s (%d de dano). (%d bala(s))" % [Inimigo.NOMES[alvo.raca], roundi(dano), balas])
+
+
+## Risco de luz do disparo, da mão até onde a bala parou (some em 0,12 s).
+func _rastro_tiro(desloc_mundo: Vector2) -> void:
+	var l := Line2D.new()
+	l.width = 1.5
+	l.default_color = Color(1.0, 0.92, 0.6, 0.9)
+	l.z_index = 5
+	var mao := Vector2(0.0, -_altura_luz)
+	l.points = PackedVector2Array([mao, mao + IsoMath.mundo_para_tela(desloc_mundo)])
+	l.position = global_position
+	get_parent().add_child(l)
+	var t := l.create_tween()
+	t.tween_property(l, "modulate:a", 0.0, 0.12)
+	t.tween_callback(l.queue_free)
+
+
+## Bandagem: +15 de vida.
+func usar_bandagem() -> void:
+	if vida >= vida_max:
+		aviso("Você não está ferido.")
+		return
+	inventario.remover("bandagem", 1)
+	vida = minf(vida_max, vida + 15.0)
+	aviso("Você fez um curativo (+15 de vida).")
+
+
+## Origem do personagem (Origens): guarda e entrega o kit. Só no começo da partida.
+func definir_origem(o: String) -> void:
+	origem = o
+	var sobra: Array = []
+	for k in Origens.kit(o):
+		var resto := inventario.adicionar_parcial(k[0], k[1])
+		if resto > 0:
+			sobra.append([k[0], resto])
+	for k in sobra:
+		largar_item(k[0], k[1])
 
 
 func receber_dano(n: float, quem: String = "") -> void:
@@ -830,7 +913,9 @@ func _atualizar_doenca(delta: float) -> void:
 func texto_doenca() -> String:
 	if doenca.is_empty():
 		return "Saudável"
-	var txt := "%s · estágio %d · %dh restantes" % [doenca.tipo, int(doenca.estagio), maxi(0, ceili(doenca.horas))]
+	var txt: String = doenca.tipo
+	if origem == "enfermeiro":                 # diagnóstico: só a Enfermeiro(a) sabe o estágio e o prazo
+		txt += " · estágio %d · %dh restantes" % [int(doenca.estagio), maxi(0, ceili(doenca.horas))]
 	var sintomas: PackedStringArray = []
 	if sintoma(0) < 1.0:
 		sintomas.append("fôlego −%d%%" % roundi((1.0 - sintoma(0)) * 100.0))
@@ -900,7 +985,7 @@ func usar_antidoto() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede,
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem,
 		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
@@ -916,6 +1001,7 @@ func restaurar(d: Dictionary) -> void:
 	vida = clampf(float(d.get("vida", vida_max)), 1.0, vida_max)
 	fome = float(d.get("fome", 100.0))
 	sede = float(d.get("sede", 100.0))
+	origem = str(d.get("origem", ""))
 	stamina = float(d.get("stamina", stamina_max))
 	sol = float(d.get("sol", 0.0))
 	doenca = (d.get("doenca", {}) as Dictionary).duplicate()
