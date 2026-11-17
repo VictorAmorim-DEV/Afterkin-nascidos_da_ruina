@@ -34,6 +34,11 @@ var _grade := GridContainer.new()       ## botões de raça: só aparecem no F9 
 var _grade_origem := GridContainer.new()  ## botões de origem: só no começo da partida
 var _botoes_origem: Dictionary = {}
 var origem: String = "policial"
+var _grade_local := GridContainer.new()   ## onde você estava quando tudo começou (Inicio)
+var _rotulo_local := Label.new()
+var _botoes_local: Dictionary = {}
+var local_inicio: String = "delegacia"
+var _local_manual := false                ## o jogador escolheu o local (a origem não troca mais o padrão)
 var _comecar := Button.new()
 var _continuar := Button.new()
 var _raiz := Control.new()
@@ -114,6 +119,24 @@ func _montar() -> void:
 		b.pressed.connect(_escolher_origem.bind(o))
 		_grade_origem.add_child(b)
 		_botoes_origem[o] = b
+	_rotulo_local.text = "Onde você estava quando tudo começou?"
+	_rotulo_local.add_theme_font_size_override("font_size", 15)
+	col.add_child(_rotulo_local)
+	_grade_local.columns = 3
+	_grade_local.add_theme_constant_override("h_separation", 8)
+	_grade_local.add_theme_constant_override("v_separation", 8)
+	col.add_child(_grade_local)
+	var grupo_l := ButtonGroup.new()
+	for l in Inicio.IDS:
+		var b := Button.new()
+		b.toggle_mode = true
+		b.button_group = grupo_l
+		b.text = Inicio.nome(l)
+		b.custom_minimum_size = Vector2(196, 36)
+		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		b.pressed.connect(_escolher_local.bind(l, true))
+		_grade_local.add_child(b)
+		_botoes_local[l] = b
 	_descricao.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_descricao.custom_minimum_size = Vector2(0, 60)
 	col.add_child(_descricao)
@@ -140,7 +163,21 @@ func _escolher(r: String) -> void:
 
 func _escolher_origem(o: String) -> void:
 	origem = o
-	_descricao.text = "Origem: o que você era antes da queda.\n" + str((Origens.DADOS[o] as Dictionary)["descricao"])
+	if not _local_manual:                     # a origem sugere o local, até o jogador escolher um
+		_escolher_local(str(Inicio.PADRAO.get(o, "delegacia")), false)
+	_atualizar_descricao()
+
+
+func _escolher_local(l: String, manual: bool) -> void:
+	local_inicio = l
+	_local_manual = _local_manual or manual
+	_botoes_local[l].button_pressed = true
+	_atualizar_descricao()
+
+
+func _atualizar_descricao() -> void:
+	_descricao.text = "%s: %s\nQuando tudo começou, você estava %s." % [Origens.nome(origem),
+		str((Origens.DADOS[origem] as Dictionary)["descricao"]), Inicio.onde(local_inicio)]
 
 
 func abrir(reiniciar: bool) -> void:
@@ -153,6 +190,9 @@ func abrir(reiniciar: bool) -> void:
 	escolhida = j.raca if (j != null and not reiniciar) else "human"
 	_grade.visible = not reiniciar
 	_grade_origem.visible = reiniciar
+	_grade_local.visible = reiniciar
+	_rotulo_local.visible = reiniciar
+	_local_manual = false
 	_botoes[escolhida].button_pressed = true
 	_escolher(escolhida)
 	if reiniciar:
@@ -169,11 +209,27 @@ func confirmar() -> void:
 		j.definir_raca(escolhida, _reiniciar)
 		if _reiniciar:
 			j.definir_origem(origem)
+			_levar_ao_inicio(j)
 			j.ler_bilhete_inicial()
-		j.aviso(("Você era %s. O mundo acabou; encontre água, comida e abrigo." % Origens.nome(origem).to_lower())
+		j.aviso(("Você estava %s quando tudo começou. Encontre água, comida e abrigo." % Inicio.onde(local_inicio))
 			if _reiniciar else "Agora você é %s." % NOMES[escolhida])
 	_raiz.visible = false
 	get_tree().paused = false
+
+
+## Leva o jogador ao local de início escolhido, sem inimigos em volta, às 08:00 (Inicio).
+func _levar_ao_inicio(j: Node) -> void:
+	j.local_inicio = local_inicio
+	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
+	if ciclo != null:
+		ciclo.minutos = 480.0
+	var a := Inicio.achar(local_inicio)
+	if a.is_empty():
+		return
+	Inicio.zona_segura = a["zona"]
+	var mundo := get_tree().get_first_node_in_group("mundo")
+	if mundo != null and mundo.has_method("teleportar"):
+		mundo.teleportar(a["p"])
 
 
 func esta_aberta() -> bool:

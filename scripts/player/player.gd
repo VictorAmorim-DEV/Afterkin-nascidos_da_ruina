@@ -68,6 +68,7 @@ var ruido_piso: float = 0.0              ## barulho mínimo imposto de fora nest
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
+var local_inicio: String = ""            ## onde estava quando tudo começou (Inicio)
 var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
 var _tiro_t: float = 0.0                 ## tempo restante do estampido do último tiro (barulho)
 var morto: bool = false
@@ -998,7 +999,7 @@ func usar_antidoto() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem,
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "local_inicio": local_inicio,
 		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
@@ -1015,6 +1016,7 @@ func restaurar(d: Dictionary) -> void:
 	fome = float(d.get("fome", 100.0))
 	sede = float(d.get("sede", 100.0))
 	origem = str(d.get("origem", ""))
+	local_inicio = str(d.get("local_inicio", ""))
 	stamina = float(d.get("stamina", stamina_max))
 	sol = float(d.get("sol", 0.0))
 	doenca = (d.get("doenca", {}) as Dictionary).duplicate()

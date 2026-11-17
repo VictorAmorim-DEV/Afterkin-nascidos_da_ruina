@@ -78,6 +78,24 @@ func _ready() -> void:
 	call_deferred("_tinta_inicial")
 
 
+## Leva o jogador ao ponto 'p' (mundo) e carrega o entorno na hora (até 2,5 s), como na carga inicial.
+## Usado pelo começo da partida (Inicio), depois da escolha do local.
+func teleportar(p: Vector2) -> void:
+	if jogador == null:
+		return
+	jogador.position = IsoMath.mundo_para_tela(p)
+	var cam := get_viewport().get_camera_2d()
+	if cam != null:
+		cam.global_position = jogador.global_position
+		cam.reset_smoothing()
+	_cc = Vector2i(floori(p.x / CH), floori(p.y / CH))
+	_reagendar(p)
+	var t0 := Time.get_ticks_msec()
+	while Time.get_ticks_msec() - t0 < 2500 and _passo():
+		pass
+	_tinta_inicial()
+
+
 func _tinta_inicial() -> void:
 	var ciclo := _achar_ciclo()
 	var foco := _foco_mundo()
@@ -385,7 +403,7 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			e.altura_tiles = spec["h"]
 			e.frente = spec["f"]
 			e.semente = spec["sem"]
-			e.moradores = spec["mor"]
+			e.moradores = 0 if Inicio.seguro(spec["p"]) else spec["mor"]   # o prédio do começo nasce vazio
 			if spec.has("o"):
 				e.configurar(spec["o"])          # prédio: uso, andares, cobertura, placa...
 			e.position = IsoMath.mundo_para_tela(spec["p"])
@@ -477,7 +495,7 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 				no = cs
 		"inimigo":
 			var cena_i := _cena("res://scenes/enemies/inimigo.tscn")
-			if cena_i != null:
+			if cena_i != null and not Inicio.seguro(spec["p"]):
 				var ini := cena_i.instantiate() as Inimigo
 				ini.raca = spec["raca"]
 				ini.dorme = randf() < 0.7
