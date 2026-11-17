@@ -1,7 +1,11 @@
 extends CanvasModulate
-## Relógio e ciclo de dia e noite do protótipo V13.
+## Relógio e ciclo de dia e noite.
 ## A cor do CanvasModulate escurece o mundo à noite e clareia ao amanhecer.
-## No protótipo um dia inteiro dura 60 s (24 minutos de jogo por segundo).
+## Na V13 um dia durava 60 s; aqui dura ~40 min reais (36 minutos de jogo por segundo, docs/DECISOES_DESIGN.md Q17).
+##
+## Seis fases (Q27), cada uma muda o que é sensato fazer. Os efeitos físicos são contínuos (sem saltos na troca
+## de fase): temperatura por uma curva diária, alcance de visão pela luz ambiente, neblina no amanhecer e o som
+## que vai mais longe no ar frio e parado da noite.
 
 ## Luz ambiente por hora: [minuto do dia, r, g, b] (tabela do protótipo, js/lighting.js).
 const AMBIENTE: Array = [
@@ -12,8 +16,21 @@ const AMBIENTE: Array = [
 
 @export_range(0.0, 1439.0, 1.0) var minutos: float = 480.0   ## hora atual em minutos (480 = 08:00)
 @export var dia: int = 1
-@export var minutos_por_segundo: float = 24.0                 ## velocidade do relógio
+@export var minutos_por_segundo: float = 36.0                 ## velocidade do relógio (36 = dia de 40 min)
 @export var pausado: bool = false
+
+@export_group("Clima")
+@export var temp_media: float = 23.0                          ## °C
+@export var temp_amplitude: float = 10.0                      ## mínima ~13 °C às 2h, máxima ~33 °C às 14h
+@export var visao_dia_m: float = 12.0                         ## de quantos metros um inimigo acordado te vê de dia
+@export var visao_noite_m: float = 3.5                        ## ... e na noite fechada (sem lanterna)
+@export var som_noite: float = 1.25                           ## o som vai 25% mais longe na noite fechada
+@export var neblina_max: float = 0.6                          ## quanto a neblina do amanhecer corta a visão (0 a 1)
+
+enum Fase { MADRUGADA, AMANHECER, MANHA, TARDE, TARDEZINHA, NOITE }
+const NOMES_FASE := ["MADRUGADA", "AMANHECER", "MANHÃ", "TARDE", "TARDEZINHA", "NOITE"]
+## Hora em que cada fase começa (a madrugada começa à 0h).
+const INICIO_FASE := [0.0, 5.0, 7.0, 12.0, 16.0, 19.0]
 
 ## Tinta do bioma (multiplica a luz do dia/noite). O Mundo muda isto com um Tween ao cruzar faixas de bioma.
 var tinta_bioma := Color.WHITE
@@ -65,4 +82,45 @@ func eh_noite() -> bool:
 
 
 func texto_relogio() -> String:
-	return "DIA %d • %02d:%02d • %s" % [dia, int(minutos / 60.0), int(minutos) % 60, "NOITE" if eh_noite() else "DIA"]
+	return "DIA %d • %02d:%02d • %s • %d °C" % [dia, int(minutos / 60.0), int(minutos) % 60, NOMES_FASE[fase()],
+		roundi(temperatura())]
+
+
+## Fase do dia agora.
+func fase() -> Fase:
+	var h := minutos / 60.0
+	for i in range(INICIO_FASE.size() - 1, -1, -1):
+		if h >= INICIO_FASE[i]:
+			return i as Fase
+	return Fase.MADRUGADA
+
+
+## Temperatura do ar em °C: curva diária, mínima às 2h e máxima às 14h.
+func temperatura() -> float:
+	var h := minutos / 60.0
+	return temp_media + temp_amplitude * cos(TAU * (h - 14.0) / 24.0)
+
+
+## Calor de 0 (até 26 °C) a 1 (33 °C ou mais). A sede e o fôlego usam isto (etapa 3).
+func calor() -> float:
+	return clampf((temperatura() - 26.0) / 7.0, 0.0, 1.0)
+
+
+## Neblina do amanhecer, de 0 a 1: sobe a partir das 4h30, é mais densa às 5h45 e some até as 7h30.
+func neblina() -> float:
+	var h := minutos / 60.0
+	if h < 4.5 or h > 7.5:
+		return 0.0
+	var t := (h - 4.5) / 1.25 if h < 5.75 else (7.5 - h) / 1.75
+	return t * t * (3.0 - 2.0 * t)
+
+
+## Até quantos metros um inimigo acordado enxerga alguém em pé, sem lanterna: segue a luz ambiente e a neblina.
+func alcance_visao_m() -> float:
+	var luz := 1.0 - clampf(escuridao() / 0.8, 0.0, 1.0)
+	return lerpf(visao_noite_m, visao_dia_m, luz) * (1.0 - neblina_max * neblina())
+
+
+## Quanto mais longe o som vai em relação ao dia (1 de dia, 'som_noite' na noite fechada).
+func propagacao_som() -> float:
+	return lerpf(1.0, som_noite, clampf(escuridao() / 0.8, 0.0, 1.0))

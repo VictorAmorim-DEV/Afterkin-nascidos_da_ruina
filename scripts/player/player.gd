@@ -109,7 +109,7 @@ func _desenhar_anel_ruido() -> void:
 		return
 	var pts := PackedVector2Array()
 	for k in 40:
-		pts.append(IsoMath.mundo_para_tela(Vector2.from_angle(TAU * k / 40.0) * ruido))
+		pts.append(IsoMath.mundo_para_tela(Vector2.from_angle(TAU * k / 40.0) * ruido_efetivo()))
 	_anel_ruido.draw_colored_polygon(pts, Color(1, 1, 1, 0.03))
 	pts.append(pts[0])
 	_anel_ruido.draw_polyline(pts, Color(1, 1, 1, 0.15), 2.0)
@@ -120,13 +120,36 @@ func aplicar_sombras_lanterna(ligar: bool) -> void:
 	lanterna_chao.shadow_enabled = ligar
 
 
+## Até onde (u de mundo) o barulho chega agora: na noite fria e parada o som vai mais longe.
+func ruido_efetivo() -> float:
+	if _ciclo == null:
+		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
+	var k: float = _ciclo.propagacao_som() if _ciclo != null and _ciclo.has_method("propagacao_som") else 1.0
+	return ruido * k
+
+
+## De quantos u de mundo um inimigo acordado te enxerga: luz do dia, neblina, postura e lanterna.
+func alcance_ser_visto() -> float:
+	if _ciclo == null:
+		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
+	var m: float = _ciclo.alcance_visao_m() if _ciclo != null and _ciclo.has_method("alcance_visao_m") else 8.0
+	if postura == Postura.AGACHADO:
+		m *= 0.65
+	elif postura == Postura.DEITADO:
+		m *= 0.4
+	if lanterna_chao.enabled:
+		m = maxf(m, 16.0)                        # no escuro a lanterna te denuncia de longe
+	return m * IsoMath.METRO
+
+
 ## Furtividade pelo barulho (V13: hudStealth).
 func texto_furtividade() -> String:
-	if ruido < 70.0:
+	var r := ruido_efetivo()
+	if r < 70.0:
 		return "Quase invisível"
-	if ruido < 130.0:
+	if r < 130.0:
 		return "Discreto"
-	if ruido < 230.0:
+	if r < 230.0:
 		return "Visível"
 	return "Barulhento"
 

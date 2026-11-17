@@ -10,7 +10,13 @@ var _folhas := CPUParticles2D.new()
 var _t := 0.0
 var _alvo_poeira := 0.0
 var _alvo_folhas := 0.0
+var _neblina := 0.0                               ## densidade da neblina do amanhecer desenhada agora (0 a 1)
+var _meia_tela := Vector2(800.0, 500.0)
+var _ciclo: Node = null
 static var _ponto: Texture2D = null
+
+const COR_NEBLINA := Color(0.8, 0.84, 0.88)
+const NEBLINA_ALFA := 0.42                        ## opacidade com a neblina mais densa
 
 
 func _ready() -> void:
@@ -66,6 +72,15 @@ func _process(delta: float) -> void:
 	if cam == null:
 		return
 	global_position = cam.get_screen_center_position()
+	# neblina do amanhecer: um véu claro sobre a tela, que corta junto o alcance de visão dos inimigos (DiaNoite)
+	if _ciclo == null:
+		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
+	var nb: float = _ciclo.neblina() if _ciclo != null and _ciclo.has_method("neblina") else 0.0
+	var meia := get_viewport_rect().size / cam.zoom * 0.5 + Vector2(64.0, 64.0)
+	if absf(nb - _neblina) > 0.004 or meia != _meia_tela:
+		_neblina = nb
+		_meia_tela = meia
+		queue_redraw()
 	# a intensidade muda devagar (sem piscar ao cruzar a borda de um bioma)
 	_poeira.modulate.a = move_toward(_poeira.modulate.a, _alvo_poeira, delta * 0.5)
 	_folhas.modulate.a = move_toward(_folhas.modulate.a, _alvo_folhas, delta * 0.5)
@@ -81,6 +96,14 @@ func _process(delta: float) -> void:
 	var mar := MapaMundi.sd(w.x, w.y) > 3.0
 	_alvo_poeira = clampf(0.12 + 0.45 * v + (0.3 if urb else 0.0), 0.0, 1.0) * (0.25 if mar else 1.0)
 	_alvo_folhas = 0.0 if urb or mar else clampf(MapaMundi.mata(w.x, w.y) * 1.3 - 0.25, 0.0, 1.0) * (1.0 - clampf(v, 0.0, 1.0))
+
+
+func _draw() -> void:
+	if _neblina <= 0.0:
+		return
+	var c := COR_NEBLINA
+	c.a = NEBLINA_ALFA * _neblina
+	draw_rect(Rect2(-_meia_tela, _meia_tela * 2.0), c)
 
 
 static func _textura_ponto() -> Texture2D:

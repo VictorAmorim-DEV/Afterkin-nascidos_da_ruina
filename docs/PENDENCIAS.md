@@ -13,8 +13,8 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 
 ### MVP em marcos (`docs/DECISOES_DESIGN.md` §12) — cada um termina com playtest
 - 🔄 Marco 1 — Incursão humana. Etapas:
-  - ✅ 1. Fim do XP/nível; todos começam humanos.
-  - ⬜ 2. Relógio de 6 fases (~40 min/dia), temperatura, multiplicadores de visão/ruído.
+  - ✅ 1. Fim do XP/nível; todos começam humanos (`dd97f4c`).
+  - ✅ 2. Relógio de 6 fases (~40 min/dia), temperatura, multiplicadores de visão/ruído.
   - ⬜ 3. Sede e água (fome e sede por hora de jogo, água suja/limpa, ferver, disenteria).
   - ⬜ 4. Peso da mochila (~25 kg).
   - ⬜ 5. Tela de origem (Policial com pistola mínima provisória, Mecânico, Enfermeiro(a), Mestre de Obras).

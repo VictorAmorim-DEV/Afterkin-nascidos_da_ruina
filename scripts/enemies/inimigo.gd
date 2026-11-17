@@ -78,7 +78,10 @@ func _physics_process(delta: float) -> void:
 	var d := em.distance_to(pm)
 	var eb := _edif_em(em)
 	var pb := _edif_em(pm)
-	var ouve: float = j.ruido * (1.0 if eb == pb else 0.55)
+	var ouve: float = j.ruido_efetivo() * (1.0 if eb == pb else 0.55)
+	# acordado, também enxerga: só no mesmo ambiente (mesmo prédio, ou os dois na rua), conforme luz, neblina,
+	# postura e lanterna do jogador
+	var ve: bool = eb == pb and d < float(j.alcance_ser_visto())
 
 	if dorme:
 		if d < ouve:
@@ -92,7 +95,7 @@ func _physics_process(delta: float) -> void:
 			_animar(Vector2.DOWN, false)
 			return
 	alerta = maxf(0.0, alerta - delta)
-	if d < ouve:
+	if d < ouve or ve:
 		alerta = 4.0
 
 	var vel := 62.0 if raca == "rat" else 46.0
