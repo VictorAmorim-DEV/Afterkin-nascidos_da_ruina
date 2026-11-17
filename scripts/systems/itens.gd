@@ -5,20 +5,20 @@ extends RefCounted
 const ICONE := "res://assets/ui/icons/icon_%s.png"
 
 const DB := {
-	"madeira": {"nome": "Madeira", "stack": 64, "desc": "Material básico de construção e fabricação."},
-	"pedra": {"nome": "Pedra", "stack": 64, "desc": "Usada em ferramentas."},
-	"sucata": {"nome": "Sucata", "stack": 32, "desc": "Peças para totens e abrigos."},
-	"comida": {"nome": "Comida", "stack": 16, "uso": true, "desc": "Recupera fome e um pouco de vida."},
-	"antibiotico": {"nome": "Antibiótico", "stack": 8, "uso": true, "desc": "Trata doenças."},
-	"antidoto": {"nome": "Antídoto", "stack": 4, "uso": true, "desc": "Tirado de ninhos de morcegos. Interrompe a mutação vampírica."},
-	"machado": {"nome": "Machado", "stack": 1, "ferramenta": true, "desc": "Equipado, corta árvores com o botão esquerdo."},
-	"picareta": {"nome": "Picareta", "stack": 1, "ferramenta": true, "desc": "Equipada, quebra pedras grandes com o botão esquerdo."},
-	"totem": {"nome": "Totem de território", "stack": 1, "uso": true, "desc": "Use para posicionar seu totem aqui."},
-	"garrafa": {"nome": "Garrafa vazia", "stack": 4, "desc": "Encha numa poça, rio ou lago (E na beira da água)."},
-	"agua_suja": {"nome": "Água suja", "stack": 4, "uso": true,
+	"madeira": {"nome": "Madeira", "stack": 64, "peso": 1.0, "desc": "Material básico de construção e fabricação."},
+	"pedra": {"nome": "Pedra", "stack": 64, "peso": 1.5, "desc": "Usada em ferramentas."},
+	"sucata": {"nome": "Sucata", "stack": 32, "peso": 0.8, "desc": "Peças para totens e abrigos."},
+	"comida": {"nome": "Comida", "stack": 16, "peso": 0.5, "uso": true, "desc": "Recupera fome e um pouco de vida."},
+	"antibiotico": {"nome": "Antibiótico", "stack": 8, "peso": 0.05, "uso": true, "desc": "Trata doenças."},
+	"antidoto": {"nome": "Antídoto", "stack": 4, "peso": 0.1, "uso": true, "desc": "Tirado de ninhos de morcegos. Interrompe a mutação vampírica."},
+	"machado": {"nome": "Machado", "stack": 1, "peso": 2.0, "ferramenta": true, "desc": "Equipado, corta árvores com o botão esquerdo."},
+	"picareta": {"nome": "Picareta", "stack": 1, "peso": 2.5, "ferramenta": true, "desc": "Equipada, quebra pedras grandes com o botão esquerdo."},
+	"totem": {"nome": "Totem de território", "stack": 1, "peso": 4.0, "uso": true, "desc": "Use para posicionar seu totem aqui."},
+	"garrafa": {"nome": "Garrafa vazia", "stack": 4, "peso": 0.1, "desc": "Encha numa poça, rio ou lago (E na beira da água)."},
+	"agua_suja": {"nome": "Água suja", "stack": 4, "peso": 1.0, "uso": true,
 		"desc": "Mata a sede, mas pode causar disenteria. Ferva numa fogueira para ficar limpa."},
-	"agua_limpa": {"nome": "Água limpa", "stack": 4, "uso": true, "desc": "Mata a sede sem risco."},
-	"fogueira": {"nome": "Fogueira", "stack": 2, "uso": true,
+	"agua_limpa": {"nome": "Água limpa", "stack": 4, "peso": 1.0, "uso": true, "desc": "Mata a sede sem risco."},
+	"fogueira": {"nome": "Fogueira", "stack": 2, "peso": 3.0, "uso": true,
 		"desc": "Use para acender à sua frente. Ferve água suja, mas faz luz e barulho. Apaga em ~3 h de jogo."},
 }
 
@@ -57,6 +57,11 @@ static func icone(id: String) -> Texture2D:
 
 static func stack_max(id: String) -> int:
 	return DB[id].stack
+
+
+## Peso de uma unidade, em kg.
+static func peso(id: String) -> float:
+	return float((DB[id] as Dictionary).get("peso", 0.5))
 
 
 ## Custo da receita. Não depende mais de nível nem de raça (docs/DECISOES_DESIGN.md, Q4 e Q28);

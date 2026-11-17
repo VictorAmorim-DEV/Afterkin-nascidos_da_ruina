@@ -159,6 +159,6 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 
 ## Em aberto
 1. **Linhagem/legado**: um novo personagem herda mundo, base e rumores do anterior? Decidir no marco 3.
-2. **Peso da mochila** como freio da incursão: recomendação de peso simples já no marco 1.
+2. ~~**Peso da mochila**~~ — decidido: 25 kg; acima disso, até −50% de velocidade, o dobro de fôlego e +80 de ruído andando (marco 1, etapa 4).
 3. **Receitas por especialização**: definir no balanceamento de cada marco.
 4. **Cura do vampirismo**: conteúdo tardio, fora do MVP.

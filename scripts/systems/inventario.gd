@@ -7,6 +7,7 @@ signal mudou
 signal aviso(texto: String)
 
 const TAMANHO := 20
+const CAPACIDADE_KG := 25.0  ## acima disso o jogador fica lento, cansa mais e faz mais barulho
 
 var slots: Array = []
 var equipado: int = -1       ## índice do slot da ferramenta equipada (-1 = mãos livres)
@@ -16,6 +17,20 @@ var jogador: Node = null     ## quem usa os itens (comer, remédio...)
 func _init() -> void:
 	slots.resize(TAMANHO)
 	slots.fill(null)
+
+
+## Peso total da mochila, em kg.
+func peso_total() -> float:
+	var t := 0.0
+	for x in slots:
+		if x != null:
+			t += Itens.peso(x.id) * int(x.quantidade)
+	return t
+
+
+## Excesso de carga de 0 (dentro da capacidade) a 1 (o dobro da capacidade ou mais).
+func sobrecarga() -> float:
+	return clampf((peso_total() - CAPACIDADE_KG) / CAPACIDADE_KG, 0.0, 1.0)
 
 
 ## Coloca 'qtd' de 'id' em 'alvo' (a lista de slots). Devolve o que NÃO coube.

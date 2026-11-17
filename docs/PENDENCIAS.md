@@ -15,8 +15,8 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 - 🔄 Marco 1 — Incursão humana. Etapas:
   - ✅ 1. Fim do XP/nível; todos começam humanos (`dd97f4c`).
   - ✅ 2. Relógio de 6 fases (40 min/dia), temperatura, multiplicadores de visão/ruído (`3ad0ec4`, `8f6c6ee`).
-  - ✅ 3. Sede e água (fome e sede por hora de jogo, água suja/limpa, ferver, disenteria).
-  - ⬜ 4. Peso da mochila (~25 kg).
+  - ✅ 3. Sede e água (fome e sede por hora de jogo, água suja/limpa, ferver, disenteria) (`3218b4f`).
+  - ✅ 4. Peso da mochila (25 kg).
   - ⬜ 5. Tela de origem (Policial com pistola mínima provisória, Mecânico, Enfermeiro(a), Mestre de Obras).
   - ⬜ 6. Ajuste e checklist de playtest.
 - ⬜ Marco 2 — Comunidade e rumores: NPCs, escambo (escassez/saturação/demanda), reputação, uma especialização, log de eventos.

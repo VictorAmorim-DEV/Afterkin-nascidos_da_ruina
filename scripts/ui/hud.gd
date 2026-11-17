@@ -87,8 +87,11 @@ func _process(delta: float) -> void:
 	else:
 		_preenchimento.bg_color = COR_FOLEGO
 	var eq: String = _jogador.inventario.id_equipado()
-	estado.text = "%s • %s · Lanterna %s · %s" % [_jogador.nome_postura(), _jogador.texto_furtividade(),
-		"ligada" if _jogador.lanterna_ligada else "desligada", Itens.nome(eq) if eq != "" else "mãos livres"]
+	var kg: float = _jogador.inventario.peso_total()
+	estado.text = "%s • %s · Lanterna %s · %s · Mochila %.0f/%.0f kg%s" % [_jogador.nome_postura(),
+		_jogador.texto_furtividade(), "ligada" if _jogador.lanterna_ligada else "desligada",
+		Itens.nome(eq) if eq != "" else "mãos livres", kg, Inventario.CAPACIDADE_KG,
+		" · SOBRECARGA" if kg > Inventario.CAPACIDADE_KG else ""]
 	_vida_barra.max_value = _jogador.vida_max
 	_vida_barra.value = _jogador.vida
 	_fome_barra.value = _jogador.fome

@@ -158,7 +158,8 @@ func _atualizar() -> void:
 		_slots[i].selecionado = (i == _sel)
 		_slots[i].equipado = (i == _inv.equipado)
 		_slots[i].mostrar(_inv.slots[i])
-	_contagem.text = "%d / %d slots" % [Inventario.TAMANHO - _inv.vazios(), Inventario.TAMANHO]
+	_contagem.text = "%d / %d slots · %.1f / %.0f kg%s" % [Inventario.TAMANHO - _inv.vazios(), Inventario.TAMANHO,
+		_inv.peso_total(), Inventario.CAPACIDADE_KG, " · SOBRECARGA" if _inv.sobrecarga() > 0.0 else ""]
 	var e := _inv.id_equipado()
 	_equip.text = ("Equipado: " + Itens.nome(e)) if e != "" else "Mãos livres"
 	_montar_info()
@@ -232,7 +233,7 @@ func _montar_info() -> void:
 		_info.add_child(l)
 		return
 	var d: Dictionary = Itens.DB[x.id]
-	l.text = "%s × %d / %d\n%s" % [d.nome, x.quantidade, x.maximo, d.desc]
+	l.text = "%s × %d / %d · %.2f kg cada\n%s" % [d.nome, x.quantidade, x.maximo, Itens.peso(x.id), d.desc]
 	_info.add_child(l)
 	if d.get("ferramenta", false):
 		_botao("Desequipar" if _sel == _inv.equipado else "Equipar", func(): _inv.alternar_equipado(_sel))

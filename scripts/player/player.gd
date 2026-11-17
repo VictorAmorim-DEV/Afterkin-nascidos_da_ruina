@@ -63,6 +63,7 @@ var vida_max: float = 100.0
 var vida: float = 100.0
 var fome: float = 100.0                  ## 100 = saciado; cai por hora de jogo e, em 0, tira vida
 var sede: float = 100.0                  ## 100 = hidratado; cai mais rápido que a fome, mais no calor e correndo
+var _carga: float = 0.0                  ## sobrecarga da mochila (0 a 1), revista a cada quadro
 var ruido_piso: float = 0.0              ## barulho mínimo imposto de fora neste quadro (ex.: fervendo água)
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
@@ -181,7 +182,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			postura = Postura.EM_PE          # o pulo primeiro levanta o personagem
 		elif pulo_z <= 0.0 and stamina >= gasto_pulo and not _saltando:
 			pulo_v = impulso_pulo
-			stamina -= gasto_pulo
+			stamina -= gasto_pulo * (1.0 + _carga)
 	elif event.is_action_pressed("attack"):
 		atacar()
 	elif event.is_action_pressed("transform"):
@@ -298,6 +299,7 @@ func velocidade_atual() -> float:
 		v = prone_speed
 	if exausto:
 		v *= 0.85
+	v *= 1.0 - 0.5 * _carga                 # sobrecarga: até metade da velocidade com o dobro da capacidade
 	var mundo := get_tree().get_first_node_in_group("mundo")
 	if mundo != null:
 		v *= float(mundo.call("fator_terreno", global_position))     # água rasa do rio atrapalha
@@ -319,7 +321,7 @@ func nome_postura() -> String:
 
 func _atualizar_folego(delta: float, rapidez: float) -> void:
 	if correndo:
-		stamina = maxf(0.0, stamina - gasto_correr * (1.0 + folego_no_calor * _calor()) * delta)
+		stamina = maxf(0.0, stamina - gasto_correr * (1.0 + folego_no_calor * _calor()) * (1.0 + _carga) * delta)
 		if stamina <= 0.0:
 			exausto = true
 		return
@@ -349,6 +351,8 @@ func _atualizar_ruido(delta: float, rapidez: float) -> void:
 		alvo = 340.0
 	if pulo_z > 0.0:
 		alvo = maxf(alvo, 260.0)
+	if andando:
+		alvo += 80.0 * _carga                  # a mochila pesada chacoalha
 	alvo = maxf(alvo, ruido_piso)
 	ruido_piso = 0.0
 	ruido += (alvo - ruido) * minf(1.0, delta * 5.0)
@@ -455,6 +459,7 @@ func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 # SOBREVIVÊNCIA, XP E ITENS (portado da V13: eat, useMed, xpGain, step)
 # =====================================================================
 func _atualizar_vitais(delta: float) -> void:
+	_carga = inventario.sobrecarga()
 	ataque_cd = maxf(0.0, ataque_cd - delta)
 	golpe_t = maxf(0.0, golpe_t - delta)
 	var horas := delta * _min_por_s() / 60.0
