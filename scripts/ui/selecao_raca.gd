@@ -169,6 +169,7 @@ func confirmar() -> void:
 		j.definir_raca(escolhida, _reiniciar)
 		if _reiniciar:
 			j.definir_origem(origem)
+			j.ler_bilhete_inicial()
 		j.aviso(("Você era %s. O mundo acabou; encontre água, comida e abrigo." % Origens.nome(origem).to_lower())
 			if _reiniciar else "Agora você é %s." % NOMES[escolhida])
 	_raiz.visible = false

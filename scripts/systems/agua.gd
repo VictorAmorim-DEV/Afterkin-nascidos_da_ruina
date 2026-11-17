@@ -49,6 +49,36 @@ func _procurar() -> String:
 	return ""
 
 
+## Água doce mais próxima do ponto 'w' (mundo), até 'max_m' metros: {"tipo": "poca"/"rio", "m": distância,
+## "rumo": "N", "NE"...} ou {} se não houver. Varre em anéis de 10 m; serve ao bilhete do começo da partida.
+static func mais_perto(w: Vector2, max_m: float = 1500.0) -> Dictionary:
+	var M := IsoMath.METRO
+	var melhor := {}
+	var r := Vector2(max_m, max_m) * M
+	for d in Quadras.detalhes_no(Rect2(w - r, r * 2.0)):
+		var dd: Dictionary = d
+		var dist: float = (dd["p"] as Vector2).distance_to(w)
+		if dd["t"] == "poca" and (melhor.is_empty() or dist < float(melhor["m"]) * M):
+			melhor = {"tipo": "poca", "m": dist / M, "dir": (dd["p"] as Vector2) - w}
+	var limite: float = float(melhor["m"]) if not melhor.is_empty() else max_m
+	var raio := 10.0
+	while raio < limite:
+		for k in 72:
+			var dir := Vector2.from_angle(TAU * k / 72.0)
+			var p := w + dir * raio * M
+			if MapaMundi.agua(p.x, p.y) > 0 and not MapaMundi.eh_mar(p.x, p.y):
+				melhor = {"tipo": "rio", "m": raio, "dir": dir}
+				limite = 0.0
+				break
+		raio += 10.0
+	if melhor.is_empty():
+		return {}
+	var v: Vector2 = melhor["dir"]
+	var graus := fposmod(rad_to_deg(atan2(v.x, -v.y)), 360.0)    # 0 = norte (−y do mundo), 90 = leste (+x)
+	melhor["rumo"] = ["norte", "nordeste", "leste", "sudeste", "sul", "sudoeste", "oeste", "noroeste"][roundi(graus / 45.0) % 8]
+	return melhor
+
+
 func prioridade_interacao() -> int:
 	return 1                          # abaixo de tudo: só vale quando não há outra coisa para pegar ou usar
 

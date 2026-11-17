@@ -211,5 +211,5 @@ func aviso(texto: String) -> void:
 	if _toast_tween != null:
 		_toast_tween.kill()
 	_toast_tween = create_tween()
-	_toast_tween.tween_interval(3.0)
+	_toast_tween.tween_interval(clampf(texto.length() / 22.0, 3.0, 7.0))   # texto longo fica mais tempo
 	_toast_tween.tween_property(_toast, "modulate:a", 0.0, 0.8)

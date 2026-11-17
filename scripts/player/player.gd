@@ -688,6 +688,19 @@ func usar_bandagem() -> void:
 	aviso("Você fez um curativo (+15 de vida).")
 
 
+## Bilhete do começo da partida: um rumor genérico (os rumores de verdade vêm com os NPCs, no marco 2) que aponta
+## a água doce mais próxima. Aparece alguns segundos depois do aviso de boas-vindas.
+func ler_bilhete_inicial() -> void:
+	await get_tree().create_timer(4.5).timeout
+	var a := Agua.mais_perto(IsoMath.tela_para_mundo(global_position))
+	if a.is_empty():
+		aviso("Bilhete no bolso: \"Não tem água por perto. Guarde a garrafa.\"")
+		return
+	var onde := "uma poça d'água" if a["tipo"] == "poca" else "um rio"
+	aviso("Bilhete no bolso: \"Tem %s a uns %d m para o %s. Ferva antes de beber.\"" % [onde,
+		roundi(float(a["m"]) / 10.0) * 10, a["rumo"]])
+
+
 ## Origem do personagem (Origens): guarda e entrega o kit. Só no começo da partida.
 func definir_origem(o: String) -> void:
 	origem = o
