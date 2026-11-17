@@ -12,7 +12,13 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 
 
 ### MVP em marcos (`docs/DECISOES_DESIGN.md` §12) — cada um termina com playtest
-- ⬜ Marco 1 — Incursão humana: 6 fases do dia (~40 min), sede e fontes de água, fim do XP/nível, origens (4), tirar a escolha de raça do início, peso da mochila.
+- 🔄 Marco 1 — Incursão humana. Etapas:
+  - ✅ 1. Fim do XP/nível; todos começam humanos.
+  - ⬜ 2. Relógio de 6 fases (~40 min/dia), temperatura, multiplicadores de visão/ruído.
+  - ⬜ 3. Sede e água (fome e sede por hora de jogo, água suja/limpa, ferver, disenteria).
+  - ⬜ 4. Peso da mochila (~25 kg).
+  - ⬜ 5. Tela de origem (Policial com pistola mínima provisória, Mecânico, Enfermeiro(a), Mestre de Obras).
+  - ⬜ 6. Ajuste e checklist de playtest.
 - ⬜ Marco 2 — Comunidade e rumores: NPCs, escambo (escassez/saturação/demanda), reputação, uma especialização, log de eventos.
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.
@@ -23,6 +29,6 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 - 💭 (o Victor ainda está pensando em mais coisas para acrescentar)
 
 ## Feito recentemente
-- ✅ Validação do GDD (entrevista Q1–Q34) → `docs/DECISOES_DESIGN.md`
+- ✅ Validação do GDD (entrevista Q1–Q34) → `docs/DECISOES_DESIGN.md` (`6262f42`)
 - ✅ Ilha do mapa-múndi, biomas, vento, sombras de contato, normal maps e partículas (`a4ed901`)
 - ✅ Save/load (`47d8a92`) · ninhos de morcegos, antídoto e sintomas por estágio (`023c279`)

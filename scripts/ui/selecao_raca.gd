@@ -1,7 +1,8 @@
 class_name SelecaoRaca
 extends CanvasLayer
-## Tela inicial de escolha de raça (V13: #startCard). O jogo fica pausado até confirmar.
-## F9 abre de novo durante a partida para trocar de raça nos testes (mantém mochila e posição).
+## Tela inicial (V13: #startCard). O jogo fica pausado até confirmar.
+## Toda partida começa como Humano (docs/DECISOES_DESIGN.md, Q3): na abertura a grade de raças fica escondida.
+## F9 abre de novo durante a partida, com a grade, para trocar de raça nos testes (mantém mochila e posição).
 
 ## Título da próxima abertura (ex.: depois de morrer). Sobrevive ao recarregamento da cena.
 static var titulo_proximo: String = ""
@@ -15,7 +16,7 @@ const RESUMOS := {
 	"zombie": "Resistente no corpo e imune a algumas doenças.",
 }
 const DESCRICOES := {
-	"human": "Humanos fabricam equipamentos com 20% menos materiais. Construções e defesas são mais resistentes, mas doenças são mais perigosas.",
+	"human": "Você começa humano. Mordidas, doenças e escolhas podem mudar o que você é.",
 	"rat": "Pode alternar entre humano e rato (tecla Q). Na forma de rato move-se 25% mais rápido e ataca 30% mais rápido, mas tem 40% menos vida.",
 	"vampire": "À noite recebe bônus de força (+30% de dano). De dia, a céu aberto, acumula exposição ao sol e depois sofre dano; dentro de casa fica abrigado.",
 	"zombie": "É lento (−15%), bate forte e é imune à leptospirose e à mordida do rato.",
@@ -28,6 +29,7 @@ var _reiniciar: bool = true
 var _botoes: Dictionary = {}
 var _titulo := Label.new()
 var _descricao := Label.new()
+var _grade := GridContainer.new()       ## botões de raça: só aparecem no F9 (teste)
 var _comecar := Button.new()
 var _continuar := Button.new()
 var _raiz := Control.new()
@@ -70,11 +72,11 @@ func _montar() -> void:
 	_titulo.add_theme_font_size_override("font_size", 24)
 	col.add_child(_titulo)
 	var sub := Label.new()
-	sub.text = "Escolha sua origem. Suas ações, mordidas e decisões podem mudar sua raça para sempre."
+	sub.text = "Suas ações, mordidas e decisões podem mudar o que você é para sempre."
 	sub.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	sub.modulate = Color(1, 1, 1, 0.65)
 	col.add_child(sub)
-	var grade := GridContainer.new()
+	var grade := _grade
 	grade.columns = 2
 	grade.add_theme_constant_override("h_separation", 10)
 	grade.add_theme_constant_override("v_separation", 10)
@@ -123,6 +125,7 @@ func abrir(reiniciar: bool) -> void:
 	titulo_proximo = ""
 	var j := get_tree().get_first_node_in_group("jogador")
 	escolhida = j.raca if (j != null and not reiniciar) else "human"
+	_grade.visible = not reiniciar
 	_botoes[escolhida].button_pressed = true
 	_escolher(escolhida)
 	_continuar.visible = reiniciar and SaveJogo.existe()

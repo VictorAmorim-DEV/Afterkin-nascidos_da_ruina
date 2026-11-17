@@ -54,8 +54,6 @@ var ruido: float = 110.0                 ## barulho que o jogador faz (para os i
 var vida_max: float = 100.0
 var vida: float = 100.0
 var fome: float = 100.0                  ## 100 = saciado; cai 0,13/s e, em 0, tira vida
-var xp: int = 0
-var nivel: int = 1
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
@@ -431,14 +429,6 @@ func aviso(texto: String) -> void:
 	get_tree().call_group("hud", "aviso", texto)
 
 
-func ganhar_xp(n: int) -> void:
-	xp += n
-	while nivel < 20 and xp >= nivel * 100:
-		xp -= nivel * 100
-		nivel += 1
-		aviso("Você alcançou o nível %d." % nivel)
-
-
 ## Come uma comida: +35 de fome e +8 de vida. Devolve false se não pôde (nada a consumir é feito aqui).
 func comer() -> bool:
 	if inventario.contar("comida") <= 0:
@@ -555,7 +545,7 @@ func vida_max_atual() -> float:
 	return 60.0 if forma_rato() else 100.0
 
 
-## Escolhe a raça. 'reiniciar' = começo de partida (zera vida, fome, XP, nível, doença e mochila).
+## Escolhe a raça. 'reiniciar' = começo de partida (zera vida, fome, doença e mochila).
 func definir_raca(r: String, reiniciar: bool = true) -> void:
 	raca = r
 	forma = "rat" if r == "rat" else "human"
@@ -563,8 +553,6 @@ func definir_raca(r: String, reiniciar: bool = true) -> void:
 	if reiniciar:
 		vida = vida_max
 		fome = 100.0
-		xp = 0
-		nivel = 1
 		sol = 0.0
 		doenca = {}
 		inventario.inicial()
@@ -790,7 +778,7 @@ func usar_antidoto() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "xp": xp, "nivel": nivel,
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome,
 		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
@@ -802,8 +790,6 @@ func restaurar(d: Dictionary) -> void:
 	definir_raca(str(d.get("raca", "human")), false)
 	forma = str(d.get("forma", forma))
 	_aplicar_frames()
-	nivel = int(d.get("nivel", 1))
-	xp = int(d.get("xp", 0))
 	vida_max = vida_max_atual()
 	vida = clampf(float(d.get("vida", vida_max)), 1.0, vida_max)
 	fome = float(d.get("fome", 100.0))

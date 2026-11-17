@@ -79,7 +79,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		j.aviso("Inventário cheio! Libere espaço para coletar.")
 		return
 	j.inventario.adicionar_itens(g)
-	j.ganhar_xp(2)
 	j.aviso(t["msg"])
 	var m := get_tree().get_first_node_in_group("mundo")
 	if m != null and m.has_method("marcar_coletado"):

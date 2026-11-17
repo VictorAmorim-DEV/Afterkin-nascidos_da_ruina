@@ -167,14 +167,14 @@ func _atualizar() -> void:
 	_montar_cartoes()
 
 
-## Cartões de estado do jogador (V13: statusItems — raça, forma, nível, vida, fome, sol, doença, totem).
+## Cartões de estado do jogador (V13: statusItems — raça, forma, vida, fome, sol, doença, totem).
 func _montar_cartoes() -> void:
 	for c in _cartoes.get_children():
 		c.queue_free()
 	var j := _jogador
 	var t: Territorio = j.territorio
 	var dados := [
-		["Raça", j.NOMES_RACA[j.raca]], ["Forma", "Rato" if j.forma_rato() else "Humano"], ["Nível", str(j.nivel)],
+		["Raça", j.NOMES_RACA[j.raca]], ["Forma", "Rato" if j.forma_rato() else "Humano"],
 		["Vida", "%d / %d" % [ceili(j.vida), int(j.vida_max)]], ["Fome", "%d%%" % int(j.fome)],
 		["Exposição solar", "%d / 60 min" % int(j.sol)], ["Doença", j.doenca.tipo if not j.doenca.is_empty() else "Nenhuma"],
 		["Totem", ("Nível %d" % t.totem.nivel) if t.tem_totem() else "Nenhum"]]
@@ -255,7 +255,7 @@ func _montar_receitas() -> void:
 	for c in _receitas.get_children():
 		c.queue_free()
 	for r in Itens.RECEITAS:
-		var custo := Itens.custo_receita(r.id, _jogador.nivel, _jogador.raca)
+		var custo := Itens.custo_receita(r.id)
 		var linha := HBoxContainer.new()
 		var txt := Label.new()
 		txt.size_flags_horizontal = Control.SIZE_EXPAND_FILL

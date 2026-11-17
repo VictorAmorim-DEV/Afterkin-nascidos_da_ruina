@@ -80,6 +80,12 @@ de nível; dados em tabelas.
 | Bônus de construção da raça humana | Passa para a origem Mestre de Obras (Q28) |
 | Raças na tela inicial (código) | Removidas; F9 fica só como debug (Q3) |
 
+**Kits das origens não dão vantagem grande** (17/11/2026): armas e equipamentos bons se conseguem no mundo ou se
+fabricam. A pistola do Policial no marco 1 é provisória, só para testar o barulho do tiro; os perks do Mecânico
+(fabricar com menos sucata, veículo gasta menos combustível), do Mestre de Obras (abrigo e totem mais baratos e
+resistentes) e do Enfermeiro(a) (vê estágio e tempo das doenças) também são provisórios até existirem durabilidade e
+comunidade.
+
 **Origem × Engenharia** (Q28): a origem constrói a estrutura (parede, porta, chão, teto); a Engenharia faz funcionar
 (armadilhas, gerador, luz UV, alarme, torre).
 

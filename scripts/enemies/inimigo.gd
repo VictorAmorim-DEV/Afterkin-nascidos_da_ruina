@@ -211,12 +211,11 @@ func _morrer() -> void:
 	sprite.flip_h = _flip_dorme
 	var j := get_tree().get_first_node_in_group("jogador")
 	if j != null:
-		j.ganhar_xp(30)
 		if j.inventario.adicionar_itens([["comida", 1]]):
-			j.aviso("Inimigo derrotado. +30 XP e 1 comida.")
+			j.aviso("Inimigo derrotado. +1 comida.")
 		else:
 			ItemNoChao.largar(get_parent(), global_position + Vector2(0, 2), "comida", 1)
-			j.aviso("Inimigo derrotado. +30 XP; a comida ficou no chão (mochila cheia).")
+			j.aviso("Inimigo derrotado; a comida ficou no chão (mochila cheia).")
 	queue_redraw()
 	var t := create_tween()
 	t.tween_interval(6.0)

@@ -182,7 +182,7 @@ func fabricar(id: String) -> void:
 	if id == "totem" and (jogador.territorio.tem_totem() or contar("totem") > 0):
 		aviso.emit("Você já possui um totem (ativo ou no inventário).")
 		return
-	var custo := Itens.custo_receita(id, jogador.nivel, jogador.raca)
+	var custo := Itens.custo_receita(id)
 	for c in custo:
 		if contar(c[0]) < c[1]:
 			aviso.emit("Materiais insuficientes.")
@@ -195,7 +195,7 @@ func fabricar(id: String) -> void:
 		return
 	for c in custo:
 		remover(c[0], c[1])
-	empilhar(slots, id, 1, {"tier": int((jogador.nivel - 1) / 5.0)} if id == "totem" else {})
+	empilhar(slots, id, 1, {"tier": 0} if id == "totem" else {})   # melhorar o totem fica para o marco 6
 	mudou.emit()
 	aviso.emit("%s fabricado e guardado no inventário. Equipe manualmente." % Itens.nome(id))
 

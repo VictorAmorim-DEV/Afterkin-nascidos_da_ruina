@@ -92,8 +92,8 @@ func _process(delta: float) -> void:
 	_vida_barra.value = _jogador.vida
 	_fome_barra.value = _jogador.fome
 	var forma: String = " · FORMA RATO" if _jogador.forma_rato() else ""
-	_vida_texto.text = "%s%s · NÍVEL %d (XP %d/%d)\nVIDA %d/%d · FOME %d%%" % [_jogador.NOMES_RACA[_jogador.raca].to_upper(), forma,
-		_jogador.nivel, _jogador.xp, _jogador.nivel * 100, ceili(_jogador.vida), int(_jogador.vida_max), int(_jogador.fome)]
+	_vida_texto.text = "%s%s\nVIDA %d/%d · FOME %d%%" % [_jogador.NOMES_RACA[_jogador.raca].to_upper(), forma,
+		ceili(_jogador.vida), int(_jogador.vida_max), int(_jogador.fome)]
 	var doente: bool = not _jogador.doenca.is_empty()
 	_saude_texto.text = "SAÚDE: " + _jogador.texto_doenca()
 	if _jogador.raca == "vampire":

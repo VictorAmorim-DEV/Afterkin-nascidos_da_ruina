@@ -64,7 +64,6 @@ func golpear(j: Node) -> bool:
 	var n := randi_range(3, 5)
 	j.inventario.adicionar_itens([[d.item, n]])
 	usado = true
-	j.ganhar_xp(8)
 	j.aviso("+%d %s coletada(s)." % [n, Itens.nome(d.item).to_lower()])
 	var alvo := get_parent() as CanvasItem
 	remove_from_group("interativo")

@@ -1,6 +1,6 @@
 class_name Loot
 extends RefCounted
-## Lógica comum de vasculhar (V13: EDIF_interagir / loot): sorteia, confere espaço, guarda, dá XP.
+## Lógica comum de vasculhar (V13: EDIF_interagir / loot): sorteia, confere espaço e guarda.
 
 
 ## 'ao_concluir' roda quando o recipiente foi mesmo esvaziado (não roda com a mochila cheia).
@@ -12,7 +12,6 @@ static func vasculhar(jogador: Node, tipo: String, rng: RandomNumberGenerator, a
 		return
 	jogador.inventario.adicionar_itens(g)
 	ao_concluir.call()
-	jogador.ganhar_xp(6)
 	if g.is_empty():
 		jogador.aviso("Nada útil %s %s." % ["na" if nome.ends_with("a") else "no", nome])
 	else:
