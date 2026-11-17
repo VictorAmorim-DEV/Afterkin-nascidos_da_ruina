@@ -14,6 +14,12 @@ const DB := {
 	"machado": {"nome": "Machado", "stack": 1, "ferramenta": true, "desc": "Equipado, corta árvores com o botão esquerdo."},
 	"picareta": {"nome": "Picareta", "stack": 1, "ferramenta": true, "desc": "Equipada, quebra pedras grandes com o botão esquerdo."},
 	"totem": {"nome": "Totem de território", "stack": 1, "uso": true, "desc": "Use para posicionar seu totem aqui."},
+	"garrafa": {"nome": "Garrafa vazia", "stack": 4, "desc": "Encha numa poça, rio ou lago (E na beira da água)."},
+	"agua_suja": {"nome": "Água suja", "stack": 4, "uso": true,
+		"desc": "Mata a sede, mas pode causar disenteria. Ferva numa fogueira para ficar limpa."},
+	"agua_limpa": {"nome": "Água limpa", "stack": 4, "uso": true, "desc": "Mata a sede sem risco."},
+	"fogueira": {"nome": "Fogueira", "stack": 2, "uso": true,
+		"desc": "Use para acender à sua frente. Ferve água suja, mas faz luz e barulho. Apaga em ~3 h de jogo."},
 }
 
 ## Receitas de fabricação (V13: RECIPES).
@@ -21,6 +27,7 @@ const RECEITAS := [
 	{"id": "totem", "desc": "Um por jogador. Fica no inventário até ser usado.", "custo": []},
 	{"id": "machado", "desc": "Madeira só se obtém de árvores com machado.", "custo": [["madeira", 4], ["pedra", 3]]},
 	{"id": "picareta", "desc": "Necessária para pedras grandes.", "custo": [["madeira", 4], ["pedra", 4]]},
+	{"id": "fogueira", "desc": "Ferve água suja. Faz luz e barulho.", "custo": [["madeira", 5], ["pedra", 3]]},
 ]
 
 ## Nome do recipiente que o jogador vasculha (V13: CONTEM).
@@ -68,15 +75,17 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 	var l: Array = []
 	match tipo:
 		"geladeira":
-			l = [["comida", rng.randi_range(0, 2)]]
+			l = [["comida", rng.randi_range(0, 2)], ["agua_limpa", 1 if rng.randf() < 0.2 else 0]]
 		"armario":
-			l = [["sucata", rng.randi_range(0, 2)], ["antibiotico", 1 if rng.randf() < 0.06 else 0]]
+			l = [["sucata", rng.randi_range(0, 2)], ["antibiotico", 1 if rng.randf() < 0.06 else 0],
+				["agua_limpa", 1 if rng.randf() < 0.06 else 0]]
 		"comoda":
 			l = [["antibiotico", 1 if rng.randf() < 0.12 else 0], ["sucata", rng.randi_range(0, 1)]]
 		"estante":
 			l = [["madeira", rng.randi_range(0, 2)], ["sucata", rng.randi_range(0, 1)]]
 		"balcao":
-			l = [["comida", rng.randi_range(0, 1)], ["sucata", rng.randi_range(0, 1)]]
+			l = [["comida", rng.randi_range(0, 1)], ["sucata", rng.randi_range(0, 1)],
+				["agua_limpa", 1 if rng.randf() < 0.1 else 0], ["garrafa", 1 if rng.randf() < 0.25 else 0]]
 		"armario_med":
 			l = [["antibiotico", rng.randi_range(1, 2) if rng.randf() < 0.4 else 0]]
 		"prateleira":
@@ -84,11 +93,12 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 		"arquivo":
 			l = [["sucata", rng.randi_range(0, 2)]]
 		"caixa":
-			l = [["madeira", rng.randi_range(1, 3)], ["sucata", rng.randi_range(0, 2)]]
+			l = [["madeira", rng.randi_range(1, 3)], ["sucata", rng.randi_range(0, 2)],
+				["garrafa", 1 if rng.randf() < 0.2 else 0]]
 		"mesa_esc":
 			l = [["sucata", rng.randi_range(0, 1)], ["antibiotico", 1 if rng.randf() < 0.04 else 0]]
 		"scrap":
-			l = [["sucata", rng.randi_range(1, 3)]]
+			l = [["sucata", rng.randi_range(1, 3)], ["garrafa", 1 if rng.randf() < 0.15 else 0]]
 		"esgoto":
 			l = [["sucata", 2]]
 		"ninho":

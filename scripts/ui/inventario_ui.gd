@@ -167,7 +167,7 @@ func _atualizar() -> void:
 	_montar_cartoes()
 
 
-## Cartões de estado do jogador (V13: statusItems — raça, forma, vida, fome, sol, doença, totem).
+## Cartões de estado do jogador (V13: statusItems — raça, forma, vida, fome, sede, sol, doença, totem).
 func _montar_cartoes() -> void:
 	for c in _cartoes.get_children():
 		c.queue_free()
@@ -175,7 +175,7 @@ func _montar_cartoes() -> void:
 	var t: Territorio = j.territorio
 	var dados := [
 		["Raça", j.NOMES_RACA[j.raca]], ["Forma", "Rato" if j.forma_rato() else "Humano"],
-		["Vida", "%d / %d" % [ceili(j.vida), int(j.vida_max)]], ["Fome", "%d%%" % int(j.fome)],
+		["Vida", "%d / %d" % [ceili(j.vida), int(j.vida_max)]], ["Fome", "%d%%" % int(j.fome)], ["Sede", "%d%%" % int(j.sede)],
 		["Exposição solar", "%d / 60 s" % int(j.sol)], ["Doença", j.doenca.tipo if not j.doenca.is_empty() else "Nenhuma"],
 		["Totem", ("Nível %d" % t.totem.nivel) if t.tem_totem() else "Nenhum"]]
 	for d in dados:

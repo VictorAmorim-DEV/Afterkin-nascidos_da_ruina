@@ -24,6 +24,14 @@ const DIRECOES: Array[String] = ["frente", "lado", "costas"]
 @export var gasto_pulo: float = 10.0     ## por pulo
 @export var limite_exaustao: float = 30.0  ## fôlego para deixar de estar exausto
 
+@export_group("Fome e sede (por hora de jogo)")
+## Cheias, a fome zera em ~1,5 dia de jogo e a sede em ~0,75 dia (docs/DECISOES_DESIGN.md Q29).
+@export var fome_por_hora: float = 2.78
+@export var sede_por_hora: float = 5.56
+@export var sede_no_calor: float = 0.5        ## +50% de sede no calor máximo (tarde)
+@export var sede_correndo: float = 0.3        ## +30% de sede correndo
+@export var folego_no_calor: float = 0.3      ## correr no calor máximo gasta +30% de fôlego
+
 @export_group("Pulo")
 @export var impulso_pulo: float = 260.0
 @export var gravidade: float = 900.0
@@ -53,7 +61,9 @@ var ruido: float = 110.0                 ## barulho que o jogador faz (para os i
 ## --- sobrevivência e mochila (V13) ---
 var vida_max: float = 100.0
 var vida: float = 100.0
-var fome: float = 100.0                  ## 100 = saciado; cai 0,13/s e, em 0, tira vida
+var fome: float = 100.0                  ## 100 = saciado; cai por hora de jogo e, em 0, tira vida
+var sede: float = 100.0                  ## 100 = hidratado; cai mais rápido que a fome, mais no calor e correndo
+var ruido_piso: float = 0.0              ## barulho mínimo imposto de fora neste quadro (ex.: fervendo água)
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
@@ -92,6 +102,9 @@ func _ready() -> void:
 	territorio.name = "Territorio"
 	territorio.jogador = self
 	add_child(territorio)
+	var agua := Agua.new()                            # beber e encher garrafas em poças, rios e lagos
+	agua.name = "Agua"
+	add_child(agua)
 	inventario.inicial()
 	# anel de barulho no chão (V13 l.1650): raio = distância em que os inimigos ouvem
 	_anel_ruido.z_index = -1
@@ -139,6 +152,8 @@ func alcance_ser_visto() -> float:
 		m *= 0.4
 	if lanterna_chao.enabled:
 		m = maxf(m, 16.0)                        # no escuro a lanterna te denuncia de longe
+	if _ciclo != null and _ciclo.has_method("escuridao") and float(_ciclo.escuridao()) > 0.3 and Fogueira.acesa_perto(self):
+		m = maxf(m, 14.0)                        # ao lado de uma fogueira no escuro, você aparece de longe
 	return m * IsoMath.METRO
 
 
@@ -304,7 +319,7 @@ func nome_postura() -> String:
 
 func _atualizar_folego(delta: float, rapidez: float) -> void:
 	if correndo:
-		stamina = maxf(0.0, stamina - gasto_correr * delta)
+		stamina = maxf(0.0, stamina - gasto_correr * (1.0 + folego_no_calor * _calor()) * delta)
 		if stamina <= 0.0:
 			exausto = true
 		return
@@ -316,6 +331,8 @@ func _atualizar_folego(delta: float, rapidez: float) -> void:
 	if exausto:
 		regen *= 0.8
 	regen *= sintoma(0)
+	if sede < 20.0:
+		regen *= 0.6                           # desidratado, o fôlego volta mais devagar
 	stamina = minf(stamina_max, stamina + regen * delta)
 	if exausto and stamina >= limite_exaustao:
 		exausto = false
@@ -332,6 +349,8 @@ func _atualizar_ruido(delta: float, rapidez: float) -> void:
 		alvo = 340.0
 	if pulo_z > 0.0:
 		alvo = maxf(alvo, 260.0)
+	alvo = maxf(alvo, ruido_piso)
+	ruido_piso = 0.0
 	ruido += (alvo - ruido) * minf(1.0, delta * 5.0)
 
 
@@ -438,9 +457,15 @@ func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 func _atualizar_vitais(delta: float) -> void:
 	ataque_cd = maxf(0.0, ataque_cd - delta)
 	golpe_t = maxf(0.0, golpe_t - delta)
-	fome = maxf(0.0, fome - delta * 0.13 * sintoma(2))
+	var horas := delta * _min_por_s() / 60.0
+	fome = maxf(0.0, fome - horas * fome_por_hora * sintoma(2))
 	if fome <= 0.0:
 		vida = maxf(0.0, vida - delta * 0.7)
+	if raca != "vampire":                      # o vampiro vai trocar fome e sede por sangue (marco 4)
+		var k := (1.0 + sede_no_calor * _calor()) * (1.0 + (sede_correndo if correndo else 0.0))
+		sede = maxf(0.0, sede - horas * sede_por_hora * k * sintoma(4))
+		if sede <= 0.0:
+			vida = maxf(0.0, vida - delta * 1.0)
 	_atualizar_sol(delta)
 	_atualizar_doenca(delta)
 	if vida <= 0.0 and not morto:
@@ -461,6 +486,60 @@ func comer() -> bool:
 	vida = minf(vida_max, vida + 8.0)
 	aviso("Você comeu e recuperou energia.")
 	return true
+
+
+## Calor de 0 a 1 (DiaNoite.calor): acelera a sede e o gasto de fôlego correndo.
+func _calor() -> float:
+	if _ciclo == null:
+		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
+	return float(_ciclo.calor()) if _ciclo != null and _ciclo.has_method("calor") else 0.0
+
+
+## Bebe: +'qtd' de sede. 'chance_doenca' é a chance de pegar disenteria (água suja ou parada).
+## 'extra' vai no fim do aviso. Devolve false se não estava com sede (nada é consumido).
+func beber(qtd: float, chance_doenca: float, de_onde: String, extra: String = "") -> bool:
+	if raca == "vampire":
+		aviso("A água não mata mais a sua sede.")
+		return false
+	if sede >= 98.0:
+		aviso("Você não está com sede.")
+		return false
+	sede = minf(100.0, sede + qtd)
+	if chance_doenca > 0.0 and doenca.is_empty() and randf() < chance_doenca:
+		doenca = {"tipo": "Disenteria", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "agua"}
+		aviso("Você bebeu %s e matou a sede... mas a água estava contaminada. Disenteria.%s" % [de_onde, extra])
+	else:
+		aviso("Você bebeu %s.%s" % [de_onde, extra])
+	return true
+
+
+## Bebe uma garrafa da mochila ("agua_limpa" ou "agua_suja") e guarda a garrafa vazia.
+func beber_garrafa(id: String) -> void:
+	var suja := id == "agua_suja"
+	if not beber(60.0, Agua.CHANCE_GARRAFA_SUJA if suja else 0.0, "água suja" if suja else "água limpa"):
+		return
+	inventario.remover(id, 1)
+	if inventario.adicionar_parcial("garrafa", 1) > 0:
+		largar_item("garrafa", 1)
+
+
+## Larga 'qtd' de 'id' no chão à frente do jogador (quando não cabe na mochila).
+func largar_item(id: String, qtd: int) -> void:
+	var frente := Vector2.from_angle(face) * (0.9 * IsoMath.METRO)
+	ItemNoChao.largar(get_parent(), global_position + IsoMath.mundo_para_tela(frente), id, qtd)
+
+
+## Acende uma fogueira à frente do jogador (receita "fogueira"). Ela apaga sozinha depois de algumas horas.
+func acender_fogueira() -> void:
+	if dirigindo != null:
+		return
+	inventario.remover("fogueira", 1)
+	var f := Fogueira.new()
+	f.duracao_s = Fogueira.DURACAO_ACESA
+	var frente := Vector2.from_angle(face) * (0.8 * IsoMath.METRO)
+	f.position = global_position + IsoMath.mundo_para_tela(frente)
+	get_parent().add_child(f)
+	aviso("Você acendeu uma fogueira. Ela faz luz e chama atenção.")
 
 
 ## Larga 'qtd' (0 = tudo) do slot no chão, à frente do jogador.
@@ -576,6 +655,7 @@ func definir_raca(r: String, reiniciar: bool = true) -> void:
 	if reiniciar:
 		vida = vida_max
 		fome = 100.0
+		sede = 100.0
 		sol = 0.0
 		doenca = {}
 		inventario.inicial()
@@ -676,12 +756,17 @@ func infectar(origem: String) -> void:
 			aviso("Infecção zumbi contraída. A transformação ou morte pode ocorrer em 24h.")
 
 
-## Sintomas por estágio (RECURSO NOVO: a V13 só conta o estágio). Por doença, um quádruplo por estágio 0–3:
-## [recuperação do fôlego ×, velocidade ×, fome ×, vida perdida por segundo].
+## Sintomas por estágio (RECURSO NOVO: a V13 só conta o estágio). Por doença, cinco fatores por estágio 0–3:
+## [recuperação do fôlego ×, velocidade ×, fome ×, vida perdida por segundo, sede ×].
 const SINTOMAS := {
-	"Leptospirose": [[1.0, 1.0, 1.0, 0.0], [0.8, 1.0, 1.0, 0.0], [0.6, 0.92, 1.2, 0.0], [0.45, 0.85, 1.3, 0.12]],
-	"Mutação vampírica": [[1.0, 1.0, 1.0, 0.0], [1.0, 1.0, 1.3, 0.0], [0.85, 1.0, 1.6, 0.0], [0.75, 1.0, 2.0, 0.05]],
-	"Infecção zumbi": [[1.0, 1.0, 1.0, 0.0], [0.9, 0.95, 1.2, 0.0], [0.75, 0.9, 1.5, 0.0], [0.6, 0.85, 1.8, 0.1]],
+	"Leptospirose": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.8, 1.0, 1.0, 0.0, 1.1], [0.6, 0.92, 1.2, 0.0, 1.2],
+		[0.45, 0.85, 1.3, 0.12, 1.3]],
+	"Mutação vampírica": [[1.0, 1.0, 1.0, 0.0, 1.0], [1.0, 1.0, 1.3, 0.0, 1.0], [0.85, 1.0, 1.6, 0.0, 1.0],
+		[0.75, 1.0, 2.0, 0.05, 1.0]],
+	"Infecção zumbi": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.9, 0.95, 1.2, 0.0, 1.0], [0.75, 0.9, 1.5, 0.0, 1.0],
+		[0.6, 0.85, 1.8, 0.1, 1.0]],
+	"Disenteria": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.9, 1.0, 1.0, 0.0, 1.6], [0.8, 0.95, 1.1, 0.0, 2.0],
+		[0.7, 0.9, 1.2, 0.05, 2.5]],
 }
 const AVISOS_ESTAGIO := {
 	"Leptospirose": ["", "Febre e dores: o fôlego volta mais devagar.", "Febre alta: você está mais lento.",
@@ -690,10 +775,12 @@ const AVISOS_ESTAGIO := {
 		"A mutação está quase completa. Encontre um antídoto!"],
 	"Infecção zumbi": ["", "Pele fria e passos pesados.", "Músculos rígidos: você está mais lento e faminto.",
 		"A infecção está tomando seu corpo."],
+	"Disenteria": ["", "Cólicas: você está perdendo líquido e a sede aumenta.",
+		"Diarreia forte: a sede dispara e você está mais fraco.", "Desidratação: a disenteria está consumindo sua vida."],
 }
 
 
-## Fator do sintoma 'i' (0 fôlego, 1 velocidade, 2 fome, 3 vida/s) no estágio atual; 1 (ou 0) sem doença.
+## Fator do sintoma 'i' (0 fôlego, 1 velocidade, 2 fome, 3 vida/s, 4 sede) no estágio atual; 1 (ou 0) sem doença.
 func sintoma(i: int) -> float:
 	if doenca.is_empty() or not SINTOMAS.has(doenca.tipo):
 		return 0.0 if i == 3 else 1.0
@@ -716,7 +803,9 @@ func _atualizar_doenca(delta: float) -> void:
 	vida = maxf(0.0, vida - sintoma(3) * delta)
 	if doenca.horas > 0.0:
 		return
-	if doenca.tipo == "Leptospirose":
+	if doenca.tipo == "Disenteria":
+		aviso("A disenteria passou. Beba água limpa.")
+	elif doenca.tipo == "Leptospirose":
 		if randf() < 0.7:
 			vida = 0.0
 			aviso("A leptospirose foi fatal.")
@@ -744,6 +833,8 @@ func texto_doenca() -> String:
 		sintomas.append("velocidade −%d%%" % roundi((1.0 - sintoma(1)) * 100.0))
 	if sintoma(2) > 1.0:
 		sintomas.append("fome +%d%%" % roundi((sintoma(2) - 1.0) * 100.0))
+	if sintoma(4) > 1.0:
+		sintomas.append("sede +%d%%" % roundi((sintoma(4) - 1.0) * 100.0))
 	if sintoma(3) > 0.0:
 		sintomas.append("perdendo vida")
 	if _sente_sol() and raca != "vampire":
@@ -770,6 +861,9 @@ func usar_antibiotico() -> void:
 		else:
 			_aliviar(12.0)
 			aviso("Um antibiótico reduziu os sintomas e prolongou o prazo em 12h.")
+	elif doenca.tipo == "Disenteria":
+		doenca = {}
+		aviso("O antibiótico curou a disenteria.")
 	elif doenca.tipo == "Mutação vampírica":
 		_aliviar(6.0)                          # só o antídoto dos ninhos de morcegos cura
 		aviso("O antibiótico só retardou a mutação (+6h). Procure um antídoto em ninhos de morcegos.")
@@ -801,7 +895,7 @@ func usar_antidoto() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome,
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede,
 		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
@@ -816,6 +910,7 @@ func restaurar(d: Dictionary) -> void:
 	vida_max = vida_max_atual()
 	vida = clampf(float(d.get("vida", vida_max)), 1.0, vida_max)
 	fome = float(d.get("fome", 100.0))
+	sede = float(d.get("sede", 100.0))
 	stamina = float(d.get("stamina", stamina_max))
 	sol = float(d.get("sol", 0.0))
 	doenca = (d.get("doenca", {}) as Dictionary).duplicate()

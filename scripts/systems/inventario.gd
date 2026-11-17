@@ -176,6 +176,10 @@ func usar(i: int) -> void:
 			jogador.usar_antidoto()
 		"totem":
 			jogador.territorio.colocar_totem(i)
+		"agua_suja", "agua_limpa":
+			jogador.beber_garrafa(x.id)
+		"fogueira":
+			jogador.acender_fogueira()
 
 
 func fabricar(id: String) -> void:
@@ -206,5 +210,7 @@ func inicial() -> void:
 	empilhar(slots, "madeira", 5)
 	empilhar(slots, "sucata", 3)
 	empilhar(slots, "comida", 2)
+	empilhar(slots, "agua_limpa", 1)
+	empilhar(slots, "garrafa", 1)
 	equipado = -1
 	mudou.emit()
