@@ -19,8 +19,8 @@ const DADOS := {
 	"areal": {"nome": "Areal", "tipo": "povoado", "area": "Areal"},
 }
 
-## Local padrão sugerido por origem (o resto começa em Porto Atlântico).
-const PADRAO := {}
+## Local sugerido (pré-selecionado) por origem na tela de criação; o jogador pode escolher outro.
+const PADRAO := {"policial": "porto_atlantico", "mecanico": "areal", "enfermeiro": "baia_dourada", "mestre_obras": "cruz_almas"}
 
 ## Usos de prédio onde se pode nascer: casa (sem uso) e apartamentos.
 const USOS_DE_MORAR := ["", "casa", "apartamentos"]
