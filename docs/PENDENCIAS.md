@@ -43,7 +43,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 1. Rodada de perguntas de design (Q35–Q56) → `docs/DECISOES_DESIGN.md`, seção "Marco 2".
   **Etapa 2a** (Vila dos Pescadores + Acampamento Santuário do Sol; termina com playtest):
   - 🔄 2. Locais de início sem comunidade, cama fabricável e tela de respawn com o mapa (camas + lugares de início).
-    - ✅ 2a. Início em Porto Atlântico, Baía Dourada, São Jorge, Cruz das Almas, Cruzeiro e Areal (commit abaixo).
+    - ✅ 2a. Início em Porto Atlântico, Baía Dourada, São Jorge, Cruz das Almas, Cruzeiro e Areal (`e03c8ea`).
     - ⬜ 2b. Cama fabricável e tela de respawn.
   - ⬜ 3. Dados de comunidades e NPCs (arquivos de dados), NPCs no mundo com sprite provisório, rotina pelas fases e portões.
   - ⬜ 4. Rascunho dos NPCs das duas comunidades (nome, história, personalidade, falas) para o Victor revisar.
