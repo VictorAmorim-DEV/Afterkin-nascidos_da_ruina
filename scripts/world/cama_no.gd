@@ -1,7 +1,8 @@
 class_name CamaNo
 extends Node2D
 ## Cama montada pelo jogador (Respawn): estrado de madeira com colchão de pano, 1 × 2 m, desenhada com polígonos e
-## sem colisão (como o abrigo). Ponto de renascimento; E perto dela recolhe de volta para a mochila.
+## sem colisão (como o abrigo). Ponto de renascimento. E perto dela abre o MenuCama: deitar e descansar, deitar e
+## dormir, ou recolher de volta para a mochila.
 
 const M := IsoMath.METRO
 const VPM := 30.3                     ## px de tela por metro de altura (o mesmo do AbrigoNo)
@@ -69,7 +70,10 @@ func prioridade_interacao() -> int:
 
 
 func texto_interacao() -> String:
-	return "E — recolher a cama" if _e_o_alvo() else ""
+	var j := _jogador()
+	if j == null or j.descansando != null:
+		return ""
+	return "E — cama (descansar, dormir, recolher)" if _e_o_alvo() else ""
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -78,7 +82,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().get_nodes_in_group("item_chao").any(func(i): return i.texto_interacao() != ""):
 		return                                   # item no chão tem prioridade
 	var j := _jogador()
-	if j == null or not "inventario" in j or j.dirigindo != null or j.morto:
+	if j == null or not "inventario" in j or j.dirigindo != null or j.morto or j.descansando != null or j.dormindo:
 		return
 	get_viewport().set_input_as_handled()
-	Respawn.recolher(j, self)
+	var menu := MenuCama.new()
+	menu.cama = self
+	get_tree().current_scene.add_child(menu)

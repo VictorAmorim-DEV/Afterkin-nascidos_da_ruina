@@ -281,3 +281,9 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
     dentro de um prédio ou do abrigo; até 5 camas; E perto dela recolhe. Ao morrer, a mochila inteira fica no chão
     (aparece no mapa como "M") e abre a tela de respawn; renasce com vida cheia, fome e sede em 70, sem doença e de
     mochila vazia.
+- **Cansaço e cama** (pedido de 18/11/2026): E na cama abre um menu com **Deitar e descansar** (o tempo corre normal,
+  o descanso volta aos poucos; mexer-se levanta), **Deitar e dormir** (passam 6–7 h de jogo, descanso 100%; fome e
+  sede caem no ritmo do sono, 60%) e **Recolher**. Com inimigo acordado a menos de 14 m não dá para deitar; com
+  descanso acima de 90 você "não está com sono". O **descanso** (100 = descansado) cai ~5 por hora acordado (+60%
+  correndo) e limita até onde o fôlego recarrega: ≥70 → 100%, ≥50 → 80%, ≥30 → 60%, ≥15 → 40%, abaixo → 15%
+  ("esgotado"). Na cama, volta ~14 por hora. Valores provisórios, para o playtest.

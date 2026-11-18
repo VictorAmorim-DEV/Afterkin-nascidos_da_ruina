@@ -32,6 +32,13 @@ const DIRECOES: Array[String] = ["frente", "lado", "costas"]
 @export var sede_correndo: float = 0.3        ## +30% de sede correndo
 @export var folego_no_calor: float = 0.3      ## correr no calor máximo gasta +30% de fôlego
 
+@export_group("Cansaço (por hora de jogo)")
+## Descanso 100 = descansado. Acordado, zera em ~20 h de jogo (meio dia real); quanto mais cansado, menos o fôlego
+## recarrega (TETOS_FOLEGO). Deitar e descansar na cama recupera aos poucos; dormir recupera tudo (6–7 h).
+@export var cansaco_por_hora: float = 5.0
+@export var cansaco_correndo: float = 0.6     ## +60% de cansaço correndo
+@export var descanso_na_cama: float = 14.0    ## quanto volta por hora deitado descansando na cama
+
 @export_group("Pulo")
 @export var impulso_pulo: float = 260.0
 @export var gravidade: float = 900.0
@@ -74,6 +81,9 @@ var local_inicio: String = ""            ## onde estava quando tudo começou (In
 var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
 var _tiro_t: float = 0.0                 ## tempo restante do estampido do último tiro (barulho)
 var morto: bool = false
+var descanso: float = 100.0              ## 100 = descansado; cai acordado e limita o teto do fôlego
+var descansando: Node2D = null           ## cama onde está deitado descansando (null = não está)
+var dormindo: bool = false
 var dirigindo: Node2D = null             ## veículo que está dirigindo (o jogador fica escondido)
 var territorio: Territorio
 var raca: String = "human"               ## human, rat, vampire ou zombie (V13: player.race)
@@ -206,6 +216,11 @@ func texto_furtividade() -> String:
 func _unhandled_input(event: InputEvent) -> void:
 	if dirigindo != null:
 		return                                   # dirigindo: o veículo trata as teclas
+	if descansando != null and (event.is_action_pressed("prone") or event.is_action_pressed("crouch")
+			or event.is_action_pressed("jump") or event.is_action_pressed("interact")):
+		levantar()
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("crouch"):
 		postura = Postura.EM_PE if postura == Postura.AGACHADO else Postura.AGACHADO
 	elif event.is_action_pressed("prone"):
@@ -266,6 +281,11 @@ func _physics_process(delta: float) -> void:
 	var movendo := dir.length_squared() > 0.0001
 	if movendo:
 		dir = dir.normalized()
+	if descansando != null:
+		if movendo:
+			levantar()
+		else:
+			postura = Postura.DEITADO
 
 	# --- mira: o corpo vira para o cursor ---
 	var alvo_face := face
@@ -357,6 +377,27 @@ func nome_postura() -> String:
 	return "Correndo" if correndo else "Em pé"
 
 
+## Faixas de cansaço: [descanso mínimo, teto do fôlego, nome]. Abaixo de 15, esgotado: o fôlego só chega a 15%.
+const TETOS_FOLEGO := [[70.0, 1.0, "Descansado"], [50.0, 0.8, "Cansado"], [30.0, 0.6, "Muito cansado"],
+	[15.0, 0.4, "Exausto"], [0.0, 0.15, "Esgotado"]]
+
+
+func _faixa_cansaco() -> Array:
+	for f in TETOS_FOLEGO:
+		if descanso >= float(f[0]):
+			return f
+	return TETOS_FOLEGO[-1]
+
+
+## Até quanto o fôlego recarrega agora (fração do máximo), pelo cansaço.
+func teto_folego() -> float:
+	return float(_faixa_cansaco()[1])
+
+
+func nome_cansaco() -> String:
+	return str(_faixa_cansaco()[2])
+
+
 func _atualizar_folego(delta: float, rapidez: float) -> void:
 	if correndo:
 		stamina = maxf(0.0, stamina - gasto_correr * (1.0 + folego_no_calor * _calor()) * (1.0 + _carga) * delta)
@@ -373,8 +414,12 @@ func _atualizar_folego(delta: float, rapidez: float) -> void:
 	regen *= sintoma(0)
 	if sede < 20.0:
 		regen *= 0.6                           # desidratado, o fôlego volta mais devagar
-	stamina = minf(stamina_max, stamina + regen * delta)
-	if exausto and stamina >= limite_exaustao:
+	var teto := stamina_max * teto_folego()
+	if stamina > teto:
+		stamina = maxf(teto, stamina - 6.0 * delta)   # mudou de faixa: o fôlego extra se esvai aos poucos
+	else:
+		stamina = minf(teto, stamina + regen * delta)
+	if exausto and stamina >= minf(limite_exaustao, teto * 0.9):
 		exausto = false
 
 
@@ -524,6 +569,7 @@ func _atualizar_vitais(delta: float) -> void:
 	if Dev.sem_necessidades:
 		fome = 100.0
 		sede = 100.0
+		descanso = 100.0
 	if Dev.invencivel:
 		vida = vida_max
 	if Dev.folego_infinito:
@@ -535,6 +581,10 @@ func _atualizar_vitais(delta: float) -> void:
 	_tiro_t = maxf(0.0, _tiro_t - delta)
 	var horas := delta * _min_por_s() / 60.0
 	_atualizar_incubacao(horas)
+	if descansando != null:
+		descanso = minf(100.0, descanso + horas * descanso_na_cama)
+	else:
+		descanso = maxf(0.0, descanso - horas * cansaco_por_hora * (1.0 + (cansaco_correndo if correndo else 0.0)))
 	fome = maxf(0.0, fome - horas * fome_por_hora * sintoma(2))
 	if fome <= 0.0:
 		vida = maxf(0.0, vida - delta * 0.7)
@@ -853,6 +903,8 @@ func renascer() -> void:
 	vida = vida_max
 	fome = 70.0
 	sede = 70.0
+	descanso = 80.0
+	descansando = null
 	stamina = stamina_max
 	exausto = false
 	incubacao_h = -1.0
@@ -860,6 +912,117 @@ func renascer() -> void:
 	doenca = {}
 	visible = true
 	set_physics_process(true)
+
+
+# =====================================================================
+# DESCANSO E SONO NA CAMA (pedido do Victor, 18/11/2026)
+# =====================================================================
+const PERIGO_SONO := 14.0 * IsoMath.METRO     ## inimigo acordado mais perto que isso: não dá para dormir nem descansar
+
+
+## Algum inimigo acordado (ou em alerta) por perto? Os que dormem na casa ao lado não contam.
+func _perigo_perto() -> bool:
+	for i in get_tree().get_nodes_in_group("inimigo"):
+		var e := i as Inimigo
+		if e == null or e.morto or (e.dorme and e.alerta <= 0.0):
+			continue
+		if IsoMath.tela_para_mundo(e.global_position - global_position).length() < PERIGO_SONO:
+			return true
+	return false
+
+
+## Deita na cama e descansa: o tempo corre normal e o descanso volta aos poucos. Mexer-se (ou E) levanta.
+func descansar_na_cama(cama: Node2D) -> void:
+	if _perigo_perto():
+		aviso("Não dá para relaxar com perigo por perto.")
+		return
+	descansando = cama
+	postura = Postura.DEITADO
+	world_vel = Vector2.ZERO
+	global_position = cama.global_position
+	aviso("Você se deita para descansar. Mexa-se para levantar.")
+
+
+func levantar() -> void:
+	if descansando == null:
+		return
+	descansando = null
+	postura = Postura.EM_PE
+	aviso("Você se levanta (%s)." % nome_cansaco().to_lower())
+
+
+## Deita e dorme 6–7 h de jogo: a tela escurece, o relógio avança e o descanso volta a 100%. Fome e sede caem no
+## ritmo do sono (60%); doenças e incubação seguem correndo, mas nada se resolve enquanto você dorme.
+func dormir_na_cama(cama: Node2D) -> void:
+	if dormindo:
+		return
+	if _perigo_perto():
+		aviso("Impossível dormir com perigo por perto.")
+		return
+	if descanso >= 90.0:
+		aviso("Você não está com sono.")
+		return
+	descansando = null
+	dormindo = true
+	postura = Postura.DEITADO
+	world_vel = Vector2.ZERO
+	global_position = cama.global_position
+	var horas := randf_range(6.0, 7.0)
+	var arvore := get_tree()
+	var capa := CanvasLayer.new()
+	capa.layer = 40
+	capa.process_mode = Node.PROCESS_MODE_ALWAYS
+	var preto := ColorRect.new()
+	preto.color = Color(0, 0, 0, 0)
+	preto.set_anchors_preset(Control.PRESET_FULL_RECT)
+	preto.mouse_filter = Control.MOUSE_FILTER_STOP
+	capa.add_child(preto)
+	var texto := Label.new()
+	texto.set_anchors_preset(Control.PRESET_FULL_RECT)
+	texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	texto.add_theme_font_size_override("font_size", 22)
+	texto.modulate = Color(1, 1, 1, 0)
+	capa.add_child(texto)
+	arvore.current_scene.add_child(capa)
+	arvore.paused = true
+	var t := capa.create_tween()
+	t.tween_property(preto, "color:a", 1.0, 1.2)
+	await t.finished
+	_passar_horas_dormindo(horas)
+	texto.text = "Você dormiu %d h %02d min." % [int(horas), int(fmod(horas, 1.0) * 60.0)]
+	var t2 := capa.create_tween()
+	t2.tween_property(texto, "modulate:a", 1.0, 0.5)
+	t2.tween_interval(1.4)
+	t2.tween_property(preto, "color:a", 0.0, 1.0)
+	t2.parallel().tween_property(texto, "modulate:a", 0.0, 0.8)
+	await t2.finished
+	capa.queue_free()
+	arvore.paused = false
+	dormindo = false
+	postura = Postura.EM_PE
+	var ciclo := arvore.get_first_node_in_group("ciclo_dia_noite")
+	aviso("Você acorda descansado. %s" % (ciclo.texto_relogio() if ciclo != null else ""))
+
+
+func _passar_horas_dormindo(horas: float) -> void:
+	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
+	if ciclo != null:
+		ciclo.minutos += horas * 60.0
+		while ciclo.minutos >= 1440.0:
+			ciclo.minutos -= 1440.0
+			ciclo.dia += 1
+	descanso = 100.0
+	stamina = stamina_max
+	exausto = false
+	fome = maxf(0.0, fome - horas * fome_por_hora * 0.6)
+	if raca != "vampire":
+		sede = maxf(0.0, sede - horas * sede_por_hora * 0.6)
+	if incubacao_h >= 0.0:
+		incubacao_h = maxf(0.05, incubacao_h - horas)   # a disenteria aparece logo depois de acordar
+	if not doenca.is_empty():
+		doenca.horas = maxf(0.05, float(doenca.horas) - horas)
+		doenca.estagio = _estagio_doenca(float(doenca.get("total", 48.0)))
 
 
 # =====================================================================
@@ -1147,7 +1310,7 @@ func usar_antidoto() -> void:
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
 	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(),
-		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
+		"stamina": stamina, "descanso": descanso, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
 
@@ -1167,6 +1330,7 @@ func restaurar(d: Dictionary) -> void:
 	incubacao_h = float(d.get("incubacao", -1.0))
 	passo_restaurar(d.get("passos", {}))
 	stamina = float(d.get("stamina", stamina_max))
+	descanso = float(d.get("descanso", 100.0))
 	sol = float(d.get("sol", 0.0))
 	doenca = (d.get("doenca", {}) as Dictionary).duplicate()
 	lanterna_ligada = bool(d.get("lanterna", true))

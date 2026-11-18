@@ -15,6 +15,7 @@ var _preenchimento := StyleBoxFlat.new()
 var _vida_barra := ProgressBar.new()
 var _fome_barra := ProgressBar.new()
 var _sede_barra := ProgressBar.new()
+var _descanso_barra := ProgressBar.new()
 var _vida_texto := Label.new()
 var _saude_texto := Label.new()
 var _sol_tela := TextureRect.new()
@@ -84,7 +85,9 @@ func _process(delta: float) -> void:
 	relogio.text += " · " + ("SEU ESCONDERIJO" if _jogador.territorio.abrigo else "TERRAS ABANDONADAS")
 	folego.max_value = _jogador.stamina_max
 	folego.value = _jogador.stamina
-	folego_texto.text = "FÔLEGO %d%%%s" % [int(_jogador.stamina), " · EXAUSTO" if _jogador.exausto else ""]
+	var teto: float = _jogador.teto_folego()
+	folego_texto.text = "FÔLEGO %d%%%s%s" % [int(_jogador.stamina), " · EXAUSTO" if _jogador.exausto else "",
+		" · recarrega até %d%% (cansaço)" % roundi(teto * 100.0) if teto < 1.0 else ""]
 	if _jogador.exausto:
 		_preenchimento.bg_color = COR_EXAUSTO
 	elif _jogador.correndo:
@@ -103,9 +106,11 @@ func _process(delta: float) -> void:
 	_vida_barra.value = _jogador.vida
 	_fome_barra.value = _jogador.fome
 	_sede_barra.value = _jogador.sede
+	_descanso_barra.value = _jogador.descanso
 	var forma: String = " · FORMA RATO" if _jogador.forma_rato() else ""
-	_vida_texto.text = "%s%s\nVIDA %d/%d · FOME %d%% · SEDE %d%%" % [_jogador.NOMES_RACA[_jogador.raca].to_upper(),
-		forma, ceili(_jogador.vida), int(_jogador.vida_max), int(_jogador.fome), int(_jogador.sede)]
+	_vida_texto.text = "%s%s\nVIDA %d/%d · FOME %d%% · SEDE %d%% · DESCANSO %d%% (%s)" % [
+		_jogador.NOMES_RACA[_jogador.raca].to_upper(), forma, ceili(_jogador.vida), int(_jogador.vida_max),
+		int(_jogador.fome), int(_jogador.sede), int(_jogador.descanso), _jogador.nome_cansaco().to_lower()]
 	var doente: bool = not _jogador.doenca.is_empty()
 	_saude_texto.text = "SAÚDE: " + _jogador.texto_doenca()
 	if _jogador.raca == "vampire":
@@ -160,6 +165,8 @@ func _montar_vitais() -> void:
 	_fome_barra.max_value = 100.0
 	_barra(_sede_barra, Color(0.35, 0.62, 0.9))
 	_sede_barra.max_value = 100.0
+	_barra(_descanso_barra, Color(0.62, 0.52, 0.82))
+	_descanso_barra.max_value = 100.0
 	_saude_texto.add_theme_font_size_override("font_size", 13)
 	_saude_texto.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	_saude_texto.add_theme_constant_override("outline_size", 4)
@@ -182,7 +189,7 @@ func _montar_vitais() -> void:
 	_sol_tela.visible = false
 	add_child(_sol_tela)
 	move_child(_sol_tela, 0)
-	for n in [_vida_texto, _vida_barra, _fome_barra, _sede_barra, _saude_texto]:
+	for n in [_vida_texto, _vida_barra, _fome_barra, _sede_barra, _descanso_barra, _saude_texto]:
 		painel.add_child(n)
 		painel.move_child(n, painel.get_child_count() - 2)     # antes da linha de ajuda
 	pass

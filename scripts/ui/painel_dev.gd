@@ -208,6 +208,7 @@ func _mudar_velocidade(i: int) -> void:
 func _curar() -> void:
 	var j := _j()
 	j.vida = j.vida_max
+	j.descanso = 100.0
 	j.fome = 100.0
 	j.sede = 100.0
 	j.doenca = {}
