@@ -41,7 +41,7 @@ const AREAS := [
 	{"m": Vector2(698, 316), "nx": 1, "ny": 1, "nome": "Recanto dos Ipês", "cat": "povoado"},
 	{"m": Vector2(786, 648), "nx": 1, "ny": 1, "nome": "Posto da Estrada", "cat": "povoado"},
 	{"m": Vector2(917, 724), "nx": 1, "ny": 1, "nome": "Mirante do Vale", "cat": "povoado"},
-	{"m": Vector2(1153, 711), "nx": 1, "ny": 1, "nome": "Areal", "cat": "povoado"},
+	{"m": Vector2(1153, 711), "nx": 2, "ny": 1, "nome": "Areal", "cat": "povoado"},
 	{"m": Vector2(343, 990), "nx": 1, "ny": 1, "nome": "Vila do Delta", "cat": "povoado"},
 ]
 const CIDADE := Rect2(168.0 * 192.0, 488.0 * 192.0, 7.0 * 3072.0 + 512.0, 5.0 * 3072.0 + 512.0)   ## = area_rect(0)

@@ -6,21 +6,21 @@ extends RefCounted
 ## bom continuar exigindo uma incursão pela cidade.
 ## O começo é seguro: o prédio (ou o acampamento) nasce sem inimigos, às 08:00. O perigo fica do lado de fora.
 
-const IDS: Array[String] = ["porto_atlantico", "baia_dourada", "sao_jorge", "vila_nova_serra", "vila_rocas",
-	"acampamento"]
+## Onde há comunidade (marco 2) não se começa nem renasce: o jogador precisa chegar até ela (DECISOES_DESIGN, Q55).
+const IDS: Array[String] = ["porto_atlantico", "baia_dourada", "sao_jorge", "cruz_almas", "cruzeiro", "areal"]
 
 ## "area" = nome em MundoGen.AREAS; "vilarejo" = nome em MundoGen.VILAREJOS; "acampamento" = nome do acampamento.
 const DADOS := {
 	"porto_atlantico": {"nome": "Porto Atlântico", "tipo": "cidade grande", "area": "Porto Atlântico"},
 	"baia_dourada": {"nome": "Baía Dourada", "tipo": "cidade grande", "area": "Baía Dourada"},
 	"sao_jorge": {"nome": "São Jorge", "tipo": "cidade", "area": "São Jorge"},
-	"vila_nova_serra": {"nome": "Vila Nova da Serra", "tipo": "vilarejo", "vilarejo": "Vila Nova da Serra"},
-	"vila_rocas": {"nome": "Vila das Roças", "tipo": "vilarejo", "vilarejo": "Vila das Roças"},
-	"acampamento": {"nome": "Santuário do Sol", "tipo": "acampamento", "acampamento": "Acampamento Santuário do Sol"},
+	"cruz_almas": {"nome": "Cruz das Almas", "tipo": "cidade", "area": "Cruz das Almas"},
+	"cruzeiro": {"nome": "Cruzeiro", "tipo": "cidade", "area": "Cruzeiro"},
+	"areal": {"nome": "Areal", "tipo": "povoado", "area": "Areal"},
 }
 
 ## Local padrão sugerido por origem (o resto começa em Porto Atlântico).
-const PADRAO := {"mestre_obras": "acampamento"}
+const PADRAO := {}
 
 ## Usos de prédio onde se pode nascer: casa (sem uso) e apartamentos.
 const USOS_DE_MORAR := ["", "casa", "apartamentos"]

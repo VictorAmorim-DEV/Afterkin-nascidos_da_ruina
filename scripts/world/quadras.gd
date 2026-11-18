@@ -43,7 +43,7 @@ const PAPEIS_AREAS := [PAPEIS,
 	{Vector2i(0, 0): "posto", Vector2i(1, 0): "casas"},                                               # Poeira
 	{Vector2i(0, 0): "militar"},                                                                       # Forte do Leste
 	{Vector2i(0, 0): "casas"}, {Vector2i(0, 0): "posto"}, {Vector2i(0, 0): "casas"},
-	{Vector2i(0, 0): "comercial_oficina"}, {Vector2i(0, 0): "casas"}]
+	{Vector2i(0, 0): "comercial_oficina", Vector2i(1, 0): "casas"}, {Vector2i(0, 0): "casas"}]   # Areal, Vila do Delta
 
 ## Rua secundária N–S no meio dos quarteirões "casas_dividida" (V13: quadraResidencialDividida, via 's'):
 ## tiles [SEC_X0, SEC_X0 + SEC_LARG) do miolo; calçadas como as das ruas principais e asfalto mais estreito.

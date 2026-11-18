@@ -271,7 +271,9 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 
 ### Rodada 6 (Q55–Q56)
 - **Q55. Pontos de respawn padrão = os lugares de início** (casa sorteada dentro do lugar). **Onde há comunidade não é
-  ponto de início nem de respawn**: o jogador precisa ir até ela e descobri-la. Vila Nova da Serra e Santuário do Sol
-  saem da lista de início; os substitutos (e o novo início padrão do Mestre de Obras) ficam a definir pelo Victor.
+  ponto de início nem de respawn**: o jogador precisa ir até ela e descobri-la. **Lugares de início (18/11/2026):**
+  Porto Atlântico, Baía Dourada, São Jorge, Cruz das Almas, Cruzeiro e Areal (saíram Vila Nova da Serra, Vila das
+  Roças e o Acampamento Santuário do Sol). Sem início padrão por origem: todos sugerem Porto Atlântico. O Areal ganhou
+  um quarteirão de casas ao lado da oficina para ter onde nascer.
 - **Q56. Cama: fabricar e colocar** (tábuas + pano/colchão do loot), dentro de um lugar coberto; pode haver várias; o
   Mestre de Obras faz mais barato; no marco 6 pode ser destruída num cerco.
