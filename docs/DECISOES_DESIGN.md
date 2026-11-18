@@ -189,3 +189,89 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
    ferver → lugar seguro antes de escurecer → sobreviver à primeira noite), com dica de tecla só na primeira vez.
    Opção de pular e chave no menu. A lista vira a primeira página do diário (Q24, marco 3).
 6. Ordem: nomes → início → prólogo e primeiros passos → mapa.
+
+---
+
+## Marco 2 — Comunidade e rumores (entrevista a partir de 18/11/2026)
+
+### Rodada 1 (Q35–Q38)
+- **Q35. Rede de comunidades, não uma só.** Os acampamentos têm comunidades menores e os vilarejos, maiores; as
+  **cidades são zona perigosa de exploração**, com sobreviventes soltos que o jogador pode ajudar, roubar ou matar.
+  Cada comunidade pode ter um forte (agricultura, caça, pesca...) e sempre tem guardas.
+  - **Comunidades:** vilarejos **Vila Nova da Serra**, **Vila dos Pescadores** e **Rancho do Cânion**; acampamentos
+    **Lago da Águia**, **Santuário do Sol** e **Mangue Vermelho** (o **covil dos Assassinos**: saqueiam a cidade e
+    atacam quem está explorando; ameaça humana de dia, que ocupa o lugar da infâmia adiada).
+  - **As comunidades se comunicam:** rumores de uma apontam especialistas, necessidades e conflitos de outra (ex.: no
+    acampamento X falam de um mestre de Medicina no vilarejo Y, que por sua vez precisa de um mecânico do acampamento
+    Z). Relações entre comunidades (parcerias, acordos, conflitos de interesse) mudam com os eventos e com o que o
+    jogador faz, no espírito de roleplay. Os especialistas podem estar numa comunidade ou noutra.
+  - **Conteúdo em camadas, sistema completo:** comunidades, NPCs, relações, rumores e diálogos ficam em **arquivos
+    de dados**, para que uma comunidade nova seja só escrever dados.
+    - **2a** (vai para o playtest): um vilarejo e um acampamento completos, ligados por uma parceria em aberto (o
+      mestre de Medicina numa, a necessidade na outra), mais 2–3 tipos de sobrevivente errante na cidade.
+    - **2b**: Mangue Vermelho (Assassinos) e as demais comunidades.
+- **Q36. 5–10 NPCs com nome por comunidade** (mais figurantes sem diálogo), podendo crescer no futuro.
+- **Q37. Árvore de diálogo** para os NPCs principais, com condições (reputação, hora, rumores conhecidos, origem) e
+  consequências (reputação, novos rumores, relação entre comunidades); figurantes só com falas curtas.
+- **Q38. Especialização do marco 2: Medicina** (prepara a cura do marco 3).
+
+### Rodada 2 (Q39–Q42)
+- **Q39. Etapa 2a: Vila dos Pescadores + Acampamento Santuário do Sol.** É só o ponto de partida para testar.
+  **O objetivo é um ecossistema vivo**, não roteiro fixo: as comunidades têm necessidades e decidem sozinhas (ex.: alguém
+  volta ferido da cidade, o acampamento não tem quem saiba Medicina → vão buscar ajuda na comunidade que tem médico →
+  depois tentam aprender Medicina, fazer parceria etc.). A parceria inicial da 2a é só a primeira situação; as
+  seguintes nascem da simulação.
+- **Q40. Reputação por testemunha e boato.** Cada NPC **lembra o que viu ou ouviu** de você, dentro ou fora da comunidade.
+  Ninguém viu = ninguém sabe (matar alguém sem testemunha não afeta a reputação; se uma testemunha escapar, ela conta).
+  O NPC espalha o que sabe na comunidade dele, e a **reputação da comunidade** (−100 a +100) sobe ou desce conforme o
+  boato corre; a **reputação humana geral** leva esses boatos às comunidades aliadas, com atraso e mais fraco.
+- **Q41. Escambo em duas colunas + balança:** mochila de um lado, estoque do NPC do outro, itens arrastados para o meio;
+  a balança diz "aceita / quer mais / recusa", sem números de preço (valor por escassez, saturação e demanda, Q22/Q30).
+- **Q42. Sobreviventes soltos na cidade:** pedem ajuda, trocam, podem ser ameaçados/roubados/mortos, alguns são hostis
+  (saqueadores; na 2b, Assassinos) e **alguns estão em combate**: ajudar rende agradecimento, recompensa, reputação por
+  boato e até **convite para uma comunidade ou clã**; o jogador também pode **convidar** sobreviventes para uma
+  comunidade ou clã.
+
+### Rodada 3 (Q43–Q46)
+- **Q43. Simulação abstrata longe, real perto.** Cada comunidade tem membros, habilidades, estoque, necessidades e
+  relações; a cada hora de jogo decide ações (expedição, pedir ajuda, trocar, aprender) e sorteia o resultado com
+  risco. Perto do jogador, os NPCs aparecem e agem de verdade (caravana na estrada, grupo saqueando um prédio).
+- **Q44. NPCs com nome morrem de vez, e a comunidade se refaz:** sente a perda (habilidade, estoque, relações) e com o
+  tempo acolhe errantes. Se o mestre de Medicina morre, a Medicina some dali até alguém aprender.
+- **Q45. Convidar = encaminhar o sobrevivente para uma comunidade** (ela cresce, você ganha reputação lá).
+  Companheiros que te seguem e um clã próprio ficam para o marco 6, com a base.
+- **Q46. Arte dos NPCs: o Victor traz folhas de sprite novas**; eu preparo recorte e animações. Até chegarem, os NPCs
+  usam o humano atual como provisório.
+
+### Rodada 4 (Q47–Q50)
+- **Q47. Rumores chegam por todos os canais:** conversa com NPCs (o que ele conta depende da reputação e do que ele viu
+  ou ouviu), conversas ouvidas entre NPCs, bilhetes no loot e mural de recados em cada comunidade, e rádio
+  (transmissões de outras comunidades em certas horas).
+- **Q48. A cadeia para aprender Medicina nasce da necessidade:** o mestre pede coisas ligadas ao que a comunidade dele
+  precisa naquele momento (remédios do hospital, salvar um ferido, trazer um livro), escolhidas pela simulação;
+  exige reputação mínima para começar.
+- **Q49. Na comunidade onde é bem-vindo, o jogador pode:** dormir em segurança com os portões fechados, usar a
+  estrutura (fogueira, água limpa, bancada, enfermaria; pagando ou por reputação) e trabalhar por reputação (vigiar o
+  portão, ajudar na pesca/roça). Baú próprio na comunidade: não.
+- **Q50. Escrita:** Claude rascunha os NPCs (nome, história, personalidade, falas) num arquivo de dados legível e o
+  Victor revisa, corta e aprova.
+
+### Rodada 5 (Q51–Q54)
+- **Q51. Comunidade não é ponto de respawn.** Ao morrer, abre uma **tela de respawn com o mapa ao lado** (como a tela
+  de início, sem escolher a origem de novo) para escolher entre as **camas que o jogador construiu** e os **pontos de
+  respawn padrão do mapa**. A mochila continua ficando no corpo.
+- **Q52. Reputação muito baixa:** portão fechado (só se fala pelo portão), trocas piores e mestres que não ensinam;
+  **redenção possível** (tarefas, presentes, ajudar aliados; o boato bom também corre). Sem caçada/hostilidade ativa
+  das comunidades no marco 2.
+- **Q53. A origem muda só falas e opções** do diálogo (o Enfermeiro oferece ajuda médica, o Policial usa a autoridade)
+  e a primeira impressão; sem bônus fixo de reputação.
+- **Q54. Para os testadores:** arquivo de eventos automático em `user://` (mortes, trocas, reputação, tempo em cada
+  lugar), botão para exportar o diário da partida em texto e uma ferramenta de resumo visual (mapa de mortes, rotas,
+  tempos) que lê esses arquivos.
+
+### Rodada 6 (Q55–Q56)
+- **Q55. Pontos de respawn padrão = os lugares de início** (casa sorteada dentro do lugar). **Onde há comunidade não é
+  ponto de início nem de respawn**: o jogador precisa ir até ela e descobri-la. Vila Nova da Serra e Santuário do Sol
+  saem da lista de início; os substitutos (e o novo início padrão do Mestre de Obras) ficam a definir pelo Victor.
+- **Q56. Cama: fabricar e colocar** (tábuas + pano/colchão do loot), dentro de um lugar coberto; pode haver várias; o
+  Mestre de Obras faz mais barato; no marco 6 pode ser destruída num cerco.

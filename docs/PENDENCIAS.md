@@ -39,8 +39,25 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     - ✅ 7k. Voo do modo desenvolvedor com 4×, 8×, 10× e 16×.
     - ✅ 7l. Disenteria: fase aguda curta e efeito prolongado (36 h) até passar ou até um antibiótico.
     - ✅ 7m. Mapa da tela inicial demorava ~5,6 s para gerar: agora vem de um cache em disco (user://).
-- ⬜ Marco 2 — Comunidade e rumores: NPCs, escambo (escassez/saturação/demanda), reputação, uma especialização, log de eventos.
-  **Próximo passo:** começar o marco 2 por uma rodada de perguntas de design (como a entrevista do GDD), antes de programar.
+- 🔄 Marco 2 — Comunidade e rumores: NPCs, escambo (escassez/saturação/demanda), reputação, uma especialização, log de eventos.
+  - ✅ 1. Rodada de perguntas de design (Q35–Q56) → `docs/DECISOES_DESIGN.md`, seção "Marco 2".
+  **Etapa 2a** (Vila dos Pescadores + Acampamento Santuário do Sol; termina com playtest):
+  - ⬜ 2. Locais de início sem comunidade (tirar Vila Nova da Serra e Santuário do Sol; substitutos a definir pelo
+    Victor), cama fabricável e tela de respawn com o mapa (camas + lugares de início).
+  - ⬜ 3. Dados de comunidades e NPCs (arquivos de dados), NPCs no mundo com sprite provisório, rotina pelas fases e portões.
+  - ⬜ 4. Rascunho dos NPCs das duas comunidades (nome, história, personalidade, falas) para o Victor revisar.
+  - ⬜ 5. Diálogo em árvore (condições: reputação, hora, rumores, origem; consequências).
+  - ⬜ 6. Memória dos NPCs (testemunhas e boatos) → reputação por comunidade e humana geral, com atraso entre aliadas.
+  - ⬜ 7. Escambo em duas colunas + balança (escassez, saturação, demanda).
+  - ⬜ 8. Simulação abstrata das comunidades (necessidades, decisões, expedições), real perto do jogador.
+  - ⬜ 9. Rumores por conversa, conversas ouvidas, mural/bilhetes e rádio, marcando regiões no mapa.
+  - ⬜ 10. Sobreviventes errantes na cidade (pedem ajuda, trocam, roubar/matar, hostis, em combate, encaminhar).
+  - ⬜ 11. Medicina: mestre, cadeia gerada pela necessidade, habilidades.
+  - ⬜ 12. Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa.
+  - ⬜ 13. Log de eventos em user://, exportar o diário e ferramenta de resumo visual.
+  - ⬜ 14. Playtest da 2a.
+  **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.
+  - ⬜ Sprites novos dos NPCs (o Victor traz as folhas; eu recorto e animo).
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.
 - ⬜ Marco 5 — Ninho e Vampiro Ancestral: prédio-ninho, chefe, três desfechos.
