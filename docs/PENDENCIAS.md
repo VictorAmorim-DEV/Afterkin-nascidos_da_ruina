@@ -44,7 +44,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   **Etapa 2a** (Vila dos Pescadores + Acampamento Santuário do Sol; termina com playtest):
   - ✅ 2. Locais de início sem comunidade, cama fabricável e tela de respawn com o mapa (camas + lugares de início).
     - ✅ 2a. Início em Porto Atlântico, Baía Dourada, São Jorge, Cruz das Almas, Cruzeiro e Areal (`e03c8ea`).
-    - ✅ 2b. Cama fabricável e tela de respawn (commit abaixo).
+    - ✅ 2b. Cama fabricável e tela de respawn (`2894619`).
   - ⬜ 3. Dados de comunidades e NPCs (arquivos de dados), NPCs no mundo com sprite provisório, rotina pelas fases e portões.
   - ⬜ 4. Rascunho dos NPCs das duas comunidades (nome, história, personalidade, falas) para o Victor revisar.
   - ⬜ 5. Diálogo em árvore (condições: reputação, hora, rumores, origem; consequências).
