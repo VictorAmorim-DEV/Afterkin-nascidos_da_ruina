@@ -277,3 +277,7 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   um quarteirão de casas ao lado da oficina para ter onde nascer.
 - **Q56. Cama: fabricar e colocar** (tábuas + pano/colchão do loot), dentro de um lugar coberto; pode haver várias; o
   Mestre de Obras faz mais barato; no marco 6 pode ser destruída num cerco.
+  - Implementação (valores provisórios): receita 6 madeira + 3 panos (pano no guarda-roupa e na cômoda); monta-se
+    dentro de um prédio ou do abrigo; até 5 camas; E perto dela recolhe. Ao morrer, a mochila inteira fica no chão
+    (aparece no mapa como "M") e abre a tela de respawn; renasce com vida cheia, fome e sede em 70, sem doença e de
+    mochila vazia.

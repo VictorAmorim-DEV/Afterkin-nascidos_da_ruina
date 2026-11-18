@@ -828,15 +828,38 @@ func receber_dano(n: float, quem: String = "") -> void:
 	create_tween().tween_property(sprite, "modulate", Color.WHITE, 0.25)
 
 
+## Morte do humano (Q7, Q51): a mochila fica no corpo e, depois de alguns segundos, abre a TelaRespawn (cama ou
+## lugar de início). O mundo continua como está. A morte infectada (acordar transformado) é do marco 3.
 func _morrer() -> void:
+	if dirigindo != null and dirigindo.has_method("sair"):
+		dirigindo.sair()
 	morto = true
-	SelecaoRaca.titulo_proximo = "Você não sobreviveu"
+	world_vel = Vector2.ZERO
+	velocity = Vector2.ZERO
+	Respawn.largar_mochila(self)
 	aviso("Você morreu. O mundo continua sem você.")
 	set_physics_process(false)
 	sprite.animation = &"caido"
 	sprite.frame = 0
 	await get_tree().create_timer(3.0).timeout
-	get_tree().reload_current_scene()
+	get_tree().current_scene.add_child(TelaRespawn.new())
+
+
+## Volta à vida depois da TelaRespawn (quem escolhe o lugar e teleporta é o Respawn). Acorda com a vida cheia,
+## com alguma fome e sede, sem doença e sem nada na mochila.
+func renascer() -> void:
+	morto = false
+	vida_max = vida_max_atual()
+	vida = vida_max
+	fome = 70.0
+	sede = 70.0
+	stamina = stamina_max
+	exausto = false
+	incubacao_h = -1.0
+	sol = 0.0
+	doenca = {}
+	visible = true
+	set_physics_process(true)
 
 
 # =====================================================================

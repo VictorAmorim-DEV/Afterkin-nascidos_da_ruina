@@ -24,6 +24,9 @@ const DB := {
 	"municao": {"nome": "Munição", "stack": 30, "peso": 0.012, "desc": "Bala de pistola. Rara."},
 	"fogueira": {"nome": "Fogueira", "stack": 2, "peso": 2.0, "uso": true,
 		"desc": "Use para acender à sua frente. Ferve água suja, mas faz luz e barulho. Apaga em ~3 h de jogo."},
+	"pano": {"nome": "Pano", "stack": 16, "peso": 0.15, "desc": "Lençol, cortina ou roupa velha. Serve para fazer uma cama."},
+	"cama": {"nome": "Cama", "stack": 1, "peso": 4.0, "uso": true,
+		"desc": "Use dentro de uma casa ou do seu abrigo para montá-la. Quando morrer, você pode renascer nela."},
 }
 
 ## Receitas de fabricação (V13: RECIPES).
@@ -32,6 +35,7 @@ const RECEITAS := [
 	{"id": "machado", "desc": "Madeira só se obtém de árvores com machado.", "custo": [["madeira", 4], ["pedra", 3]]},
 	{"id": "picareta", "desc": "Necessária para pedras grandes.", "custo": [["madeira", 4], ["pedra", 4]]},
 	{"id": "fogueira", "desc": "Ferve água suja. Faz luz e barulho.", "custo": [["madeira", 5], ["pedra", 3]]},
+	{"id": "cama", "desc": "Monte num lugar coberto: vira ponto de renascimento.", "custo": [["madeira", 6], ["pano", 3]]},
 ]
 
 ## Nome do recipiente que o jogador vasculha (V13: CONTEM).
@@ -69,7 +73,7 @@ static func peso(id: String) -> float:
 
 
 ## Custo da receita. Não depende de nível nem de raça (docs/DECISOES_DESIGN.md, Q4 e Q28); os descontos vêm da
-## origem: o Mecânico gasta 25% menos sucata e o Mestre de Obras paga 25% menos pelo totem.
+## origem: o Mecânico gasta 25% menos sucata e o Mestre de Obras paga 25% menos pelo totem e pela cama.
 static func custo_receita(id: String, origem: String = "") -> Array:
 	var base: Array = []
 	if id == "totem":
@@ -81,7 +85,7 @@ static func custo_receita(id: String, origem: String = "") -> Array:
 	var out: Array = []
 	for c in base:
 		var qtd: int = c[1]
-		if (origem == "mecanico" and c[0] == "sucata") or (origem == "mestre_obras" and id == "totem"):
+		if (origem == "mecanico" and c[0] == "sucata") or (origem == "mestre_obras" and id in ["totem", "cama"]):
 			qtd = Origens.desconto(qtd)
 		out.append([c[0], qtd])
 	return out
@@ -95,10 +99,10 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 			l = [["comida", rng.randi_range(0, 2)], ["agua_limpa", 1 if rng.randf() < 0.2 else 0]]
 		"armario":
 			l = [["sucata", rng.randi_range(0, 2)], ["antibiotico", 1 if rng.randf() < 0.06 else 0],
-				["agua_limpa", 1 if rng.randf() < 0.06 else 0]]
+				["agua_limpa", 1 if rng.randf() < 0.06 else 0], ["pano", rng.randi_range(0, 2)]]
 		"comoda":
 			l = [["antibiotico", 1 if rng.randf() < 0.12 else 0], ["sucata", rng.randi_range(0, 1)],
-				["municao", rng.randi_range(1, 3) if rng.randf() < 0.05 else 0]]
+				["municao", rng.randi_range(1, 3) if rng.randf() < 0.05 else 0], ["pano", rng.randi_range(0, 1)]]
 		"estante":
 			l = [["madeira", rng.randi_range(0, 2)], ["sucata", rng.randi_range(0, 1)]]
 		"balcao":

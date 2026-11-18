@@ -6,7 +6,7 @@ extends Control
 ## - os nomes de cidades, povoados, locais especiais e vilarejos (conhecidos desde o começo);
 ## - acampamentos: "?" até serem descobertos;
 ## - ícones dos pontos de interesse (hospital, mercado...) já revelados;
-## - você, o totem, o abrigo e o marcador.
+## - você, o totem, o abrigo, as camas, a mochila deixada no corpo e o marcador.
 ## Roda do mouse aproxima, arrastar move, botão direito põe/tira o marcador.
 ## No modo da tela inicial ('modo_inicio'), não há névoa e só o lugar escolhido ('destaque', um id de Inicio) mostra
 ## os ícones (é a cidade onde o personagem morava).
@@ -41,12 +41,15 @@ const ICONES := {
 	"marcador": ["✚", Color("#e83a6a"), Color("#ffffff"), "Seu marcador"],
 	"totem": ["T", Color("#4ab0a0"), Color("#0a1a18"), "Seu totem"],
 	"abrigo": ["A", Color("#4ab0a0"), Color("#0a1a18"), "Seu abrigo"],
+	"cama": ["Z", Color("#6a8ad8"), Color("#ffffff"), "Sua cama"],
+	"mochila": ["M", Color("#9a3a2a"), Color("#ffffff"), "Sua mochila (onde morreu)"],
 }
 const ORDEM_LEGENDA := ["hospital", "farmacia", "mercado", "delegacia", "posto", "oficina", "escola", "igreja",
-	"restaurante", "acampamento", "desconhecido", "npc", "totem", "abrigo", "marcador"]
+	"restaurante", "acampamento", "desconhecido", "npc", "totem", "abrigo", "cama", "mochila", "marcador"]
 
 @export var modo_inicio := false
-var destaque := ""                     ## id de Inicio realçado (tela inicial)
+var destaque := ""                     ## id de Inicio realçado (tela inicial e tela de respawn)
+var destaque_ponto := Vector2.INF      ## ponto (mundo) realçado com um anel (cama escolhida na tela de respawn)
 
 var _terreno := Control.new()
 var _sobre := Control.new()
@@ -200,10 +203,10 @@ func _desenhar_sobre() -> void:
 		icone(_sobre, pc, "acampamento" if conhecido else "desconhecido", 9.0, fonte)
 		if conhecido:
 			_rotulo(fonte, pc + Vector2(0, 20), str(cd["nome"]), 11, Color(1.0, 0.85, 0.55))
+	if area_destaque.has_area():
+		var r := Rect2(para_tela(area_destaque.position), area_destaque.size / MinimapaBase.PX * _esc()).grow(6.0)
+		_sobre.draw_rect(r, Color(1.0, 0.85, 0.3), false, 2.0)
 	if modo_inicio:
-		if area_destaque.has_area():
-			var r := Rect2(para_tela(area_destaque.position), area_destaque.size / MinimapaBase.PX * _esc()).grow(6.0)
-			_sobre.draw_rect(r, Color(1.0, 0.85, 0.3), false, 2.0)
 		return
 	# você, totem, abrigo e marcador
 	var j := get_tree().get_first_node_in_group("jogador") as Node2D
@@ -213,9 +216,16 @@ func _desenhar_sobre() -> void:
 			icone(_sobre, para_tela(IsoMath.tela_para_mundo(t.totem.no.global_position)), "totem", 8.0, fonte)
 		if t._no_abrigo != null and is_instance_valid(t._no_abrigo):
 			icone(_sobre, para_tela(IsoMath.tela_para_mundo(t._no_abrigo.global_position)), "abrigo", 8.0, fonte)
+	for c in Respawn.camas:
+		if is_instance_valid(c["no"]):
+			icone(_sobre, para_tela(c["p"]), "cama", 8.0, fonte)
+	for m in get_tree().get_nodes_in_group("mochila_chao"):
+		icone(_sobre, para_tela(IsoMath.tela_para_mundo((m as Node2D).global_position)), "mochila", 8.0, fonte)
+	if destaque_ponto != Vector2.INF:
+		_sobre.draw_arc(para_tela(destaque_ponto), 15.0, 0.0, TAU, 32, Color(1.0, 0.85, 0.3), 2.5)
 	if Descobertas.marcador != Vector2.INF:
 		icone(_sobre, para_tela(Descobertas.marcador), "marcador", 9.0, fonte)
-	if j != null:
+	if j != null and not j.morto:
 		var alvo: Node2D = j.dirigindo if j.dirigindo != null else j
 		var pj := para_tela(IsoMath.tela_para_mundo(alvo.global_position))
 		var f := Vector2.from_angle(j.face)                # direção no mundo = direção no mapa (norte para cima)

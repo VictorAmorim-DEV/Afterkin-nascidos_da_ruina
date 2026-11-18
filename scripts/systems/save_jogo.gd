@@ -2,8 +2,9 @@ class_name SaveJogo
 extends RefCounted
 ## Salvar e carregar a partida (RECURSO NOVO: a V13 não tem save). Um arquivo JSON em user://.
 ##
-## Salva o jogador (posição, raça e forma, vitais, XP, doença, mochila), o totem e o abrigo, o relógio e o que o
-## mundo lembra (galhos e pedras pegos, portões, inimigos restantes por chunk, ninhos vasculhados). O mundo em si
+## Salva o jogador (posição, raça e forma, vitais, doença, mochila), o totem e o abrigo, as camas e a mochila deixada
+## no corpo (Respawn), o relógio e o que o mundo lembra (galhos e pedras pegos, portões, inimigos restantes por
+## chunk, ninhos vasculhados). O mundo em si
 ## é determinístico pela semente: não precisa ir para o arquivo. Carros movidos voltam ao lugar de origem.
 ##
 ## Carregar recarrega a cena: o Mundo põe o jogador na posição salva antes da primeira carga de chunks e a
@@ -52,6 +53,7 @@ static func salvar(arvore: SceneTree) -> String:
 		"relogio": {"dia": ciclo.dia, "minutos": ciclo.minutos} if ciclo != null else {},
 		"mundo": m.dados_para_salvar(),
 		"descobertas": Descobertas.dados_para_salvar(),
+		"respawn": Respawn.dados_para_salvar(arvore),
 	}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f == null:
@@ -111,6 +113,7 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 		ciclo.dia = int(rel["dia"])
 		ciclo.minutos = float(rel["minutos"])
 	Descobertas.restaurar(pendente.get("descobertas", {}))
+	Respawn.restaurar(arvore, pendente.get("respawn", {}))
 	if j != null and bool(j.passos.get("_ativo", false)):
 		arvore.call_group("primeiros_passos", "iniciar", j)
 	pendente = {}

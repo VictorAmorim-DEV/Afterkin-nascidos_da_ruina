@@ -265,6 +265,7 @@ func _levar_ao_inicio(j: Node) -> String:
 	Inicio.zona_segura = a["zona"]
 	# você conhece o lugar onde morava: a área já vem revelada no mapa (e o acampamento, descoberto)
 	Descobertas.zerar()
+	Respawn.zerar()
 	var area := _mapa._area_destaque()
 	if area.has_area():
 		Descobertas.revelar_retangulo(area.grow(20.0 * IsoMath.METRO))
