@@ -12,14 +12,14 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 
 
 ### MVP em marcos (`docs/DECISOES_DESIGN.md` §12) — cada um termina com playtest
-- 🔄 Marco 1 — Incursão humana. Etapas:
+- ✅ Marco 1 — Incursão humana (aprovado no playtest de 18/11/2026; resultado em `docs/PLAYTEST_MARCO1.md`). Etapas:
   - ✅ 1. Fim do XP/nível; todos começam humanos (`dd97f4c`).
   - ✅ 2. Relógio de 6 fases (40 min/dia), temperatura, multiplicadores de visão/ruído (`3ad0ec4`, `8f6c6ee`).
   - ✅ 3. Sede e água (fome e sede por hora de jogo, água suja/limpa, ferver, disenteria) (`3218b4f`).
   - ✅ 4. Peso da mochila (25 kg) (`d07679b`).
   - ✅ 5. Tela de origem (Policial com pistola mínima provisória, Mecânico, Enfermeiro(a), Mestre de Obras) (`a3e14a4`).
   - ✅ 6. Bilhete inicial apontando a água e roteiro de playtest (`docs/PLAYTEST_MARCO1.md`).
-  - 🔄 7. Playtest do Victor (3–4 incursões) e ajustes a partir das respostas. Primeiros ajustes pedidos:
+  - ✅ 7. Playtest do Victor e ajustes a partir das respostas. Primeiros ajustes pedidos:
     - ✅ 7a. Início com sentido: nascer num lugar da cidade ligado à história ("eu estava no acampamento / no
       supermercado / na delegacia quando tudo começou"), não no meio da rodovia. (`84bea31`, `09cd6a1`)
     - ✅ 7b (`975088b`). Minimapa de um tamanho só (área pequena ao redor); M abre o mapa do mundo inteiro no meio da tela, com
@@ -28,13 +28,17 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     - ✅ 7c (`5ed4fba`). Começo guiado: diálogo/mini tutorial que apresente a história, a lógica e as mecânicas.
     Retorno do primeiro playtest (17/11): sem objetivo claro a incursão não se sustenta (confirma o marco 2);
     não deu para testar noite, sede, doença e fogueira por falta de tempo. Pedidos:
-    - ✅ 7d. Modo desenvolvedor: dar itens, teleportar, fôlego infinito, voar pelo mapa, pular o tempo etc.
+    - ✅ 7d–7j (`166a323`). Modo desenvolvedor: dar itens, teleportar, fôlego infinito, voar pelo mapa, pular o tempo etc.
     - ✅ 7e. Tiro vai para onde o mouse aponta (mira), não para onde o boneco está virado.
     - ✅ 7f. Faróis do carro não acendiam (a luz nascia dentro da carroceria e o oclusor do próprio carro a apagava); o HUD dentro do carro mostra os faróis, não a lanterna.
     - ✅ 7g. A luz da lanterna sai do pé; deve sair da lanterna na mão.
     - ✅ 7h. Peso: 35 kg e itens ~40% mais leves.
     - ✅ 7i. Água suja: só "Você bebeu"; a disenteria aparece 2–5 h de jogo depois, e o aviso é o sintoma.
     - ✅ 7j. Roteiro de playtest mais simples (o que é incursão, onde anotar), usando o modo desenvolvedor.
+    Segundo retorno (18/11): marco aprovado. Pedidos:
+    - ✅ 7k. Voo do modo desenvolvedor com 4×, 8×, 10× e 16×.
+    - ✅ 7l. Disenteria: fase aguda curta e efeito prolongado (36 h) até passar ou até um antibiótico.
+    - ✅ 7m. Mapa da tela inicial demorava ~5,6 s para gerar: agora vem de um cache em disco (user://).
 - ⬜ Marco 2 — Comunidade e rumores: NPCs, escambo (escassez/saturação/demanda), reputação, uma especialização, log de eventos.
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.
@@ -43,6 +47,10 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 
 ## Ideias em avaliação
 - 💭 (o Victor ainda está pensando em mais coisas para acrescentar)
+- 💭 Loot: rever o que cada recipiente/local dá (a discutir).
+- 💭 Construções e funções de cada local; casas e prédios em lugares estranhos; distribuição de árvores e ruas.
+- 💭 Dificuldade dos monstros e o nome deles (em estudo: "Transformados").
+- 💭 Tamanho do mapa e distâncias entre os lugares (o Victor ainda está avaliando; não mexer por enquanto).
 
 ## Feito recentemente
 - ✅ Validação do GDD (entrevista Q1–Q34) → `docs/DECISOES_DESIGN.md` (`6262f42`)

@@ -47,4 +47,7 @@ HTML/JS (V13, em docs/prototipo_html_v13/) para Godot 4.7, renderizador GL Compa
   `pronto`; os polígonos vão para um `Desenho` (um draw call por nó, sempre com o atlas `TexturasParede`).
 - Gráficos nunca mudam sozinhos: efeitos pesados ficam atrás de uma flag (ex.: `SombraSol.ativo`) que vira
   opção no menu de configurações.
+- Marco 1 (incursão humana) aprovado; decisões de design em `docs/DECISOES_DESIGN.md` (valem sobre o GDD).
+- Modo desenvolvedor: F1 (`PainelDev`/`Dev`, só em build de debug). O mapa-base do minimapa/mapa do mundo fica em
+  cache em `user://mapa_base_*.png` (chave pelos dados e scripts do mapa; regenera sozinho quando eles mudam).
 - Único ⬜ que resta no RESUMO: guarda/mirar (na V13 é só um anel, sem efeito). Próximos passos: docs/PENDENCIAS.md.

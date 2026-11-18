@@ -8,7 +8,8 @@ static var folego_infinito := false
 static var invencivel := false
 static var sem_necessidades := false   ## fome e sede sempre cheias
 static var invisivel := false          ## inimigos não ouvem nem enxergam o jogador
-static var voar := false               ## atravessa tudo e anda 4× mais rápido
+static var voar := false               ## atravessa tudo e anda 'voar_vezes' mais rápido que correndo
+static var voar_vezes := 4.0
 
 
 static func disponivel() -> bool:

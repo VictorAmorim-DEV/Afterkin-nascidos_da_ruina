@@ -44,6 +44,39 @@ const COR_CHAO := {"grama": Color("#5a7a3a"), "asfalto": Color("#3c3d40"), "conc
 
 
 ## Enche os caches na thread principal (a thread de geração só lê).
+## Cache em disco da imagem gerada (gerar() leva ~5 s; ler o PNG, ~35 ms). A chave muda quando mudam os dados do
+## mapa-múndi ou os scripts que desenham o mapa (nas builds de debug, onde o código é legível), então o cache nunca
+## fica velho: depois de mexer na geração, a primeira abertura gera de novo e salva.
+const ARQUIVOS_DA_CHAVE := ["res://data/mapa_dados.res", "res://scripts/systems/minimapa_base.gd",
+	"res://scripts/world/mundo_gen.gd", "res://scripts/world/quadras.gd", "res://scripts/world/mapa_mundi.gd"]
+const VERSAO_CACHE := 1                           ## suba à mão se mudar algo que a chave não pega
+
+static var _arquivo_cache := ""
+
+
+## Calcula o nome do arquivo de cache (chame na thread principal, antes da thread).
+static func preparar_cache() -> void:
+	var partes := PackedStringArray([str(VERSAO_CACHE), str(MundoGen.SEMENTE)])
+	for a in ARQUIVOS_DA_CHAVE:
+		partes.append(FileAccess.get_md5(a) if FileAccess.file_exists(a) else "-")
+	_arquivo_cache = "user://mapa_base_%s.png" % "|".join(partes).md5_text().substr(0, 16)
+
+
+## Para a thread: lê do cache se existir; senão gera, salva e apaga os caches antigos.
+static func gerar_ou_cache() -> Image:
+	if _arquivo_cache != "" and FileAccess.file_exists(_arquivo_cache):
+		var img := Image.load_from_file(ProjectSettings.globalize_path(_arquivo_cache))
+		if img != null and img.get_width() == W and img.get_height() == H:
+			return img
+	var nova := gerar()
+	if _arquivo_cache != "":
+		for f in DirAccess.get_files_at("user://"):
+			if f.begins_with("mapa_base_") and f.ends_with(".png"):
+				DirAccess.remove_absolute("user://" + f)
+		nova.save_png(_arquivo_cache)
+	return nova
+
+
 static func preparar() -> void:
 	MapaMundi.carregar()
 	MundoGen.estradas()

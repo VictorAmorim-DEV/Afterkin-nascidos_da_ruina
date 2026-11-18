@@ -71,8 +71,9 @@ func _ready() -> void:
 	_dica.text = "M · ampliar"
 	_layout()
 	MinimapaBase.preparar()
+	MinimapaBase.preparar_cache()
 	_thread = Thread.new()
-	_thread.start(MinimapaBase.gerar)
+	_thread.start(MinimapaBase.gerar_ou_cache)    # do cache em disco quando existir
 
 
 func _exit_tree() -> void:

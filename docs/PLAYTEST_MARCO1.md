@@ -71,3 +71,20 @@ Para cada uma, anote em uma linha: **objetivo · deu certo? · por que voltou (o
 - A fogueira acesa pelo jogador não entra no save; a zona sem inimigos do começo também não.
 - O vampiro (F9) não tem sede; o sangue vem no marco 4.
 - Não há som no jogo ainda.
+
+---
+
+## Resultado do playtest (18/11/2026) — marco 1 aprovado
+
+- **Passou no critério:** dá vontade de explorar mais um lugar, com medo de perder os itens e a vida (o "vou mais um
+  pouco ou volto?"), e o Victor jogaria outra incursão mesmo sem NPCs e sem objetivos dados pelo jogo.
+- **O mais legal:** explorar o mapa (lugares variados), lutar, sobreviver e voltar a um lugar seguro, e a promessa da
+  transformação. Pontos de interesse (hospital, delegacia) cheios de inimigos dificultam o loot, e isso é bom.
+- **Funcionou:** tutorial inicial, água suja com efeito atrasado, disenteria, peso, tiro com mira, faróis, mapa,
+  modo desenvolvedor.
+- **Ajustado depois do teste:** voo do F1 com 4×/8×/10×/16×; disenteria com fase aguda curta e efeito longo (36 h)
+  até passar ou até um antibiótico; mapa da tela inicial carregando do cache (antes gerava ~5,6 s a cada abertura).
+- **Para depois (anotado em PENDENCIAS como ideias):** loot, construções e funções de cada local, distribuição de
+  árvores/ruas/casas, dificuldade dos monstros (nome em estudo: "Transformados") e o tamanho/distâncias do mapa.
+- **Lição:** sem objetivo dado pelo jogo a exploração já segura, mas cada incursão vai valer mais com os rumores e
+  NPCs do marco 2.

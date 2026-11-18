@@ -329,7 +329,7 @@ func _physics_process(delta: float) -> void:
 func velocidade_atual() -> float:
 	var v := run_speed if correndo else walk_speed
 	if Dev.voar:
-		return run_speed * 4.0
+		return run_speed * Dev.voar_vezes
 	v *= sintoma(1)
 	if postura == Postura.AGACHADO:
 		v = crouch_speed
@@ -516,7 +516,7 @@ func _atualizar_incubacao(horas: float) -> void:
 		return
 	incubacao_h = -1.0
 	if doenca.is_empty():
-		doenca = {"tipo": "Disenteria", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "agua"}
+		doenca = nova_disenteria()
 		aviso("Cólicas fortes de repente. A água que você bebeu estava contaminada: disenteria.")
 
 
@@ -975,6 +975,7 @@ const SINTOMAS := {
 		[0.75, 1.0, 2.0, 0.05, 1.0]],
 	"Infecção zumbi": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.9, 0.95, 1.2, 0.0, 1.0], [0.75, 0.9, 1.5, 0.0, 1.0],
 		[0.6, 0.85, 1.8, 0.1, 1.0]],
+	# disenteria: estágio 2 é o platô longo (sede ×2, fôlego −20%), sem perder vida; o 3 não é usado
 	"Disenteria": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.9, 1.0, 1.0, 0.0, 1.6], [0.8, 0.95, 1.1, 0.0, 2.0],
 		[0.7, 0.9, 1.2, 0.05, 2.5]],
 }
@@ -986,7 +987,7 @@ const AVISOS_ESTAGIO := {
 	"Infecção zumbi": ["", "Pele fria e passos pesados.", "Músculos rígidos: você está mais lento e faminto.",
 		"A infecção está tomando seu corpo."],
 	"Disenteria": ["", "Cólicas: você está perdendo líquido e a sede aumenta.",
-		"Diarreia forte: a sede dispara e você está mais fraco.", "Desidratação: a disenteria está consumindo sua vida."],
+		"Diarreia forte: a sede dobrou e você está mais fraco. Vai demorar a passar; um antibiótico cura.", ""],
 }
 
 
@@ -998,6 +999,21 @@ func sintoma(i: int) -> float:
 	return t[i]
 
 
+## Disenteria nova: 36 h de jogo (~1 h real). Fase aguda curta (pico em 3 h) e efeito prolongado até o fim do prazo
+## ou até um antibiótico (pedido do playtest de 18/11/2026).
+func nova_disenteria() -> Dictionary:
+	return {"tipo": "Disenteria", "horas": 36.0, "total": 36.0, "estagio": 0.0, "origem": "agua"}
+
+
+## Estágio da doença agora. As outras seguem 4 quartos do prazo (o último é o 3); a disenteria sobe rápido
+## (1 h → estágio 1, 3 h → estágio 2) e fica no platô do estágio 2 até passar.
+func _estagio_doenca(total: float) -> float:
+	var passou: float = total - float(doenca.horas)
+	if doenca.tipo == "Disenteria":
+		return 0.0 if passou < 1.0 else (1.0 if passou < 3.0 else 2.0)
+	return clampf(passou / total * 4.0, 0.0, 3.0)
+
+
 func _atualizar_doenca(delta: float) -> void:
 	if doenca.is_empty():
 		return
@@ -1005,7 +1021,7 @@ func _atualizar_doenca(delta: float) -> void:
 	doenca.horas -= delta * _min_por_s() / 60.0
 	var total: float = doenca.get("total", 48.0)
 	var antes := int(doenca.estagio)
-	doenca.estagio = clampf((total - doenca.horas) / total * 4.0, 0.0, 3.0)   # 4 quartos do prazo; o último é o 3
+	doenca.estagio = _estagio_doenca(total)
 	if int(doenca.estagio) > antes:
 		var msg: String = (AVISOS_ESTAGIO.get(doenca.tipo, ["", "", "", ""]) as Array)[int(doenca.estagio)]
 		if msg != "":

@@ -60,13 +60,24 @@ func _ready() -> void:
 	_titulo(col, "Chaves")
 	for par in [["Fôlego infinito", "folego_infinito"], ["Invencível (sem dano nem infecção)", "invencivel"],
 			["Sem fome e sede", "sem_necessidades"], ["Invisível para inimigos", "invisivel"],
-			["Voar (atravessa tudo, 4× mais rápido)", "voar"]]:
+			["Voar (atravessa tudo)", "voar"]]:
 		var c := CheckBox.new()
 		c.text = par[0]
 		c.focus_mode = Control.FOCUS_NONE
 		c.button_pressed = Dev.valor(par[1])
 		c.toggled.connect(func(v: bool): Dev.ligar(par[1], v))
 		col.add_child(c)
+	var lvoo := HBoxContainer.new()
+	var rvoo := Label.new()
+	rvoo.text = "Velocidade do voo:"
+	lvoo.add_child(rvoo)
+	var voo := OptionButton.new()
+	for n in [4, 8, 10, 16]:
+		voo.add_item("%d× correndo" % n)
+	voo.focus_mode = Control.FOCUS_NONE
+	voo.item_selected.connect(func(i: int): Dev.voar_vezes = [4.0, 8.0, 10.0, 16.0][i])
+	lvoo.add_child(voo)
+	col.add_child(lvoo)
 	col.add_child(_botao("Revelar o mapa inteiro", func():
 		Descobertas.revelar_retangulo(Rect2(0, 0, MinimapaBase.W * MinimapaBase.PX, MinimapaBase.H * MinimapaBase.PX))
 		for c in MundoGen.acampamentos():
@@ -207,8 +218,8 @@ func _curar() -> void:
 
 func _doenca(tipo: String) -> void:
 	var j := _j()
-	j.doenca = {"tipo": tipo, "horas": 24.0, "total": 24.0, "estagio": 0.0,
-		"origem": "vampire" if tipo == "Mutação vampírica" else "agua"}
+	j.doenca = j.nova_disenteria() if tipo == "Disenteria" else \
+		{"tipo": tipo, "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "vampire"}
 	_aviso("Doença: " + tipo)
 
 
