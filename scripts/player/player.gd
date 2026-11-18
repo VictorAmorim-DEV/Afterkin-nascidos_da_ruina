@@ -64,6 +64,7 @@ var vida: float = 100.0
 var fome: float = 100.0                  ## 100 = saciado; cai por hora de jogo e, em 0, tira vida
 var sede: float = 100.0                  ## 100 = hidratado; cai mais rápido que a fome, mais no calor e correndo
 var _carga: float = 0.0                  ## sobrecarga da mochila (0 a 1), revista a cada quadro
+var incubacao_h: float = -1.0           ## horas de jogo até a disenteria aparecer (< 0 = nada incubando)
 var ruido_piso: float = 0.0              ## barulho mínimo imposto de fora neste quadro (ex.: fervendo água)
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
@@ -85,6 +86,7 @@ var _inclinacao: float = 0.0
 var _ciclo: Node = null
 var _saltando: bool = false               ## no meio de um salto guiado (ex.: pulando uma janela)
 var _altura_luz: float = 31.0
+var _brilho_mao := Sprite2D.new()           ## brilho da lente da lanterna, na mão (aditivo, não depende da luz)
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var lanterna_chao: PointLight2D = $LanternaChao
@@ -116,6 +118,7 @@ func _ready() -> void:
 	_anel_ruido.draw.connect(_desenhar_anel_ruido)
 	add_child(_anel_ruido)
 	aplicar_sombras_lanterna(Controles.ler_cfg().get_value("video", "sombras_lanterna", true))
+	_montar_brilho_mao()
 
 
 func _process(_delta: float) -> void:
@@ -133,6 +136,28 @@ func _desenhar_anel_ruido() -> void:
 	_anel_ruido.draw_polyline(pts, Color(1, 1, 1, 0.15), 2.0)
 
 
+## Brilho pequeno e quente na mão, onde fica a lanterna: mostra de onde sai o facho.
+func _montar_brilho_mao() -> void:
+	var g := Gradient.new()
+	g.set_color(0, Color(1.0, 0.97, 0.85, 1.0))
+	g.set_color(1, Color(1.0, 0.9, 0.6, 0.0))
+	var t := GradientTexture2D.new()
+	t.gradient = g
+	t.fill = GradientTexture2D.FILL_RADIAL
+	t.fill_from = Vector2(0.5, 0.5)
+	t.fill_to = Vector2(1.0, 0.5)
+	t.width = 16
+	t.height = 16
+	_brilho_mao.texture = t
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	mat.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	_brilho_mao.material = mat
+	_brilho_mao.z_index = 1
+	_brilho_mao.visible = false
+	add_child(_brilho_mao)
+
+
 ## Sombras da luz da lanterna (opção de vídeo: desligar alivia PCs mais fracos).
 func aplicar_sombras_lanterna(ligar: bool) -> void:
 	lanterna_chao.shadow_enabled = ligar
@@ -140,6 +165,8 @@ func aplicar_sombras_lanterna(ligar: bool) -> void:
 
 ## Até onde (u de mundo) o barulho chega agora: na noite fria e parada o som vai mais longe.
 func ruido_efetivo() -> float:
+	if Dev.invisivel:
+		return 0.0
 	if _ciclo == null:
 		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
 	var k: float = _ciclo.propagacao_som() if _ciclo != null and _ciclo.has_method("propagacao_som") else 1.0
@@ -148,6 +175,8 @@ func ruido_efetivo() -> float:
 
 ## De quantos u de mundo um inimigo acordado te enxerga: luz do dia, neblina, postura e lanterna.
 func alcance_ser_visto() -> float:
+	if Dev.invisivel:
+		return 0.0
 	if _ciclo == null:
 		_ciclo = get_tree().get_first_node_in_group("ciclo_dia_noite")
 	var m: float = _ciclo.alcance_visao_m() if _ciclo != null and _ciclo.has_method("alcance_visao_m") else 8.0
@@ -279,7 +308,10 @@ func _physics_process(delta: float) -> void:
 	world_vel = world_vel.move_toward(alvo, (aceleracao if movendo else frenagem) * delta)
 
 	velocity = IsoMath.mundo_para_tela(world_vel)
-	move_and_slide()
+	if Dev.voar:                                # modo desenvolvedor: atravessa tudo
+		global_position += velocity * delta
+	else:
+		move_and_slide()
 	# se bateu em algo, a velocidade real mudou: mantém a de mundo em sincronia
 	world_vel = IsoMath.tela_para_mundo(velocity)
 	var rapidez := world_vel.length()
@@ -296,6 +328,8 @@ func _physics_process(delta: float) -> void:
 ## Velocidade máxima do estado atual (u/s).
 func velocidade_atual() -> float:
 	var v := run_speed if correndo else walk_speed
+	if Dev.voar:
+		return run_speed * 4.0
 	v *= sintoma(1)
 	if postura == Postura.AGACHADO:
 		v = crouch_speed
@@ -450,7 +484,9 @@ func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 	lanterna_chao.enabled = ligada
 	lanterna_chao.energy = energia * lerpf(0.75, 1.0, fator_altura)
 	lanterna_chao.height = _altura_luz
-	lanterna_chao.transform = Transform2D(frente * k_chao, lado * k_chao, mao)
+	# o facho só toca o chão um pouco à frente do corpo (não nasce no pé): ~0,5 m em pé, menos agachado
+	var toque := IsoMath.mundo_para_tela(olhar * IsoMath.METRO * lerpf(0.15, 0.5, fator_altura))
+	lanterna_chao.transform = Transform2D(frente * k_chao, lado * k_chao, mao + toque)
 
 	# LUZ DOS OBJETOS EM PÉ (paredes, carros, árvores, personagens): sai da altura
 	# da mão, então ilumina mais baixo quando o jogador agacha ou deita.
@@ -459,17 +495,46 @@ func _atualizar_lanterna(olhar: Vector2, delta: float) -> void:
 	lanterna_objetos.energy = energia
 	lanterna_objetos.height = _altura_luz
 	lanterna_objetos.transform = Transform2D(frente * k_obj, lado * k_obj, mao + Vector2(0.0, -_altura_luz - pulo_z))
+	# brilho da própria lanterna, na mão
+	_brilho_mao.visible = ligada
+	_brilho_mao.position = mao + Vector2(0.0, -_altura_luz - pulo_z)
+	_brilho_mao.modulate.a = clampf(escuro * 1.6, 0.25, 1.0)
 
 
 # =====================================================================
 # SOBREVIVÊNCIA, XP E ITENS (portado da V13: eat, useMed, xpGain, step)
 # =====================================================================
+const INCUBACAO_MIN_H := 2.0             ## a água contaminada dá sintomas entre 2 e 5 horas de jogo depois
+const INCUBACAO_MAX_H := 5.0
+
+
+func _atualizar_incubacao(horas: float) -> void:
+	if incubacao_h < 0.0:
+		return
+	incubacao_h -= horas
+	if incubacao_h > 0.0:
+		return
+	incubacao_h = -1.0
+	if doenca.is_empty():
+		doenca = {"tipo": "Disenteria", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "agua"}
+		aviso("Cólicas fortes de repente. A água que você bebeu estava contaminada: disenteria.")
+
+
 func _atualizar_vitais(delta: float) -> void:
+	if Dev.sem_necessidades:
+		fome = 100.0
+		sede = 100.0
+	if Dev.invencivel:
+		vida = vida_max
+	if Dev.folego_infinito:
+		stamina = stamina_max
+		exausto = false
 	_carga = inventario.sobrecarga()
 	ataque_cd = maxf(0.0, ataque_cd - delta)
 	golpe_t = maxf(0.0, golpe_t - delta)
 	_tiro_t = maxf(0.0, _tiro_t - delta)
 	var horas := delta * _min_por_s() / 60.0
+	_atualizar_incubacao(horas)
 	fome = maxf(0.0, fome - horas * fome_por_hora * sintoma(2))
 	if fome <= 0.0:
 		vida = maxf(0.0, vida - delta * 0.7)
@@ -517,11 +582,10 @@ func beber(qtd: float, chance_doenca: float, de_onde: String, extra: String = ""
 		aviso("Você não está com sede.")
 		return false
 	sede = minf(100.0, sede + qtd)
-	if chance_doenca > 0.0 and doenca.is_empty() and randf() < chance_doenca:
-		doenca = {"tipo": "Disenteria", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "agua"}
-		aviso("Você bebeu %s e matou a sede... mas a água estava contaminada. Disenteria.%s" % [de_onde, extra])
-	else:
-		aviso("Você bebeu %s.%s" % [de_onde, extra])
+	# contaminada: ninguém percebe na hora; a disenteria aparece horas depois (incubação), e o aviso é o sintoma
+	if chance_doenca > 0.0 and doenca.is_empty() and incubacao_h < 0.0 and randf() < chance_doenca:
+		incubacao_h = randf_range(INCUBACAO_MIN_H, INCUBACAO_MAX_H)
+	aviso("Você bebeu %s.%s" % [de_onde, extra])
 	get_tree().call_group("primeiros_passos", "evento", "bebeu")
 	return true
 
@@ -647,16 +711,19 @@ func _atirar() -> void:
 	ataque_cd = 0.55
 	golpe_t = 0.15
 	_tiro_t = 0.35
-	var olhar := Vector2.from_angle(face)
 	var alcance := ALCANCE_TIRO_M * IsoMath.METRO
-	var alvo: Inimigo = null
+	var alvo := _alvo_da_mira(alcance)
+	var olhar := Vector2.from_angle(face)
 	var dist := alcance
-	for e in get_tree().get_nodes_in_group("inimigo"):
-		var v: Vector2 = IsoMath.tela_para_mundo(e.global_position - global_position)
-		var d := v.length()
-		if d > 1.0 and d < dist and v.normalized().dot(olhar) > cos(deg_to_rad(ANGULO_TIRO)):
-			dist = d
-			alvo = e
+	if alvo != null:
+		var v: Vector2 = IsoMath.tela_para_mundo(alvo.global_position - global_position)
+		dist = v.length()
+		olhar = v / maxf(dist, 0.001)
+	else:
+		var ate := IsoMath.tela_para_mundo(get_global_mouse_position() - global_position)
+		if ate.length() > 1.0:
+			olhar = ate.normalized()
+	face = olhar.angle()                       # o corpo vira na hora para onde atirou
 	_rastro_tiro(olhar * dist)
 	var balas: int = inventario.contar("municao")
 	if alvo == null:
@@ -665,6 +732,32 @@ func _atirar() -> void:
 	var dano := DANO_TIRO * lerpf(1.0, 0.6, dist / alcance)
 	alvo.receber_dano(dano)
 	aviso("Tiro! Acertou um %s (%d de dano). (%d bala(s))" % [Inimigo.NOMES[alvo.raca], roundi(dano), balas])
+
+
+## Inimigo que o tiro acerta: primeiro o que está sob o cursor (o corpo fica ~28 px acima do pé, na tela);
+## senão, o mais próximo na direção do cursor, dentro de ANGULO_TIRO. null se nenhum ao alcance.
+func _alvo_da_mira(alcance: float) -> Inimigo:
+	var mouse := get_global_mouse_position()
+	var alvo: Inimigo = null
+	var melhor := INF
+	for e in get_tree().get_nodes_in_group("inimigo"):
+		var d_mundo: float = IsoMath.tela_para_mundo(e.global_position - global_position).length()
+		var d_tela: float = (e.global_position + Vector2(0.0, -28.0)).distance_to(mouse)
+		if d_mundo < alcance and d_tela < 30.0 and d_tela < melhor:
+			melhor = d_tela
+			alvo = e
+	if alvo != null:
+		return alvo
+	var ate := IsoMath.tela_para_mundo(mouse - global_position)
+	var olhar := ate.normalized() if ate.length() > 1.0 else Vector2.from_angle(face)
+	var dist := alcance
+	for e in get_tree().get_nodes_in_group("inimigo"):
+		var v: Vector2 = IsoMath.tela_para_mundo(e.global_position - global_position)
+		var d := v.length()
+		if d > 1.0 and d < dist and v.normalized().dot(olhar) > cos(deg_to_rad(ANGULO_TIRO)):
+			dist = d
+			alvo = e
+	return alvo
 
 
 ## Risco de luz do disparo, da mão até onde a bala parou (some em 0,12 s).
@@ -726,7 +819,7 @@ func definir_origem(o: String) -> void:
 
 
 func receber_dano(n: float, quem: String = "") -> void:
-	if morto:
+	if morto or Dev.invencivel:
 		return
 	if raca == "zombie" and quem == "rat":
 		return                                   # zumbi não sente a mordida do rato (V13)
@@ -770,6 +863,7 @@ func definir_raca(r: String, reiniciar: bool = true) -> void:
 		fome = 100.0
 		sede = 100.0
 		passos = {}
+		incubacao_h = -1.0
 		sol = 0.0
 		doenca = {}
 		inventario.inicial()
@@ -849,6 +943,8 @@ func _atualizar_sol(delta: float) -> void:
 
 ## Mordida/golpe de inimigo (V13: infectPlayer). Cada origem causa uma doença diferente.
 func infectar(origem: String) -> void:
+	if Dev.invencivel:
+		return
 	if raca == "zombie" and origem == "rat":
 		return
 	if raca == origem and origem != "rat":
@@ -1011,7 +1107,7 @@ func usar_antidoto() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "local_inicio": local_inicio, "passos": passos.duplicate(),
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(),
 		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
@@ -1029,6 +1125,7 @@ func restaurar(d: Dictionary) -> void:
 	sede = float(d.get("sede", 100.0))
 	origem = str(d.get("origem", ""))
 	local_inicio = str(d.get("local_inicio", ""))
+	incubacao_h = float(d.get("incubacao", -1.0))
 	passo_restaurar(d.get("passos", {}))
 	stamina = float(d.get("stamina", stamina_max))
 	sol = float(d.get("sol", 0.0))

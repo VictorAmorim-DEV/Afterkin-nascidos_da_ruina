@@ -25,7 +25,16 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     - ✅ 7b (`975088b`). Minimapa de um tamanho só (área pequena ao redor); M abre o mapa do mundo inteiro no meio da tela, com
       ícones e legenda (supermercado, hospital, restaurante, NPCs principais...) e nomes dos lugares por categoria
       (acampamentos, vilarejos, cidades grandes).
-    - ✅ 7c. Começo guiado: diálogo/mini tutorial que apresente a história, a lógica e as mecânicas.
+    - ✅ 7c (`5ed4fba`). Começo guiado: diálogo/mini tutorial que apresente a história, a lógica e as mecânicas.
+    Retorno do primeiro playtest (17/11): sem objetivo claro a incursão não se sustenta (confirma o marco 2);
+    não deu para testar noite, sede, doença e fogueira por falta de tempo. Pedidos:
+    - ✅ 7d. Modo desenvolvedor: dar itens, teleportar, fôlego infinito, voar pelo mapa, pular o tempo etc.
+    - ✅ 7e. Tiro vai para onde o mouse aponta (mira), não para onde o boneco está virado.
+    - ✅ 7f. Faróis do carro não acendiam (a luz nascia dentro da carroceria e o oclusor do próprio carro a apagava); o HUD dentro do carro mostra os faróis, não a lanterna.
+    - ✅ 7g. A luz da lanterna sai do pé; deve sair da lanterna na mão.
+    - ✅ 7h. Peso: 35 kg e itens ~40% mais leves.
+    - ✅ 7i. Água suja: só "Você bebeu"; a disenteria aparece 2–5 h de jogo depois, e o aviso é o sintoma.
+    - ✅ 7j. Roteiro de playtest mais simples (o que é incursão, onde anotar), usando o modo desenvolvedor.
 - ⬜ Marco 2 — Comunidade e rumores: NPCs, escambo (escassez/saturação/demanda), reputação, uma especialização, log de eventos.
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.

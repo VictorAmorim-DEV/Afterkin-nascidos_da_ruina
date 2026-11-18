@@ -7,7 +7,7 @@ signal mudou
 signal aviso(texto: String)
 
 const TAMANHO := 20
-const CAPACIDADE_KG := 25.0  ## acima disso o jogador fica lento, cansa mais e faz mais barulho
+const CAPACIDADE_KG := 35.0  ## acima disso o jogador fica lento, cansa mais e faz mais barulho
 
 var slots: Array = []
 var equipado: int = -1       ## índice do slot da ferramenta equipada (-1 = mãos livres)

@@ -65,6 +65,9 @@ func _ready() -> void:
 	menu.mudou.connect(mm._layout)                 # a dica "M · mapa" acompanha a tecla
 	add_child(TelaMapa.new())                      # M: mapa do mundo, com legenda e descobertas
 	add_child(PrimeirosPassos.new())               # lista dos primeiros passos, embaixo do minimapa
+	var dev := PainelDev.new()                     # F1: modo desenvolvedor (só em build de debug)
+	dev.name = "PainelDev"
+	add_child(dev)
 	_texto_ajuda()
 
 
@@ -90,8 +93,10 @@ func _process(delta: float) -> void:
 		_preenchimento.bg_color = COR_FOLEGO
 	var eq: String = _jogador.inventario.id_equipado()
 	var kg: float = _jogador.inventario.peso_total()
-	estado.text = "%s • %s · Lanterna %s · %s · Mochila %.0f/%.0f kg%s" % [_jogador.nome_postura(),
-		_jogador.texto_furtividade(), "ligada" if _jogador.lanterna_ligada else "desligada",
+	var luz: String = ("Lanterna " + ("ligada" if _jogador.lanterna_ligada else "desligada")) \
+		if _jogador.dirigindo == null else ("Faróis " + ("ligados" if _jogador.dirigindo.farol_ligado else "apagados"))
+	estado.text = "%s • %s · %s · %s · Mochila %.0f/%.0f kg%s" % [_jogador.nome_postura(),
+		_jogador.texto_furtividade(), luz,
 		Itens.nome(eq) if eq != "" else "mãos livres", kg, Inventario.CAPACIDADE_KG,
 		" · SOBRECARGA" if kg > Inventario.CAPACIDADE_KG else ""]
 	_vida_barra.max_value = _jogador.vida_max

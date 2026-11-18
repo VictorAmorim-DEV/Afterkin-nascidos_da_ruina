@@ -299,7 +299,8 @@ func _atualizar_farois() -> void:
 	var frente := IsoMath.mundo_para_tela(d)
 	var lado := IsoMath.mundo_para_tela(Vector2(-d.y, d.x))
 	var k := alcance_farol / 256.0
-	var nariz := IsoMath.mundo_para_tela(d * comprimento * 0.45)
+	# a luz nasce logo à frente do para-choque: dentro da carroceria, o oclusor do próprio carro a apagava inteira
+	var nariz := IsoMath.mundo_para_tela(d * (comprimento * 0.5 + 0.25 * M))
 	var energia := energia_farol * clampf(escuro * 1.8, 0.0, 1.0)
 	_farol_chao.energy = energia
 	_farol_chao.transform = Transform2D(frente * k, lado * k * 1.3, nariz)
