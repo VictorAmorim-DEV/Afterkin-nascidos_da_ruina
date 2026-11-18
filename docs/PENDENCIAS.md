@@ -40,6 +40,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     - ✅ 7l. Disenteria: fase aguda curta e efeito prolongado (36 h) até passar ou até um antibiótico.
     - ✅ 7m. Mapa da tela inicial demorava ~5,6 s para gerar: agora vem de um cache em disco (user://).
 - ⬜ Marco 2 — Comunidade e rumores: NPCs, escambo (escassez/saturação/demanda), reputação, uma especialização, log de eventos.
+  **Próximo passo:** começar o marco 2 por uma rodada de perguntas de design (como a entrevista do GDD), antes de programar.
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.
 - ⬜ Marco 5 — Ninho e Vampiro Ancestral: prédio-ninho, chefe, três desfechos.
