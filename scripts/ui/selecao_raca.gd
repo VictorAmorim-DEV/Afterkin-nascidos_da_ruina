@@ -37,7 +37,7 @@ var origem: String = "policial"
 var _grade_local := GridContainer.new()   ## onde você estava quando tudo começou (Inicio)
 var _rotulo_local := Label.new()
 var _botoes_local: Dictionary = {}
-var local_inicio: String = "delegacia"
+var local_inicio: String = "porto_atlantico"
 var _local_manual := false                ## o jogador escolheu o local (a origem não troca mais o padrão)
 var _comecar := Button.new()
 var _continuar := Button.new()
@@ -131,8 +131,8 @@ func _montar() -> void:
 		var b := Button.new()
 		b.toggle_mode = true
 		b.button_group = grupo_l
-		b.text = Inicio.nome(l)
-		b.custom_minimum_size = Vector2(196, 36)
+		b.text = "%s\n%s" % [Inicio.nome(l), Inicio.tipo(l)]
+		b.custom_minimum_size = Vector2(196, 48)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.pressed.connect(_escolher_local.bind(l, true))
 		_grade_local.add_child(b)
@@ -164,7 +164,7 @@ func _escolher(r: String) -> void:
 func _escolher_origem(o: String) -> void:
 	origem = o
 	if not _local_manual:                     # a origem sugere o local, até o jogador escolher um
-		_escolher_local(str(Inicio.PADRAO.get(o, "delegacia")), false)
+		_escolher_local(str(Inicio.PADRAO.get(o, "porto_atlantico")), false)
 	_atualizar_descricao()
 
 
@@ -209,27 +209,32 @@ func confirmar() -> void:
 		j.definir_raca(escolhida, _reiniciar)
 		if _reiniciar:
 			j.definir_origem(origem)
-			_levar_ao_inicio(j)
+			var onde := _levar_ao_inicio(j)
 			j.ler_bilhete_inicial()
-		j.aviso(("Você estava %s quando tudo começou. Encontre água, comida e abrigo." % Inicio.onde(local_inicio))
-			if _reiniciar else "Agora você é %s." % NOMES[escolhida])
+			j.aviso("Você estava %s quando tudo começou. Encontre água, comida e abrigo." % onde)
+		else:
+			j.aviso("Agora você é %s." % NOMES[escolhida])
 	_raiz.visible = false
 	get_tree().paused = false
 
 
-## Leva o jogador ao local de início escolhido, sem inimigos em volta, às 08:00 (Inicio).
-func _levar_ao_inicio(j: Node) -> void:
+## Leva o jogador a uma casa ou prédio sorteado no lugar escolhido, sem inimigos em volta, às 08:00 (Inicio).
+## Devolve a frase de onde ele estava ("numa casa de Porto Atlântico").
+func _levar_ao_inicio(j: Node) -> String:
 	j.local_inicio = local_inicio
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
 	if ciclo != null:
 		ciclo.minutos = 480.0
-	var a := Inicio.achar(local_inicio)
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	var a := Inicio.achar(local_inicio, rng)
 	if a.is_empty():
-		return
+		return Inicio.onde(local_inicio)
 	Inicio.zona_segura = a["zona"]
 	var mundo := get_tree().get_first_node_in_group("mundo")
 	if mundo != null and mundo.has_method("teleportar"):
 		mundo.teleportar(a["p"])
+	return str(a["onde"])
 
 
 func esta_aberta() -> bool:

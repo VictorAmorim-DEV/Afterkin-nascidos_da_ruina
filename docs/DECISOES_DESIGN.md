@@ -167,11 +167,12 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 
 ## Ajustes do playtest do marco 1 (17/11/2026)
 
-1. **Onde você estava quando tudo começou** (escolha depois da origem, livre; a origem só sugere o padrão):
-   delegacia, hospital, supermercado, oficina/posto (prédios reais de Porto Atlântico), um acampamento ou em casa
-   (uma casa de vilarejo). A tela dessa escolha mostra o **mapa** com os nomes e os ícones dos locais; a casa não tem
-   ícone (não é um ponto fixo). Policial → delegacia, Enfermeiro(a) → hospital, Mecânico → oficina,
-   Mestre de Obras → acampamento.
+1. **Onde você estava quando tudo começou** (escolha depois da origem): escolhe-se o **lugar** — Porto Atlântico,
+   Baía Dourada, São Jorge, Vila Nova da Serra, Vila das Roças ou o Acampamento Santuário do Sol — e o **prédio é
+   sorteado** a cada partida: uma casa ou um prédio de apartamentos qualquer dentro dele (pode ser perto de um ponto
+   de interesse, mas nunca dentro de hospital, mercado, delegacia, farmácia, oficina, posto etc.). Motivo: nascer
+   dentro do hospital entregaria o melhor loot sem incursão. Padrão: Porto Atlântico; Mestre de Obras, acampamento.
+   A tela dessa escolha mostra o **mapa** com os nomes e os ícones dos locais (a casa não tem ícone).
 2. **Começo seguro**: dentro do prédio escolhido, às 08:00, sem inimigos lá dentro. O perigo está do lado de fora.
 3. **Mapa do mundo** (M, no meio da tela; o minimapa fica com um tamanho só, área pequena ao redor):
    - nomes de cidades e vilarejos visíveis desde o início;
