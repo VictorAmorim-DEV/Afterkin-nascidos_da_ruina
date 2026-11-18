@@ -1,17 +1,15 @@
 class_name MenuCama
 extends CanvasLayer
 ## Menu da cama (E perto dela): deitar e descansar, deitar e dormir, recolher ou cancelar.
-## Pausa o jogo enquanto está aberto; ESC ou clicar fora fecha.
+## O jogo NÃO pausa: o mundo segue enquanto você escolhe. ESC, E, clicar fora ou se afastar da cama fecha.
 
 var cama: Node2D = null
 
 
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 35
-	get_tree().paused = true
 	var fundo := ColorRect.new()
-	fundo.color = Color(0, 0, 0, 0.35)
+	fundo.color = Color(0, 0, 0, 0.12)
 	fundo.set_anchors_preset(Control.PRESET_FULL_RECT)
 	fundo.gui_input.connect(func(e: InputEvent):
 		if e is InputEventMouseButton and e.pressed:
@@ -67,10 +65,16 @@ func _botao(col: VBoxContainer, texto: String, dica: String) -> Button:
 
 
 func _fechar() -> void:
-	if is_queued_for_deletion():
-		return
-	get_tree().paused = false
-	queue_free()
+	if not is_queued_for_deletion():
+		queue_free()
+
+
+func _process(_delta: float) -> void:
+	var j: Node2D = get_tree().get_first_node_in_group("jogador")
+	if j == null or bool(j.get("morto")) or not is_instance_valid(cama):
+		_fechar()
+	elif IsoMath.tela_para_mundo(cama.global_position - j.global_position).length() > CamaNo.ALCANCE * 1.5:
+		_fechar()                                  # o jogo não pausa: andou para longe, o menu some
 
 
 func _unhandled_input(event: InputEvent) -> void:
