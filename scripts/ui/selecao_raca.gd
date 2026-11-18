@@ -38,6 +38,7 @@ var _grade_local := GridContainer.new()   ## onde você estava quando tudo come�
 var _rotulo_local := Label.new()
 var _botoes_local: Dictionary = {}
 var local_inicio: String = "porto_atlantico"
+var _mapa := MapaMundo.new()            ## mapa com o lugar escolhido realçado (só no começo)
 var _local_manual := false                ## o jogador escolheu o local (a origem não troca mais o padrão)
 var _comecar := Button.new()
 var _continuar := Button.new()
@@ -77,7 +78,13 @@ func _montar() -> void:
 	var col := VBoxContainer.new()
 	col.custom_minimum_size = Vector2(620, 0)
 	col.add_theme_constant_override("separation", 12)
-	painel.add_child(col)
+	var lado := HBoxContainer.new()          # escolhas à esquerda, mapa à direita
+	lado.add_theme_constant_override("separation", 16)
+	painel.add_child(lado)
+	lado.add_child(col)
+	_mapa.modo_inicio = true
+	_mapa.custom_minimum_size = Vector2(440, 480)
+	lado.add_child(_mapa)
 	_titulo.add_theme_font_size_override("font_size", 24)
 	col.add_child(_titulo)
 	var sub := Label.new()
@@ -172,6 +179,10 @@ func _escolher_local(l: String, manual: bool) -> void:
 	local_inicio = l
 	_local_manual = _local_manual or manual
 	_botoes_local[l].button_pressed = true
+	_mapa.destaque = l
+	var r := _mapa._area_destaque()
+	if r.has_area():
+		_mapa.focar(r.get_center(), 3.0)
 	_atualizar_descricao()
 
 
@@ -191,6 +202,7 @@ func abrir(reiniciar: bool) -> void:
 	_grade.visible = not reiniciar
 	_grade_origem.visible = reiniciar
 	_grade_local.visible = reiniciar
+	_mapa.visible = reiniciar
 	_rotulo_local.visible = reiniciar
 	_local_manual = false
 	_botoes[escolhida].button_pressed = true
@@ -231,6 +243,14 @@ func _levar_ao_inicio(j: Node) -> String:
 	if a.is_empty():
 		return Inicio.onde(local_inicio)
 	Inicio.zona_segura = a["zona"]
+	# você conhece o lugar onde morava: a área já vem revelada no mapa (e o acampamento, descoberto)
+	Descobertas.zerar()
+	var area := _mapa._area_destaque()
+	if area.has_area():
+		Descobertas.revelar_retangulo(area.grow(20.0 * IsoMath.METRO))
+	var nome_camp: String = (Inicio.DADOS[local_inicio] as Dictionary).get("acampamento", "")
+	if nome_camp != "":
+		Descobertas.acampamentos.append(nome_camp)
 	var mundo := get_tree().get_first_node_in_group("mundo")
 	if mundo != null and mundo.has_method("teleportar"):
 		mundo.teleportar(a["p"])

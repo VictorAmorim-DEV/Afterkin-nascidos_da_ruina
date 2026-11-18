@@ -2,7 +2,7 @@ class_name Minimapa
 extends Control
 ## Minimapa (V13: desenharMinimapa, l.1784-1818): círculo no canto superior direito com o mapa na MESMA projeção
 ## isométrica do jogo (andar para o "N" do minimapa é ir para o norte), anel de bússola, seta do jogador,
-## totem, inimigos em alerta e o rumo por extenso. M alterna entre pequeno (60 m) e ampliado (180 m).
+## totem, inimigos em alerta e o rumo por extenso. Um tamanho só (60 m em volta); M abre o mapa do mundo (TelaMapa).
 ##
 ## O mapa-base sai de MinimapaBase numa Thread; o recorte circular e a projeção são feitos num shader.
 
@@ -32,7 +32,9 @@ void fragment() {
 }
 """
 
-var grande := false
+var grande := false                ## não muda mais: o mapa grande é a TelaMapa
+## Textura do mundo inteiro (1 px = 128 u, norte para cima), pronta quando a thread termina; o mapa do mundo usa.
+static var textura_mundo: ImageTexture = null
 var _mapa := ColorRect.new()
 var _sobre := Control.new()
 var _rumo := Label.new()
@@ -45,6 +47,7 @@ var _jogador: Node2D = null
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS          # termina a imagem mesmo com a tela inicial pausando o jogo
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sh := Shader.new()
 	sh.code = SHADER
@@ -92,7 +95,7 @@ func _layout() -> void:
 	_rumo.size = Vector2(d, 18)
 	_dica.position = Vector2(0, d + 12.0)
 	_dica.size = Vector2(d, 16)
-	_dica.text = "%s · %s" % [Controles.nome("minimapa"), "reduzir" if grande else "ampliar"]
+	_dica.text = "%s · mapa" % Controles.nome("minimapa")
 	_mat.set_shader_parameter("tam", Vector2(d, d))
 	_mat.set_shader_parameter("raio", _raio_tela())
 	_sobre.queue_redraw()
@@ -108,18 +111,12 @@ func _esc() -> float:
 	return raio_u / (MinimapaBase.PX * _raio_tela() * sqrt(2.0))
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("minimapa") and not get_tree().paused:
-		grande = not grande
-		_layout()
-		get_viewport().set_input_as_handled()
-
-
 func _process(delta: float) -> void:
 	if not _pronto and _thread != null and not _thread.is_alive():
 		var img: Image = _thread.wait_to_finish()
 		_thread = null
-		_mat.set_shader_parameter("mapa", ImageTexture.create_from_image(img))
+		textura_mundo = ImageTexture.create_from_image(img)
+		_mat.set_shader_parameter("mapa", textura_mundo)
 		_mat.set_shader_parameter("tam_mapa", Vector2(img.get_width(), img.get_height()))
 		_pronto = true
 	if _jogador == null or not is_instance_valid(_jogador):

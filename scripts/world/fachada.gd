@@ -14,6 +14,8 @@ const VPM := 30.3
 const LOJAS := ["PADARIA", "BAR DO ZÉ", "FERRAGENS", "LAVANDERIA", "BARBEARIA", "LANCHONETE", "ÓTICA", "LOTÉRICA",
 	"PAPELARIA", "MERCEARIA", "PIZZARIA", "ARMARINHO", "ARMAS & CAÇA", "PET SHOP", "AÇOUGUE", "SAPATARIA", "BRECHÓ",
 	"DINER 24H", "HOTEL", "CINEMA"]
+## Placas de lojas de comida: o prédio vira "restaurante" (Quadras._fabrica).
+const COMIDA := ["LANCHONETE", "PIZZARIA", "DINER 24H"]
 const CORES_PLACA := [["#2a3a5a", "#e8dcb0"], ["#6a1e1a", "#f0e6cc"], ["#1e4a32", "#e6e2d0"], ["#3a2a1e", "#e8c060"],
 	["#e0dccc", "#2a2a2a"], ["#5a3a6a", "#f0e0f0"]]
 const PICHA := ["NÃO ABRA", "MORTOS DENTRO", "SOCORRO", "ELES ESTÃO AQUI", "FUJAM", "NÃO É SEGURO",

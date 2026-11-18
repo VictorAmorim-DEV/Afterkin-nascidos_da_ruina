@@ -21,8 +21,8 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 6. Bilhete inicial apontando a água e roteiro de playtest (`docs/PLAYTEST_MARCO1.md`).
   - 🔄 7. Playtest do Victor (3–4 incursões) e ajustes a partir das respostas. Primeiros ajustes pedidos:
     - ✅ 7a. Início com sentido: nascer num lugar da cidade ligado à história ("eu estava no acampamento / no
-      supermercado / na delegacia quando tudo começou"), não no meio da rodovia. (O mapa na tela de escolha vem com o 7b.)
-    - ⬜ 7b. Minimapa de um tamanho só (área pequena ao redor); M abre o mapa do mundo inteiro no meio da tela, com
+      supermercado / na delegacia quando tudo começou"), não no meio da rodovia. (`84bea31`, `09cd6a1`)
+    - ✅ 7b. Minimapa de um tamanho só (área pequena ao redor); M abre o mapa do mundo inteiro no meio da tela, com
       ícones e legenda (supermercado, hospital, restaurante, NPCs principais...) e nomes dos lugares por categoria
       (acampamentos, vilarejos, cidades grandes).
     - ⬜ 7c. Começo guiado: diálogo/mini tutorial que apresente a história, a lógica e as mecânicas.

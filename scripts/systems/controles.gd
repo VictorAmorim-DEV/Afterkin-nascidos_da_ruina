@@ -12,7 +12,7 @@ const ACOES := [
 	["move_right", "Mover para a direita"], ["run", "Correr (segurar)"], ["crouch", "Agachar (alterna)"],
 	["prone", "Deitar (alterna)"], ["jump", "Pular"], ["interact", "Interagir / vasculhar / pegar"],
 	["attack", "Atacar / colher"], ["transform", "Alternar forma (ratos)"], ["flashlight", "Lanterna"],
-	["inventory", "Inventário"], ["minimapa", "Ampliar o minimapa"], ["salvar_rapido", "Salvar a partida"],
+	["inventory", "Inventário"], ["minimapa", "Mapa do mundo"], ["salvar_rapido", "Salvar a partida"],
 	["carregar_rapido", "Carregar a partida salva"], ["menu", "Menu / configurações"]]
 
 static var _padroes: Dictionary = {}        ## ação -> Array[InputEvent] do project.godot

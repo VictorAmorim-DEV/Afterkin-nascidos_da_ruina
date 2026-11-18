@@ -51,6 +51,7 @@ static func salvar(arvore: SceneTree) -> String:
 		"territorio": j.territorio.dados_para_salvar(),
 		"relogio": {"dia": ciclo.dia, "minutos": ciclo.minutos} if ciclo != null else {},
 		"mundo": m.dados_para_salvar(),
+		"descobertas": Descobertas.dados_para_salvar(),
 	}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f == null:
@@ -109,6 +110,7 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 	if ciclo != null and not rel.is_empty():
 		ciclo.dia = int(rel["dia"])
 		ciclo.minutos = float(rel["minutos"])
+	Descobertas.restaurar(pendente.get("descobertas", {}))
 	pendente = {}
 	if j != null:
 		j.aviso("Partida carregada.")

@@ -56,7 +56,7 @@ const FILEIRA := ["prateleira", "carteira", "banco_ig", "caixa"]
 const USO_SALAS := {"apartamentos": ["sala", "quarto", "cozinha", "banheiro"], "loja": ["loja", "deposito"],
 	"farmacia": ["loja", "enfermaria"], "posto": ["loja", "deposito"], "galpao": ["deposito"], "igreja": ["nave"],
 	"hospital": ["enfermaria", "escritorio"], "delegacia": ["escritorio"], "mercado": ["loja", "deposito"],
-	"oficina": ["deposito"], "escola": ["aula", "escritorio"], "banco": ["escritorio"]}
+	"oficina": ["deposito"], "escola": ["aula", "escritorio"], "banco": ["escritorio"], "restaurante": ["sala", "cozinha"]}
 ## materiais de prédio (V13: PAREDES_PREDIO, MAT_USO) — [cor, tipo]; o tipo muda o desenho da fachada
 const PAREDES_PREDIO := [[Color8(152, 74, 54), "tijolo"], [Color8(112, 64, 50), "tijolo"], [Color8(176, 128, 92), "tijolo"],
 	[Color8(188, 174, 150), "reboco"], [Color8(152, 150, 142), "reboco"], [Color8(206, 202, 192), "reboco"],

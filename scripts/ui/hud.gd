@@ -62,7 +62,8 @@ func _ready() -> void:
 	menu.name = "MenuConfig"
 	add_child(menu)
 	menu.mudou.connect(_texto_ajuda)
-	menu.mudou.connect(mm._layout)                 # a dica "M · ampliar" acompanha a tecla
+	menu.mudou.connect(mm._layout)                 # a dica "M · mapa" acompanha a tecla
+	add_child(TelaMapa.new())                      # M: mapa do mundo, com legenda e descobertas
 	_texto_ajuda()
 
 

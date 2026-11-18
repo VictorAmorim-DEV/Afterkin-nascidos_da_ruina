@@ -375,7 +375,14 @@ static func _fabrica(q: Q, tipo: String) -> Dictionary:
 				"extras": {"varanda": q.rng.randf() < 0.6, "incendio": q.pick(["s", "e"]) if q.rng.randf() < 0.55 else ""}}}
 		"loja":
 			var cs2: Array = q.pick(Fachada.CORES_PLACA)
-			return {"w": q.ri(7, 10), "d": q.ri(8, 10), "o": {"uso": "loja", "andares": q.ri(1, 2), "loja": true, "placa": [q.pick(Fachada.LOJAS), cs2[0], cs2[1]]}}
+			var w_loja := q.ri(7, 10)
+			var d_loja := q.ri(8, 10)
+			var andares := q.ri(1, 2)
+			var nome_loja: String = q.pick(Fachada.LOJAS)
+			# lanchonete, pizzaria e diner viram restaurante: salão e cozinha (comida no loot), ícone no mapa
+			var uso_loja := "restaurante" if nome_loja in Fachada.COMIDA else "loja"
+			return {"w": w_loja, "d": d_loja, "o": {"uso": uso_loja, "andares": andares, "loja": true,
+				"placa": [nome_loja, cs2[0], cs2[1]]}}
 		"banco":
 			return {"w": 13, "d": 11, "o": {"uso": "banco", "andares": 2, "pe_direito_m": 3.6}}
 		"farmacia":
