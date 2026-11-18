@@ -83,6 +83,17 @@ func _montar() -> void:
 	_info_save.add_theme_font_size_override("font_size", 13)
 	_info_save.modulate = Color(1, 1, 1, 0.7)
 	aba_p.add_child(_info_save)
+	var intro := CheckBox.new()
+	intro.text = "Introdução e primeiros passos (prólogo e lista de objetivos no começo da partida)"
+	intro.focus_mode = Control.FOCUS_NONE
+	intro.button_pressed = SelecaoRaca.introducao_ligada()
+	intro.toggled.connect(func(v: bool):
+		_salvar_opcao("jogo", "introducao", v)
+		var j := get_tree().get_first_node_in_group("jogador")
+		if j != null and not v and j.passos.has("_ativo"):
+			j.passos["_ativo"] = false
+			get_tree().call_group("primeiros_passos", "_atualizar"))
+	aba_p.add_child(intro)
 	var nota_p := Label.new()
 	nota_p.text = "Atalhos durante o jogo: salvar e carregar (veja a aba Controles). Carregar descarta o progresso não salvo."
 	nota_p.add_theme_font_size_override("font_size", 12)

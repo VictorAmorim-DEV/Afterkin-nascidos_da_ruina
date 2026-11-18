@@ -99,6 +99,7 @@ func _physics_process(delta: float) -> void:
 		return
 	_t_ferver = 0.0
 	j.inventario.remover("agua_suja", 1)
+	get_tree().call_group("primeiros_passos", "evento", "ferveu")
 	if j.inventario.adicionar_parcial("agua_limpa", 1) > 0:
 		j.largar_item("agua_limpa", 1)
 	if j.inventario.contar("agua_suja") <= 0:

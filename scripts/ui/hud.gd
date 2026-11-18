@@ -56,7 +56,7 @@ func _ready() -> void:
 	dica.add_theme_font_size_override("font_size", 18)
 	_montar_vitais()
 	_montar_toast()
-	var mm := Minimapa.new()                       # V13: minimapa com bússola (M amplia)
+	var mm := Minimapa.new()                       # V13: minimapa com bússola (M abre o mapa do mundo)
 	add_child(mm)
 	var menu := MenuConfig.new()                   # V13: menu de configurações (ESC)
 	menu.name = "MenuConfig"
@@ -64,6 +64,7 @@ func _ready() -> void:
 	menu.mudou.connect(_texto_ajuda)
 	menu.mudou.connect(mm._layout)                 # a dica "M · mapa" acompanha a tecla
 	add_child(TelaMapa.new())                      # M: mapa do mundo, com legenda e descobertas
+	add_child(PrimeirosPassos.new())               # lista dos primeiros passos, embaixo do minimapa
 	_texto_ajuda()
 
 
@@ -185,7 +186,7 @@ func _montar_vitais() -> void:
 ## Linha de ajuda montada com as teclas atuais (muda quando o jogador remapeia no menu).
 func _texto_ajuda() -> void:
 	var n := func(a: String) -> String: return Controles.nome(a)
-	ajuda.text = "%s %s %s %s mover · %s correr · %s agachar · %s deitar · %s pular · %s lanterna · %s interagir / entrar no veículo · %s mochila · %s atacar/colher · %s forma (rato) · %s minimapa · %s salvar · %s menu · F9 trocar raça" % [
+	ajuda.text = "%s %s %s %s mover · %s correr · %s agachar · %s deitar · %s pular · %s lanterna · %s interagir / entrar no veículo · %s mochila · %s atacar/colher · %s forma (rato) · %s mapa · %s salvar · %s menu · F9 trocar raça" % [
 		n.call("move_up"), n.call("move_left"), n.call("move_down"), n.call("move_right"), n.call("run"), n.call("crouch"),
 		n.call("prone"), n.call("jump"), n.call("flashlight"), n.call("interact"), n.call("inventory"), n.call("attack"),
 		n.call("transform"), n.call("minimapa"), n.call("salvar_rapido"), n.call("menu")]

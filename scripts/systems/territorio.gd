@@ -36,6 +36,7 @@ func colocar_totem(slot: int) -> void:
 	no.alcance = ALCANCES[t]
 	var vida: float = VIDAS[t] * (1.5 if jogador.origem == "mestre_obras" else 1.0)   # Mestre de Obras: +50%
 	totem = {"no": no, "tier": t, "nivel": NIVEIS[t], "hp": vida, "max": vida, "alcance": ALCANCES[t]}
+	jogador.get_tree().call_group("primeiros_passos", "evento", "totem")
 	jogador.aviso("Totem de nível %d colocado. Proteção em raio de %.1f m." % [NIVEIS[t], ALCANCES[t] / M])
 
 

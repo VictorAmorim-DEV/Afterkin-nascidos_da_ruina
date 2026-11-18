@@ -111,6 +111,8 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 		ciclo.dia = int(rel["dia"])
 		ciclo.minutos = float(rel["minutos"])
 	Descobertas.restaurar(pendente.get("descobertas", {}))
+	if j != null and bool(j.passos.get("_ativo", false)):
+		arvore.call_group("primeiros_passos", "iniciar", j)
 	pendente = {}
 	if j != null:
 		j.aviso("Partida carregada.")

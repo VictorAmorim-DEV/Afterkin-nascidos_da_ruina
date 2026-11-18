@@ -11,6 +11,7 @@ static func vasculhar(jogador: Node, tipo: String, rng: RandomNumberGenerator, a
 		jogador.aviso("Inventário cheio! Libere espaço para coletar.")
 		return
 	jogador.inventario.adicionar_itens(g)
+	jogador.get_tree().call_group("primeiros_passos", "evento", "vasculhou")
 	ao_concluir.call()
 	if g.is_empty():
 		jogador.aviso("Nada útil %s %s." % ["na" if nome.ends_with("a") else "no", nome])

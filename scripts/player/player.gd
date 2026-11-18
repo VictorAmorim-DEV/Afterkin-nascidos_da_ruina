@@ -68,6 +68,7 @@ var ruido_piso: float = 0.0              ## barulho mínimo imposto de fora nest
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
+var passos: Dictionary = {}               ## progresso dos PrimeirosPassos (contagem por evento, "_ativo", "noite")
 var local_inicio: String = ""            ## onde estava quando tudo começou (Inicio)
 var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
 var _tiro_t: float = 0.0                 ## tempo restante do estampido do último tiro (barulho)
@@ -521,6 +522,7 @@ func beber(qtd: float, chance_doenca: float, de_onde: String, extra: String = ""
 		aviso("Você bebeu %s e matou a sede... mas a água estava contaminada. Disenteria.%s" % [de_onde, extra])
 	else:
 		aviso("Você bebeu %s.%s" % [de_onde, extra])
+	get_tree().call_group("primeiros_passos", "evento", "bebeu")
 	return true
 
 
@@ -551,6 +553,7 @@ func acender_fogueira() -> void:
 	f.position = global_position + IsoMath.mundo_para_tela(frente)
 	get_parent().add_child(f)
 	aviso("Você acendeu uma fogueira. Ela faz luz e chama atenção.")
+	get_tree().call_group("primeiros_passos", "evento", "acendeu")
 
 
 ## Larga 'qtd' (0 = tudo) do slot no chão, à frente do jogador.
@@ -702,6 +705,14 @@ func ler_bilhete_inicial() -> void:
 		roundi(float(a["m"]) / 10.0) * 10, a["rumo"]])
 
 
+## Progresso dos primeiros passos vindo do save (o JSON devolve números como float).
+func passo_restaurar(d: Dictionary) -> void:
+	passos = {}
+	for k in d:
+		var v: Variant = d[k]
+		passos[k] = int(v) if v is float else v
+
+
 ## Origem do personagem (Origens): guarda e entrega o kit. Só no começo da partida.
 func definir_origem(o: String) -> void:
 	origem = o
@@ -758,6 +769,7 @@ func definir_raca(r: String, reiniciar: bool = true) -> void:
 		vida = vida_max
 		fome = 100.0
 		sede = 100.0
+		passos = {}
 		sol = 0.0
 		doenca = {}
 		inventario.inicial()
@@ -999,7 +1011,7 @@ func usar_antidoto() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "local_inicio": local_inicio,
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "local_inicio": local_inicio, "passos": passos.duplicate(),
 		"stamina": stamina, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
@@ -1017,6 +1029,7 @@ func restaurar(d: Dictionary) -> void:
 	sede = float(d.get("sede", 100.0))
 	origem = str(d.get("origem", ""))
 	local_inicio = str(d.get("local_inicio", ""))
+	passo_restaurar(d.get("passos", {}))
 	stamina = float(d.get("stamina", stamina_max))
 	sol = float(d.get("sol", 0.0))
 	doenca = (d.get("doenca", {}) as Dictionary).duplicate()

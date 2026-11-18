@@ -222,12 +222,32 @@ func confirmar() -> void:
 		if _reiniciar:
 			j.definir_origem(origem)
 			var onde := _levar_ao_inicio(j)
-			j.ler_bilhete_inicial()
-			j.aviso("Você estava %s quando tudo começou. Encontre água, comida e abrigo." % onde)
-		else:
-			j.aviso("Agora você é %s." % NOMES[escolhida])
+			_raiz.visible = false
+			if introducao_ligada():
+				var p := Prologo.new()
+				get_parent().add_child(p)
+				p.terminou.connect(_comecar_partida.bind(j, onde, true))
+				p.abrir(origem, local_inicio, onde)
+			else:
+				_comecar_partida(j, onde, false)
+			return
+		j.aviso("Agora você é %s." % NOMES[escolhida])
 	_raiz.visible = false
 	get_tree().paused = false
+
+
+## Opção "Introdução e primeiros passos" (Configurações > Partida); ligada por padrão.
+static func introducao_ligada() -> bool:
+	return bool(Controles.ler_cfg().get_value("jogo", "introducao", true))
+
+
+## Depois do prólogo (ou sem ele): solta o jogo, dá as boas-vindas, o bilhete e liga os primeiros passos.
+func _comecar_partida(j: Node, onde: String, com_passos: bool) -> void:
+	get_tree().paused = false
+	j.aviso("Você estava %s quando tudo começou. Encontre água, comida e abrigo." % onde)
+	j.ler_bilhete_inicial()
+	if com_passos:
+		get_tree().call_group("primeiros_passos", "iniciar", j)
 
 
 ## Leva o jogador a uma casa ou prédio sorteado no lugar escolhido, sem inimigos em volta, às 08:00 (Inicio).
