@@ -1,0 +1,26 @@
+{
+	"id": "vila_dos_pescadores",
+	"nome": "Vila dos Pescadores",
+	"tipo": "vilarejo",
+	"local": "Vila dos Pescadores",
+	"forte": "pesca",
+	"descricao": "Vilarejo murado na costa leste. Vive da pesca e tem o único médico da região.",
+	"portao": {"abre": 6, "fecha": 18},
+	"figurantes": 2,
+	"npcs": [
+		{"id": "lider", "nome": "Líder (provisório)", "papel": "lider", "habilidades": [], "casa": 0,
+			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "praca", "tarde": "praca", "tardezinha": "fogueira", "noite": "casa"}},
+		{"id": "guarda_dia", "nome": "Guarda do dia (provisório)", "papel": "guarda", "habilidades": [], "casa": 1,
+			"rotina": {"madrugada": "casa", "amanhecer": "portao", "manha": "portao", "tarde": "portao", "tardezinha": "portao", "noite": "casa"}},
+		{"id": "guarda_noite", "nome": "Guarda da noite (provisório)", "papel": "guarda", "habilidades": [], "casa": 2,
+			"rotina": {"madrugada": "portao", "amanhecer": "portao", "manha": "casa", "tarde": "casa", "tardezinha": "fogueira", "noite": "portao"}},
+		{"id": "comerciante", "nome": "Comerciante (provisório)", "papel": "comerciante", "habilidades": [], "casa": 3,
+			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "praca", "tarde": "praca", "tardezinha": "fogueira", "noite": "casa"}},
+		{"id": "medico", "nome": "Médico (provisório)", "papel": "mestre_medicina", "habilidades": ["medicina"], "casa": 4,
+			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
+		{"id": "pescador", "nome": "Pescador (provisório)", "papel": "pescador", "habilidades": ["pesca"], "casa": 5,
+			"rotina": {"madrugada": "casa", "amanhecer": "trabalho", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
+		{"id": "pescadora", "nome": "Pescadora (provisório)", "papel": "pescador", "habilidades": ["pesca"], "casa": 6,
+			"rotina": {"madrugada": "casa", "amanhecer": "trabalho", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}}
+	]
+}

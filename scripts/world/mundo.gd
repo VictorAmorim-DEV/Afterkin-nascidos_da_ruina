@@ -66,6 +66,9 @@ func _ready() -> void:
 		jogador.position = IsoMath.mundo_para_tela(MundoGen.INICIO)
 	SaveJogo.aplicar_mundo(self)                 # partida carregada: posição e memória do mundo antes da carga
 	add_child(Atmosfera.new())                   # poeira e folhas caindo em volta da câmera
+	var gerente := GerenteComunidades.new()      # moradores das comunidades perto do jogador e os portões delas
+	gerente.name = "GerenteComunidades"
+	add_child(gerente)
 	TerrenoTexturas.preparar_todas()
 	TexturasParede.atlas_relevo()                # gera o atlas (e o relevo dele) na carga, não no primeiro edifício
 	# carga inicial síncrona (limitada): o jogador já nasce com chão e a vizinhança de volta
@@ -364,6 +367,11 @@ func lembrar_saque(chave: Vector2i) -> void:
 	_saqueados[chave] = true
 
 
+func _minutos() -> float:
+	var c := _achar_ciclo()
+	return float(c.minutos) if c != null else 480.0
+
+
 ## Portão aberto/fechado pelo jogador: o estado sobrevive ao descarregar o chunk.
 func lembrar_portao(meio_mundo: Vector2, aberto: bool) -> void:
 	_portoes[Vector2i(meio_mundo)] = aberto
@@ -403,7 +411,8 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			e.altura_tiles = spec["h"]
 			e.frente = spec["f"]
 			e.semente = spec["sem"]
-			e.moradores = 0 if Inicio.seguro(spec["p"]) else spec["mor"]   # o prédio do começo nasce vazio
+			# o prédio do começo nasce vazio, e nas comunidades ninguém mora com monstros
+			e.moradores = 0 if Inicio.seguro(spec["p"]) or Comunidades.protege(spec["p"]) else spec["mor"]
 			if spec.has("o"):
 				e.configurar(spec["o"])          # prédio: uso, andares, cobertura, placa...
 			e.position = IsoMath.mundo_para_tela(spec["p"])
@@ -482,6 +491,9 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			pt.b = spec["b"]
 			pt.estilo = spec["e"]
 			pt.aberto = _portoes.get(Vector2i((pt.a + pt.b) * 0.5), spec["aberto"])
+			pt.comunidade = spec.get("com", "")
+			if pt.comunidade != "":
+				pt.aberto = Comunidades.portao_aberto(pt.comunidade, _minutos())   # quem manda é o horário
 			add_child(pt)
 			no = pt
 		"coleta":
@@ -495,7 +507,7 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 				no = cs
 		"inimigo":
 			var cena_i := _cena("res://scenes/enemies/inimigo.tscn")
-			if cena_i != null and not Inicio.seguro(spec["p"]):
+			if cena_i != null and not Inicio.seguro(spec["p"]) and not Comunidades.protege(spec["p"]):
 				var ini := cena_i.instantiate() as Inimigo
 				ini.raca = spec["raca"]
 				ini.dorme = randf() < 0.7

@@ -177,6 +177,9 @@ static func _dados() -> void:
 		var vd: Array = v
 		var a := _aldeia(vd[0], MapaMundi.mundo(vd[1]), vd[2], vd[3], 101 + _aldeias.size() * 101)
 		if not (a["casas"] as Array).is_empty():
+			var com := Comunidades.do_local(str(vd[0]))
+			if com != "":
+				_murar_aldeia(a, com)
 			_aldeias.append(a)
 	for k in ACAMPAMENTOS.size():
 		var cd: Array = ACAMPAMENTOS[k]
@@ -206,6 +209,8 @@ static func _dados() -> void:
 			_bloq.append(l)
 		for p in ad["plantios"]:
 			_bloq.append(((p as Dictionary)["r"] as Rect2).grow(60.0))
+		if ad.has("muro"):
+			_bloq.append((ad["muro"] as Rect2).grow(60.0))       # nada de mato e árvore dentro da comunidade
 	for c2 in _camps:
 		var cdd: Dictionary = c2
 		var cc: Vector2 = cdd["c"]
@@ -305,8 +310,12 @@ static func _specs_cerca(seg: Array, r: Rect2, specs: Array, ferro: bool = false
 		var meio := (sa + sb) * 0.5
 		if r.has_point(meio):
 			var h := absi(int(meio.x * 0.37 + meio.y * 0.61)) % 100     # estado inicial fixo por posição
-			specs.append({"k": "portao", "a": sa, "b": sb, "e": "ferro" if ferro else "madeira",
-				"aberto": (not ferro) and h < 35})
+			var sp := {"k": "portao", "a": sa, "b": sb, "e": "ferro" if ferro else "madeira",
+				"aberto": (not ferro) and h < 35}
+			if seg.size() > 4:
+				sp["com"] = seg[4]                 # portão de comunidade: abre e fecha pelo horário (Comunidades)
+				sp["e"] = "ferro"
+			specs.append(sp)
 		return
 	for pedaco in _dividir(sa, sb, 256.0):
 		var pa: Vector2 = pedaco[0]
@@ -353,7 +362,33 @@ static func _aldeia(nome: String, o: Vector2, n: int, bio: int, sem: int) -> Dic
 			cercas.append_array(_cerca_ret(pr.grow(40.0), "n", pr.position.x + 480.0, 256.0, "arame"))
 		k += 1
 	return {"nome": nome, "bio": bio, "casas": casas, "cercas": cercas, "plantios": plantios, "lotes": lotes,
-		"area": Rect2(x0 - 300.0, yc - 1100.0, n * 832.0 + 600.0, 2900.0)}
+		"area": Rect2(x0 - 300.0, yc - 1100.0, n * 832.0 + 600.0, 2900.0), "rua_y": yc, "x0": x0, "n": n}
+
+
+## Vilarejo onde mora uma comunidade (Comunidades): muro de paliçada em volta das casas e da rua, com um portão
+## em cada ponta da rua (oeste e leste), e a fogueira na praça. As roças ficam do lado de fora.
+static func _murar_aldeia(a: Dictionary, com: String) -> void:
+	var yc: float = a["rua_y"]
+	var x0: float = a["x0"]
+	var n: int = a["n"]
+	var muro := Rect2(x0 - 150.0, yc - 800.0, n * 832.0 + 200.0, 1600.0)
+	var y0 := muro.position.y
+	var y1 := muro.end.y
+	var portoes: Array = []
+	var segs: Array = [[Vector2(muro.position.x, y0), Vector2(muro.end.x, y0), "palicada"],
+		[Vector2(muro.position.x, y1), Vector2(muro.end.x, y1), "palicada"]]
+	for x in [muro.position.x, muro.end.x]:
+		var g0 := Vector2(x, yc - 150.0)
+		var g1 := Vector2(x, yc + 150.0)
+		segs.append([Vector2(x, y0), g0, "palicada"])
+		segs.append([g1, Vector2(x, y1), "palicada"])
+		segs.append([g0, g1, "palicada", "portao", com])
+		portoes.append([g0, g1])
+	(a["cercas"] as Array).append_array(segs)
+	a["com"] = com
+	a["muro"] = muro
+	a["portoes"] = portoes
+	a["fogueira"] = Vector2(muro.get_center().x, yc)
 
 
 # ───────────────────────────── consultas ─────────────────────────────
@@ -581,6 +616,8 @@ static func planejar(c: Vector2i, vivos: int) -> Array:
 				specs.append({"k": "edificio", "p": cp, "w": cd["w"], "h": cd["h"], "f": cd["f"], "sem": cd["sem"], "mor": cd["mor"]})
 				if rng.randf() < 0.6:
 					specs.append({"k": "prop", "n": "caixote", "p": cp + Vector2(rng.randf_range(0.0, 400.0), (6 * 64 + 40) if cd["f"] == "s" else -50), "loot": "caixa"})
+		if ad.has("fogueira") and r.has_point(ad["fogueira"]):
+			specs.append({"k": "fogueira", "p": ad["fogueira"]})
 		for cg in ad["cercas"]:
 			_specs_cerca(cg, r, specs)
 		for p in ad["plantios"]:
@@ -692,8 +729,12 @@ static func _planejar_acampamento(cm: Dictionary, r: Rect2, rng: RandomNumberGen
 	var est: String = "palicada" if int(cm["est"]) == 0 else "arame"
 	var ret := Rect2(cc.x - hw, cc.y - hh, hw * 2.0, hh * 2.0)
 	var gc: float = cc.x
+	var com := Comunidades.do_local(str(cm["nome"]))
 	for cg in _cerca_ret(ret, gate, gc, 300.0, est):
-		_specs_cerca(cg, r, specs, true)
+		var seg: Array = cg
+		if seg.size() > 3 and com != "":
+			seg = seg + [com]                      # portão da comunidade
+		_specs_cerca(seg, r, specs, true)
 	var tendas: Array = [Vector2(-400, -330), Vector2(-130, -340), Vector2(150, -330), Vector2(410, -310),
 		Vector2(-440, 40), Vector2(440, 60)]
 	for i in tendas.size():

@@ -287,3 +287,15 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   descanso acima de 90 você "não está com sono". O **descanso** (100 = descansado) cai ~5 por hora acordado (+60%
   correndo) e limita até onde o fôlego recarrega: ≥70 → 100%, ≥50 → 80%, ≥30 → 60%, ≥15 → 40%, abaixo → 15%
   ("esgotado"). Na cama, volta ~14 por hora. Valores provisórios, para o playtest.
+
+### Etapa 3 — como ficou (provisório até o playtest)
+- Cada comunidade é um arquivo em `data/comunidades/<id>.json`: nome, local (vilarejo/acampamento do mapa), forte,
+  horário do portão e os NPCs (nome, papel, habilidades, casa e rotina por fase: casa, portão, fogueira, praça ou
+  trabalho), mais figurantes. Nomes ainda provisórios: a etapa 4 escreve os personagens.
+- **Vila dos Pescadores** ganhou muro de paliçada com um portão de ferro em cada ponta da rua e uma fogueira na
+  praça; as roças ficam do lado de fora. O **Santuário do Sol** usa a cerca e o portão que já tinha.
+- **Portões das comunidades: abrem às 6h e fecham às 18h**, sozinhos (o jogador não mexe neles; fora do horário a
+  dica diz "fechado até de manhã"). Pedir para entrar fica para a etapa 12 (reputação e portão).
+- Dentro das comunidades não nascem inimigos nem moradores-monstro nas casas.
+- Os NPCs aparecem quando o jogador chega a ~100 m da comunidade e somem a ~145 m. Quem está "em casa" na
+  madrugada e à noite entra e dorme (some até a rotina mudar). E num NPC: por enquanto, uma fala curta pelo papel.

@@ -1,0 +1,22 @@
+{
+	"id": "santuario_do_sol",
+	"nome": "Santuário do Sol",
+	"tipo": "acampamento",
+	"local": "Acampamento Santuário do Sol",
+	"forte": "caça",
+	"descricao": "Acampamento cercado na beira do lago. Caçadores e catadores; ninguém ali sabe tratar um ferido.",
+	"portao": {"abre": 6, "fecha": 18},
+	"figurantes": 1,
+	"npcs": [
+		{"id": "lider", "nome": "Líder (provisório)", "papel": "lider", "habilidades": [], "casa": 0,
+			"rotina": {"madrugada": "casa", "amanhecer": "fogueira", "manha": "praca", "tarde": "praca", "tardezinha": "fogueira", "noite": "casa"}},
+		{"id": "guarda", "nome": "Guarda (provisório)", "papel": "guarda", "habilidades": [], "casa": 1,
+			"rotina": {"madrugada": "casa", "amanhecer": "portao", "manha": "portao", "tarde": "portao", "tardezinha": "portao", "noite": "fogueira"}},
+		{"id": "cacador", "nome": "Caçador (provisório)", "papel": "cacador", "habilidades": ["caca"], "casa": 2,
+			"rotina": {"madrugada": "casa", "amanhecer": "trabalho", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
+		{"id": "catadora", "nome": "Catadora (provisório)", "papel": "comerciante", "habilidades": [], "casa": 3,
+			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "praca", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
+		{"id": "ferido", "nome": "Ferido (provisório)", "papel": "morador", "habilidades": [], "casa": 4,
+			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "casa", "tarde": "fogueira", "tardezinha": "fogueira", "noite": "casa"}}
+	]
+}

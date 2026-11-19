@@ -12,6 +12,7 @@ var a := Vector2.ZERO
 var b := Vector2.ZERO
 var estilo: String = "madeira"
 var aberto: bool = false
+var comunidade: String = ""          ## portão de comunidade: abre e fecha pelo horário (GerenteComunidades)
 
 var _t := 0.0                        ## 0 fechado → 1 aberto (animação)
 var _la := Vector2.ZERO
@@ -75,6 +76,8 @@ func prioridade_interacao() -> int:
 func texto_interacao() -> String:
 	if not _e_o_alvo():
 		return ""
+	if comunidade != "":
+		return "" if aberto else "Portão de %s: fechado até de manhã" % Comunidades.nome(comunidade)
 	return "E — %s portão" % ("fechar" if aberto else "abrir")
 
 
@@ -83,6 +86,7 @@ func _vao_ocupado() -> bool:
 	var dir := (b - a).normalized()
 	var meia := a.distance_to(b) * 0.5 + 12.0
 	var corpos: Array = get_tree().get_nodes_in_group("jogador") + get_tree().get_nodes_in_group("inimigo")
+	corpos.append_array(get_tree().get_nodes_in_group("npc"))
 	for c in corpos:
 		var p := _mundo_rel(c as Node2D)
 		if absf(p.dot(dir)) < meia and absf(p.dot(dir.orthogonal())) < PASSAGEM:
@@ -98,12 +102,25 @@ func _unhandled_input(event: InputEvent) -> void:
 	var j := get_tree().get_first_node_in_group("jogador")
 	if j == null or j.dirigindo != null:
 		return
+	if comunidade != "":
+		return                                   # o portão da comunidade é dos guardas
 	get_viewport().set_input_as_handled()
 	if aberto and _vao_ocupado():
 		j.aviso("Saia da passagem antes de fechar o portão.")
 		return
 	alternar()
 	j.aviso("Portão aberto. Cuidado: o que está lá fora também pode entrar." if aberto else "Portão fechado e trancado.")
+
+
+## Portão de comunidade: abre ou fecha pelo horário (não vai para a memória do Mundo; o horário decide de novo).
+func definir_aberto(v: bool) -> void:
+	if v == aberto:
+		return
+	if not v and _vao_ocupado():
+		return                                   # alguém na passagem: fecha na próxima checagem
+	aberto = v
+	_col.set_deferred("disabled", aberto)
+	set_process(true)
 
 
 func alternar() -> void:
