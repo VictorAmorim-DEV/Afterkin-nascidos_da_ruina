@@ -43,10 +43,18 @@ const ICONES := {
 	"abrigo": ["A", Color("#4ab0a0"), Color("#0a1a18"), "Seu abrigo"],
 	"cama": ["Z", Color("#6a8ad8"), Color("#ffffff"), "Sua cama"],
 	"mochila": ["M", Color("#9a3a2a"), Color("#ffffff"), "Sua mochila (onde morreu)"],
-	"rumor": ["R", Color("#9a6ad0"), Color("#ffffff"), "Rumor (região aproximada)"],
+	"rumor": ["?", Color("#e0a030"), Color("#2a1a04"), "Rumor (região aproximada)"],
+	"ninho": ["", Color("#3a2a3a"), Color("#e8d8f0"), "Ninho de morcegos"],
+	"perigo": ["!", Color("#b02828"), Color("#ffffff"), "Perigo"],
+	"suprimento": ["■", Color("#3a8a7a"), Color("#ffffff"), "Suprimentos"],
+	"sinal": ["◉", Color("#3a5a9a"), Color("#ffffff"), "Transmissão de rádio"],
+	"pessoa": ["P", Color("#c8a060"), Color("#1a1208"), "Pessoa procurada"],
+	"estranho": ["◇", Color("#5a4a6a"), Color("#f0e0ff"), "Coisa estranha"],
+	"comunidade": ["", Color("#4a8a4a"), Color("#ffffff"), "Comunidade"],
 }
 const ORDEM_LEGENDA := ["hospital", "farmacia", "mercado", "delegacia", "posto", "oficina", "escola", "igreja",
-	"restaurante", "acampamento", "desconhecido", "npc", "totem", "abrigo", "cama", "mochila", "rumor", "marcador"]
+	"restaurante", "acampamento", "desconhecido", "npc", "totem", "abrigo", "cama", "mochila", "rumor", "ninho", "perigo", "suprimento", "sinal", "pessoa", "estranho",
+	"comunidade", "marcador"]
 
 @export var modo_inicio := false
 var destaque := ""                     ## id de Inicio realçado (tela inicial e tela de respawn)
@@ -217,17 +225,29 @@ func _desenhar_sobre() -> void:
 			icone(_sobre, para_tela(IsoMath.tela_para_mundo(t.totem.no.global_position)), "totem", 8.0, fonte)
 		if t._no_abrigo != null and is_instance_valid(t._no_abrigo):
 			icone(_sobre, para_tela(IsoMath.tela_para_mundo(t._no_abrigo.global_position)), "abrigo", 8.0, fonte)
+	var lugares_feitos: Dictionary = {}           # dois rumores do mesmo lugar: um ícone só
 	for rid in Rumores.no_mapa():
+		var desc := Rumores.descoberta(rid)
+		if not desc.is_empty():
+			var pr := Rumores.ponto_real(rid)
+			var nome_l := str(desc["nome"])
+			if lugares_feitos.has(nome_l) or pr == Vector2.INF:
+				continue
+			lugares_feitos[nome_l] = true
+			var pd := para_tela(pr)
+			icone(_sobre, pd, str(desc["icone"]), 8.0, fonte)
+			if _zoom >= 2.0:
+				_rotulo(fonte, pd + Vector2(0, 20.0), nome_l, 11, Color(1.0, 0.95, 0.85))
+			continue
 		var rg: Dictionary = Rumores.regiao(rid)
 		var pc := para_tela(rg["centro"])
 		var rr := maxf(6.0, float(rg["raio"]) / MinimapaBase.PX * _esc())
-		_sobre.draw_circle(pc, rr, Color(0.6, 0.42, 0.82, 0.10))
+		_sobre.draw_circle(pc, rr, Color(0.88, 0.63, 0.19, 0.08))
 		for k in 24:
 			if k % 2 == 0:
-				_sobre.draw_arc(pc, rr, TAU * k / 24.0, TAU * (k + 1) / 24.0, 4, Color(0.7, 0.52, 0.92, 0.9), 1.5)
-		icone(_sobre, pc, "rumor", 7.0, fonte)
-		if _zoom >= 3.0:
-			_rotulo(fonte, pc + Vector2(0, rr + 12.0), Rumores.titulo(rid), 11, Color(0.85, 0.75, 1.0))
+				_sobre.draw_arc(pc, rr, TAU * k / 24.0, TAU * (k + 1) / 24.0, 4, Color(0.95, 0.7, 0.25, 0.9), 1.5)
+		icone(_sobre, pc, "rumor", 8.0, fonte)
+		_rotulo(fonte, pc + Vector2(0, maxf(rr, 10.0) + 12.0), Rumores.rotulo(rid), 11, Color(1.0, 0.82, 0.45))
 	for c in Respawn.camas:
 		if is_instance_valid(c["no"]):
 			icone(_sobre, para_tela(c["p"]), "cama", 8.0, fonte)
@@ -281,6 +301,24 @@ static func icone(ci: CanvasItem, p: Vector2, tipo: String, r: float, fonte: Fon
 	var d: Array = ICONES.get(tipo, ["•", Color.WHITE, Color.BLACK, ""])
 	ci.draw_circle(p, r + 1.5, Color(0, 0, 0, 0.75))
 	ci.draw_circle(p, r, d[1])
+	if tipo == "ninho":                          # morcego: corpo e duas asas recortadas
+		var s := r / 8.0
+		var asa := PackedVector2Array([Vector2(0, -1), Vector2(-3, -3), Vector2(-7, -2.5), Vector2(-6.5, 0.5),
+			Vector2(-5, -0.3), Vector2(-4, 1.5), Vector2(-2.5, 0.2), Vector2(-1, 2.5), Vector2(0, 1.5),
+			Vector2(1, 2.5), Vector2(2.5, 0.2), Vector2(4, 1.5), Vector2(5, -0.3), Vector2(6.5, 0.5), Vector2(7, -2.5),
+			Vector2(3, -3)])
+		for i in asa.size():
+			asa[i] = p + asa[i] * s
+		ci.draw_colored_polygon(asa, d[2])
+		ci.draw_circle(p + Vector2(-0.8, -3.2) * s, 0.9 * s, d[2])      # orelhas
+		ci.draw_circle(p + Vector2(0.8, -3.2) * s, 0.9 * s, d[2])
+		return
+	if tipo == "comunidade":                     # casinha
+		var s2 := r / 8.0
+		ci.draw_colored_polygon(PackedVector2Array([p + Vector2(-5, -0.5) * s2, p + Vector2(0, -5) * s2,
+			p + Vector2(5, -0.5) * s2]), d[2])
+		ci.draw_rect(Rect2(p + Vector2(-3.5, -0.5) * s2, Vector2(7, 5) * s2), d[2])
+		return
 	var tam := int(r * 1.5)
 	var w := fonte.get_string_size(str(d[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, tam).x
 	ci.draw_string(fonte, p + Vector2(-w * 0.5, tam * 0.36), str(d[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, tam, d[2])

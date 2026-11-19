@@ -9,14 +9,21 @@ extends RefCounted
 ##   novidade?"), conversam entre si perto do jogador e põem no mural da comunidade.
 ## Canais (Q47): conversa, conversas ouvidas, mural e bilhetes, rádio. O que o jogador conhece fica em
 ## Conversas.rumores; as novidades ganham um id "nov_<n>" e o texto.
+## No mapa, um rumor conhecido é um "?" âmbar com "Rumor: <rotulo>" no meio da região; ao chegar perto do lugar de
+## verdade aparece "Local descoberto: <nome>" e o "?" vira o ícone do que foi achado ("descoberta" no JSON), no ponto
+## exato.
 
 static var novidades: Dictionary = {}       ## id -> {titulo, texto, com, dia}
+static var descobertos: Dictionary = {}     ## id -> true (lugar do rumor já achado)
+static var _reais: Dictionary = {}          ## cache: id -> Vector2 (ponto de verdade)
 static var _regioes: Dictionary = {}        ## cache: id -> {centro, raio}
 
 
 static func zerar() -> void:
 	novidades = {}
+	descobertos = {}
 	_regioes = {}
+	_reais = {}
 
 
 static func dados(id: String) -> Dictionary:
@@ -111,6 +118,46 @@ static func _ponto(reg: Dictionary) -> Vector2:
 	return Vector2.INF
 
 
+## Ponto de verdade do lugar do rumor (INF se não houver).
+static func ponto_real(id: String) -> Vector2:
+	if not _reais.has(id):
+		_reais[id] = _ponto(dados(id).get("regiao", {}))
+	return _reais[id]
+
+
+## "Rumor: ninho de morcegos" (o rótulo curto; sem rótulo, o título).
+static func rotulo(id: String) -> String:
+	return "Rumor: %s" % str(dados(id).get("rotulo", titulo(id)))
+
+
+## Já descoberto: {nome, icone} do lugar; senão {}.
+static func descoberta(id: String) -> Dictionary:
+	return (dados(id).get("descoberta", {}) as Dictionary) if descobertos.has(id) else {}
+
+
+## O jogador está em 'p' (mundo): descobre os lugares de rumores conhecidos que estão perto. Devolve os nomes.
+static func verificar(p: Vector2) -> PackedStringArray:
+	var achados: PackedStringArray = []
+	for id in Conversas.rumores:
+		var sid := str(id)
+		if descobertos.has(sid) or not dados(sid).has("descoberta"):
+			continue
+		var reg := regiao(sid)
+		var pr := ponto_real(sid)
+		if reg.is_empty() or pr == Vector2.INF:
+			continue
+		var raio := clampf(float(reg["raio"]) * 0.3, 40.0 * IsoMath.METRO, 90.0 * IsoMath.METRO)
+		if p.distance_to(pr) < raio:
+			descobertos[sid] = true
+			var nome := str((dados(sid)["descoberta"] as Dictionary)["nome"])
+			if not achados.has(nome):
+				achados.append(nome)
+			var ref := str((dados(sid).get("regiao", {}) as Dictionary).get("ref", ""))
+			if ref.begins_with("Acampamento") and not Descobertas.acampamentos.has(ref):
+				Descobertas.acampamentos.append(ref)
+	return achados
+
+
 ## Rumores conhecidos que marcam o mapa: [id].
 static func no_mapa() -> Array:
 	var out: Array = []
@@ -173,9 +220,11 @@ static func usar_radio(j: Node) -> void:
 # ───────────────────────────── save ─────────────────────────────
 
 static func dados_para_salvar() -> Dictionary:
-	return {"novidades": novidades.duplicate(true)}
+	return {"novidades": novidades.duplicate(true), "descobertos": descobertos.keys()}
 
 
 static func restaurar(d: Dictionary) -> void:
 	zerar()
 	novidades = (d.get("novidades", {}) as Dictionary).duplicate(true)
+	for k in d.get("descobertos", []):
+		descobertos[str(k)] = true

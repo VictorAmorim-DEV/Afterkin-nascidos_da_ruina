@@ -59,6 +59,8 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 7 (`77b0683`). Escambo em duas colunas + balança (escassez, saturação, demanda).
   - ✅ 8 (`6b1aa4f`). Simulação abstrata das comunidades (necessidades, decisões, expedições), real perto do jogador.
   - ✅ 9 (`689ffde`). Rumores por conversa, conversas ouvidas, mural/bilhetes e rádio, marcando regiões no mapa.
+  - ✅ 9b (commit abaixo). Rumor no mapa como "?" âmbar com "Rumor: <rótulo>"; ao chegar ao lugar de verdade,
+    "Local descoberto: <nome>" e o "?" vira o ícone do que foi achado (morcego no ninho, perigo, suprimentos...).
   - ⬜ 10. Sobreviventes errantes na cidade (pedem ajuda, trocam, roubar/matar, hostis, em combate, encaminhar).
   - ⬜ 11. Medicina: mestre, cadeia gerada pela necessidade, habilidades.
   - ⬜ 12. Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa.

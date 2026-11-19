@@ -90,6 +90,8 @@ func _process(delta: float) -> void:
 	var nome := Descobertas.descobrir_acampamento(w)
 	if nome != "":
 		j.aviso("Local descoberto: %s" % nome)
+	for achado in Rumores.verificar(w):
+		j.aviso("Local descoberto: %s" % achado)
 
 
 func _desenhar_legenda() -> void:
@@ -99,10 +101,10 @@ func _desenhar_legenda() -> void:
 	y += 22.0
 	for k in MapaMundo.ORDEM_LEGENDA:
 		var d: Array = MapaMundo.ICONES[k]
-		MapaMundo.icone(_legenda, Vector2(14, y), k, 8.0, fonte)
+		MapaMundo.icone(_legenda, Vector2(14, y), k, 7.0, fonte)
 		var cor := Color(1, 1, 1, 0.45) if k == "npc" else Color(1, 1, 1, 0.9)
-		_legenda.draw_string(fonte, Vector2(30, y + 5), str(d[3]), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, cor)
-		y += 24.0
+		_legenda.draw_string(fonte, Vector2(30, y + 5), str(d[3]), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, cor)
+		y += 19.0                                    # 23 tipos de ícone: a legenda precisa caber na tela
 	y += 8.0
 	_legenda.draw_string(fonte, Vector2(4, y), "Cidades e vilarejos: nome", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
 		Color(1, 1, 1, 0.6))
@@ -123,6 +125,6 @@ func _desenhar_legenda() -> void:
 		var t := Rumores.titulo(str(rid))
 		if t.length() > 30:
 			t = t.substr(0, 29) + "…"
-		var marca := "• " if Rumores.regiao(str(rid)).is_empty() else "R "
+		var marca := "• " if Rumores.regiao(str(rid)).is_empty() else ("✓ " if not Rumores.descoberta(str(rid)).is_empty() else "? ")
 		_legenda.draw_string(fonte, Vector2(4, y), marca + t, HORIZONTAL_ALIGNMENT_LEFT, 196, 12, Color(1, 1, 1, 0.8))
 		y += 16.0

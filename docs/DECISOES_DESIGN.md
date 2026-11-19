@@ -399,5 +399,10 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
      vasculhar, de um grupo de rumores do canal "bilhete".
   4. **Rádio de pilha** (item novo, raro na cômoda e na estante, vale 30 no escambo): usado das 0h às 5h, pega uma
      transmissão por noite (canal "radio"); de dia, só chiado.
-- **Mapa:** cada rumor com região aparece como um círculo tracejado roxo com "R" (com o título de perto); a legenda
-  ganhou "Rumor (região aproximada)" e a lista dos últimos 10 rumores.
+- **Mapa (pedido do Victor, 19/11/2026):** cada rumor com região é um **"?" âmbar** (para não confundir com o "?"
+  roxo dos acampamentos não visitados) no meio de um círculo tracejado, com o rótulo curto sempre visível
+  ("Rumor: ninho de morcegos"). Ao chegar perto do **lugar de verdade** (30% do raio, entre 40 e 90 m; o centro do
+  círculo é deslocado, então é preciso procurar), aparece **"Local descoberto: Ninho de morcegos"** e o "?" vira o
+  ícone do que foi achado, no ponto exato: morcego (ninho), "!" (perigo), suprimentos, transmissão de rádio, pessoa
+  procurada, coisa estranha, comunidade ou acampamento. Cada rumor do JSON tem `"rotulo"` e
+  `"descoberta": {"nome", "icone"}`. A legenda lista os ícones e os últimos 10 rumores ("?" a conferir, "✓" achado).
