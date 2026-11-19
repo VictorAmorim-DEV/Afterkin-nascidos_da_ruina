@@ -49,7 +49,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     dormir" (6–7 h de jogo passam, descanso 100%). O cansaço sobe com o tempo acordado e limita até onde o fôlego
     recarrega (100% → 80% → 60% → 40% → 15% quando esgotado).
   - ✅ 3 (`a5b62db`). Dados de comunidades e NPCs (arquivos de dados), NPCs no mundo com sprite provisório, rotina pelas fases e portões.
-  - ✅ 4 (commit abaixo). Personagens das duas comunidades aprovados pelo Victor (documento "Afterkin — Personagens
+  - ✅ 4 (`91308aa`). Personagens das duas comunidades aprovados pelo Victor (documento "Afterkin — Personagens
     das comunidades", https://claude.ai/artifact/12rxpJCaHWvp9ChuAFt9JX) e passados para `data/comunidades/*.json`
     (nome, idade, quem é, como fala, o que quer, segredo, como recebe o jogador, parentes).
   - ⬜ 4b. Gênero do personagem (masculino/feminino) na criação, para as falas se ajustarem ("meu filho"/"minha
