@@ -136,6 +136,15 @@ static func protege(p: Vector2) -> bool:
 	return false
 
 
+## Comunidade a menos de 'margem' (u) da área ("" se nenhuma).
+static func perto(p: Vector2, margem: float) -> String:
+	for id in ids():
+		var g := geo(str(id))
+		if not g.is_empty() and (g["area"] as Rect2).grow(margem).has_point(p):
+			return str(id)
+	return ""
+
+
 ## Comunidade cuja área contém o ponto ("" se nenhuma).
 static func em(p: Vector2) -> String:
 	for id in ids():

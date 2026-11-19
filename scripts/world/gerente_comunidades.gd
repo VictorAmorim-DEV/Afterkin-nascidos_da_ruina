@@ -18,6 +18,7 @@ func _process(delta: float) -> void:
 	if _t > 0.0:
 		return
 	_t = 0.5
+	Reputacao.passo()                          # boatos que chegaram à hora de correr
 	var j := get_tree().get_first_node_in_group("jogador") as Node2D
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
 	if j == null:
@@ -54,6 +55,8 @@ func _criar(id: String) -> void:
 	var mundo := get_parent()
 	var nos: Array = []
 	for i in lista.size():
+		if not Reputacao.vivo(id, str((lista[i] as Dictionary).get("id", ""))):
+			continue                            # morreu de vez (Q44)
 		var n := Npc.new()
 		n.comunidade = id
 		n.dados = lista[i]

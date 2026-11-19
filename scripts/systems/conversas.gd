@@ -14,15 +14,14 @@ extends RefCounted
 ## (data/rumores.json), {"dar": "item", "qtd": n}, {"pedir": "item", "qtd": n}, {"escambo": true}.
 ## Texto: "{filho/filha}" usa a primeira forma para personagem masculino e a segunda para feminino.
 ##
-## A reputação aqui é um número por comunidade (-100 a 100); a etapa 6 troca a origem dela por testemunhas e
-## boatos, e os efeitos "rep" das conversas passam a ser o que o NPC conta aos outros.
+## A reputação é a da Reputacao (testemunhas e boatos); o efeito "rep" de uma conversa muda a da comunidade na hora.
+## Condição "lembra": o NPC lembra de um evento (furto, agressao, assassinato, defesa) que viu ou ouviu.
 
 const PASTA := "res://data/dialogos"
 const RUMORES := "res://data/rumores.json"
 
 static var flags: Dictionary = {}           ## nome -> true
 static var rumores: Dictionary = {}         ## id -> true (rumores que o jogador conhece)
-static var rep: Dictionary = {}             ## id da comunidade -> int
 static var vistos: Dictionary = {}          ## "comunidade/npc" -> true
 
 static var _arvores: Dictionary = {}        ## comunidade -> {npc: árvore}
@@ -32,7 +31,6 @@ static var _tab_rumores: Dictionary = {}
 static func zerar() -> void:
 	flags = {}
 	rumores = {}
-	rep = {}
 	vistos = {}
 
 
@@ -55,7 +53,7 @@ static func rumor(id: String) -> Dictionary:
 
 
 static func reputacao(com: String) -> int:
-	return int(rep.get(com, 0))
+	return Reputacao.valor(com)
 
 
 # ───────────────────────────── condições ─────────────────────────────
@@ -90,6 +88,12 @@ static func vale(se: Dictionary, ctx: Dictionary) -> bool:
 				if rumores.has(str(v)): return false
 			"visto":
 				if vistos.has("%s/%s" % [com, ctx["npc"]]) != bool(v): return false
+			"lembra":
+				var achou := false
+				for m in Reputacao.memoria(com, str(ctx["npc"])):
+					if str((m as Dictionary)["ev"]) == str(v):
+						achou = true
+				if not achou: return false
 			"tem":
 				for item in (v as Dictionary):
 					if j == null or j.inventario.contar(str(item)) < int((v as Dictionary)[item]): return false
@@ -111,8 +115,7 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 	for e in efeitos:
 		var ed: Dictionary = e
 		if ed.has("rep"):
-			var com: String = str(ed.get("com", ctx["com"]))
-			rep[com] = clampi(reputacao(com) + int(ed["rep"]), -100, 100)
+			Reputacao.mudar(str(ed.get("com", ctx["com"])), int(ed["rep"]))
 		if ed.has("flag"):
 			flags[str(ed["flag"])] = true
 		if ed.has("tira_flag"):
@@ -152,7 +155,7 @@ static func texto(s: String, ctx: Dictionary) -> String:
 # ───────────────────────────── save ─────────────────────────────
 
 static func dados_para_salvar() -> Dictionary:
-	return {"flags": flags.keys(), "rumores": rumores.keys(), "rep": rep.duplicate(), "vistos": vistos.keys()}
+	return {"flags": flags.keys(), "rumores": rumores.keys(), "vistos": vistos.keys()}
 
 
 static func restaurar(d: Dictionary) -> void:
@@ -161,8 +164,8 @@ static func restaurar(d: Dictionary) -> void:
 		flags[str(f)] = true
 	for r in d.get("rumores", []):
 		rumores[str(r)] = true
-	var rd: Dictionary = d.get("rep", {})
+	var rd: Dictionary = d.get("rep", {})          # saves da etapa 5: a reputação morava aqui
 	for k in rd:
-		rep[str(k)] = int(rd[k])
+		Reputacao.rep[str(k)] = int(rd[k])
 	for v in d.get("vistos", []):
 		vistos[str(v)] = true

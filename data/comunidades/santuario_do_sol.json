@@ -9,6 +9,9 @@
 		"abre": 6,
 		"fecha": 18
 	},
+	"relacoes": {
+		"vila_dos_pescadores": "neutra"
+	},
 	"figurantes": 1,
 	"npcs": [
 		{

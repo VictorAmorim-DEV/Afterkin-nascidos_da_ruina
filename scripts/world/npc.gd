@@ -4,6 +4,7 @@ extends CharacterBody2D
 ## para casa, portão, fogueira, praça ou trabalho. Na madrugada e à noite, quem está "em casa" entra e dorme (some
 ## do mapa até a rotina mudar). E perto dele abre a conversa (DialogoUI, árvore em data/dialogos); sem árvore,
 ## só uma fala curta pelo papel.
+## Pode ser ferido e morto pelo jogador (Reputacao: agressão e assassinato, com testemunhas); atacado, foge.
 ## Sprite provisório: o humano do jogador, com uma cor por NPC, até chegarem as folhas de sprite dos NPCs.
 
 const M := IsoMath.METRO
@@ -19,6 +20,10 @@ var indice: int = 0                           ## posição na lista (espalha que
 var tarefa: String = ""
 var dormindo := false
 var conversando := false                      ## parado, olhando para o jogador, enquanto a DialogoUI está aberta
+var morto := false
+var vida: float = 40.0
+var _fuga_t := 0.0                            ## segundos fugindo do jogador depois de apanhar
+var _t_agressao := -99.0                      ## quando foi a última agressão registrada (s, para não repetir a cada golpe)
 
 var _alvo := Vector2.INF                      ## mundo
 var _passo := 0.0
@@ -121,7 +126,10 @@ func _physics_process(delta: float) -> void:
 			_alvo = ponto_da_tarefa(t)
 			if dormindo:
 				_dormir(false)                # acordou: sai de casa
-	if dormindo:
+	if dormindo or morto:
+		return
+	if _fuga_t > 0.0:
+		_fugir(delta)
 		return
 	if conversando:
 		velocity = Vector2.ZERO
@@ -156,6 +164,77 @@ func _physics_process(delta: float) -> void:
 	_passo += VEL * delta * 0.09
 	_olhar = dir
 	_animar(true)
+
+
+## Correndo para longe do jogador (atacado).
+func _fugir(delta: float) -> void:
+	_fuga_t -= delta
+	var j := get_tree().get_first_node_in_group("jogador") as Node2D
+	var dir := Vector2.from_angle(randf() * TAU)
+	if j != null:
+		var d := IsoMath.tela_para_mundo(global_position - j.global_position)
+		if d.length() > 1.0:
+			dir = d.normalized()
+	if _desvio_t > 0.0:
+		_desvio_t -= delta
+		dir = (dir * 0.35 + Vector2(-dir.y, dir.x) * _lado).normalized()
+	var antes := global_position
+	velocity = IsoMath.mundo_para_tela(dir * VEL * 2.6)
+	move_and_slide()
+	if IsoMath.tela_para_mundo(global_position - antes).length() < VEL * delta * 0.8 and _desvio_t <= 0.0:
+		_lado = 1.0 if randf() < 0.5 else -1.0
+		_desvio_t = 0.5
+	_passo += VEL * 2.6 * delta * 0.09
+	_olhar = dir
+	_animar(true)
+	if _fuga_t <= 0.0:
+		_alvo = ponto_da_tarefa(tarefa)
+
+
+## Golpe ou tiro do jogador. A primeira agressão em alguns segundos vira um evento com testemunhas; morrer, outro.
+func receber_dano(n: float) -> void:
+	if morto:
+		return
+	vida -= n
+	_sprite.modulate = Color(1.0, 0.4, 0.4)
+	create_tween().tween_property(_sprite, "modulate", Color.WHITE, 0.25)
+	if dormindo:
+		_dormir(false)
+	if vida <= 0.0:
+		_morrer()
+		return
+	_fuga_t = 6.0
+	var agora := Time.get_ticks_msec() / 1000.0
+	if agora - _t_agressao > 20.0:
+		_t_agressao = agora
+		Reputacao.registrar("agressao", _mundo(), self)
+
+
+func _morrer() -> void:
+	morto = true
+	conversando = false
+	remove_from_group("interativo")
+	_col.set_deferred("disabled", true)
+	velocity = Vector2.ZERO
+	_sprite.animation = &"caido" if _sprite.sprite_frames.has_animation(&"caido") else _sprite.animation
+	_sprite.frame = 0
+	var id := str(dados.get("id", ""))
+	if not id.begins_with("figurante"):
+		Reputacao.npc_morreu(comunidade, id)
+	Reputacao.registrar("assassinato", _mundo())
+	var j := get_tree().get_first_node_in_group("jogador")
+	if j != null:
+		j.aviso("%s está morto." % nome())
+	var t := create_tween()
+	t.tween_interval(20.0)
+	t.tween_property(self, "modulate:a", 0.0, 2.0)
+	t.tween_callback(queue_free)
+
+
+## Acordou com alguém mexendo na casa dele de noite (Reputacao: furto). Sai para a rua, assustado.
+func acordar_assustado() -> void:
+	_dormir(false)
+	_fuga_t = 3.0
 
 
 func _olhar_para_jogador() -> void:
@@ -193,7 +272,7 @@ func _dist_jogador() -> float:
 
 
 func _e_o_alvo() -> bool:
-	if dormindo:
+	if dormindo or morto:
 		return false
 	var d := _dist_jogador()
 	if d > ALCANCE_FALA:

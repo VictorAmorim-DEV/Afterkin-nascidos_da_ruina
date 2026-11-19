@@ -703,6 +703,48 @@ func _inimigo_perto() -> Inimigo:
 	return melhor
 
 
+## Morador ao alcance do golpe, à frente (só quando não há inimigo).
+func _npc_perto() -> Npc:
+	var melhor: Npc = null
+	var dist := 55.0
+	var olhar := Vector2.from_angle(face)
+	for n in get_tree().get_nodes_in_group("npc"):
+		var npc := n as Npc
+		if npc == null or npc.morto or npc.dormindo:
+			continue
+		var v: Vector2 = IsoMath.tela_para_mundo(npc.global_position - global_position)
+		if v.length() < dist and v.dot(olhar) > -8.0:
+			dist = v.length()
+			melhor = npc
+	return melhor
+
+
+var _confirma_npc: Npc = null              ## morador que o próximo clique (em 2 s) vai mesmo atacar
+var _confirma_t := 0.0
+
+
+## Atacar um morador pede um segundo clique: o primeiro só avisa (evita golpe sem querer numa conversa).
+func _confirmar_ataque(npc: Npc) -> bool:
+	var agora := Time.get_ticks_msec() / 1000.0
+	if _confirma_npc == npc and agora - _confirma_t < 2.0:
+		return true
+	_confirma_npc = npc
+	_confirma_t = agora
+	aviso("Atacar %s? Clique de novo para confirmar." % npc.nome())
+	ataque_cd = 0.25
+	return false
+
+
+func _golpear_npc(npc: Npc) -> void:
+	if not _confirmar_ataque(npc):
+		return
+	var dano: float = 16.0 * 1.1 * BONUS_ARMA.get(inventario.id_equipado(), 1.0)
+	ataque_cd = 0.6
+	golpe_t = 0.2
+	aviso("Você acertou %s." % npc.nome())
+	npc.receber_dano(dano)
+
+
 func atacar() -> void:
 	if ataque_cd > 0.0 or morto or _saltando:
 		return
@@ -712,6 +754,10 @@ func atacar() -> void:
 	postura = Postura.EM_PE if postura == Postura.AGACHADO else postura
 	var alvo := _inimigo_perto()
 	if alvo == null:
+		var npc := _npc_perto()
+		if npc != null:
+			_golpear_npc(npc)
+			return
 		var melhor: Coletavel = null
 		var dist := INF
 		for c in get_tree().get_nodes_in_group("coletavel"):
@@ -764,10 +810,15 @@ func _atirar() -> void:
 	_tiro_t = 0.35
 	var alcance := ALCANCE_TIRO_M * IsoMath.METRO
 	var alvo := _alvo_da_mira(alcance)
+	var npc_mira := _npc_na_mira(alcance) if alvo == null else null
+	if npc_mira != null and not _confirmar_ataque(npc_mira):
+		inventario.adicionar_parcial("municao", 1)   # não atirou: devolve a bala
+		return
 	var olhar := Vector2.from_angle(face)
 	var dist := alcance
-	if alvo != null:
-		var v: Vector2 = IsoMath.tela_para_mundo(alvo.global_position - global_position)
+	var mirado: Node2D = alvo if alvo != null else npc_mira
+	if mirado != null:
+		var v: Vector2 = IsoMath.tela_para_mundo(mirado.global_position - global_position)
 		dist = v.length()
 		olhar = v / maxf(dist, 0.001)
 	else:
@@ -777,12 +828,30 @@ func _atirar() -> void:
 	face = olhar.angle()                       # o corpo vira na hora para onde atirou
 	_rastro_tiro(olhar * dist)
 	var balas: int = inventario.contar("municao")
+	if npc_mira != null:
+		var dano_n := DANO_TIRO * lerpf(1.0, 0.6, dist / alcance)
+		npc_mira.receber_dano(dano_n)
+		aviso("Tiro! Acertou %s. (%d bala(s))" % [npc_mira.nome(), balas])
+		return
 	if alvo == null:
 		aviso("Tiro! Errou. O estampido ecoa pela rua. (%d bala(s))" % balas)
 		return
 	var dano := DANO_TIRO * lerpf(1.0, 0.6, dist / alcance)
 	alvo.receber_dano(dano)
 	aviso("Tiro! Acertou um %s (%d de dano). (%d bala(s))" % [Inimigo.NOMES[alvo.raca], roundi(dano), balas])
+
+
+## Morador sob o cursor, ao alcance do tiro (null se nenhum).
+func _npc_na_mira(alcance: float) -> Npc:
+	var mouse := get_global_mouse_position()
+	for n in get_tree().get_nodes_in_group("npc"):
+		var npc := n as Npc
+		if npc == null or npc.morto or npc.dormindo:
+			continue
+		var d_mundo: float = IsoMath.tela_para_mundo(npc.global_position - global_position).length()
+		if d_mundo < alcance and (npc.global_position + Vector2(0.0, -28.0)).distance_to(mouse) < 30.0:
+			return npc
+	return null
 
 
 ## Inimigo que o tiro acerta: primeiro o que está sob o cursor (o corpo fica ~28 px acima do pé, na tela);

@@ -324,3 +324,22 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   três saídas → Dona Iracema aceita ajudar se o Caio pedir → o Caio aceita por orgulho ferido ou pelo recado.
 - A reputação, por enquanto, é um número por comunidade mexido pelas conversas; a etapa 6 a liga a testemunhas e
   boatos.
+
+### Etapa 6 — reputação por testemunha e boato (valores provisórios)
+- **Atos que contam:** furto (vasculhar qualquer coisa dentro de uma comunidade: −8), agressão a um morador (−15),
+  assassinato (−45) e defesa (matar um monstro a até 15 m do muro: +4). As conversas continuam mexendo na hora.
+- **Quem viu:** NPC acordado, no alcance em que um inimigo te veria (luz, noite, lanterna, postura) e no mesmo
+  ambiente (os dois na rua ou no mesmo prédio). Furto de noite numa casa: o morador que dorme ali acorda e vê
+  (60%). O jogador é avisado ("Seu Valdir e Dona Iracema viram você mexendo no que é dos outros"); se ninguém viu,
+  nada acontece.
+- **Boato:** a testemunha conta 1–2 h de jogo depois; aí a reputação da comunidade muda e todos passam a lembrar
+  ("ouviu"). Se a testemunha morrer antes, o boato morre junto. Depois viaja: aliadas em ~12 h com metade do peso,
+  neutras em ~24 h com um quarto, rivais não. A **reputação humana geral** acompanha metade de cada boato.
+  Vila dos Pescadores e Santuário do Sol são **neutras** entre si (`"relacoes"` no arquivo da comunidade).
+- **Morador:** tem 40 de vida; atacado, foge. **Atacar um morador pede confirmação** (o primeiro clique só avisa).
+  Morto, não volta (Q44).
+- **Na conversa:** o NPC cobra uma vez o que lembra ("Eu vi você mexendo no que não é seu", "Soube que você enfrentou
+  um monstro perto do muro. A gente agradece") e depois segue normal. Com reputação −40 ou menos, ninguém conversa
+  ("Some daqui"). Condição nova nos diálogos: `"lembra": "furto"`.
+- **Modo dev (F1):** mostra a reputação de cada comunidade, a humana geral e os boatos a caminho; botões ±20 e
+  "Espalhar boatos já".

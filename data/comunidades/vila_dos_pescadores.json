@@ -9,6 +9,9 @@
 		"abre": 6,
 		"fecha": 18
 	},
+	"relacoes": {
+		"santuario_do_sol": "neutra"
+	},
 	"figurantes": 2,
 	"npcs": [
 		{

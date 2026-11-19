@@ -55,6 +55,22 @@ func _ready() -> void:
 	_arvore = Conversas.arvore(npc.comunidade, _ctx["npc"])
 	npc.conversando = true
 	var abertura := "fim"
+	var cobranca := _cobranca()
+	if Reputacao.valor(npc.comunidade) <= -40:
+		_arvore = {"nos": {"some": {"fala": "Some daqui. Ninguém aqui tem nada pra falar com você."}}}
+		abertura = "some"
+	elif cobranca != "":
+		_arvore = _arvore.duplicate(true)
+		if not _arvore.has("nos"):
+			_arvore["nos"] = {}
+		var seguir := "fim"
+		for e in _arvore.get("inicio", []):
+			if Conversas.vale((e as Dictionary).get("se", {}), _ctx):
+				seguir = str((e as Dictionary)["no"])
+				break
+		_arvore["nos"]["_cobranca"] = {"fala": cobranca, "sem_sair": true, "opcoes": [
+			{"texto": "...", "vai": seguir}, {"texto": "Não foi bem assim.", "vai": seguir}]}
+		_arvore["inicio"] = [{"no": "_cobranca"}]
 	for e in _arvore.get("inicio", []):
 		var ed: Dictionary = e
 		if Conversas.vale(ed.get("se", {}), _ctx):
@@ -62,6 +78,29 @@ func _ready() -> void:
 			break
 	Conversas.vistos["%s/%s" % [_ctx["com"], _ctx["npc"]]] = true
 	_ir(abertura)
+
+
+## O que o NPC tem a cobrar do jogador (a lembrança mais grave ainda não cobrada); "" se nada.
+const COBRANCAS := {
+	"assassinato": {"viu": "Eu vi o que você fez. Não chega perto de mim.", "ouviu": "Dizem que você matou gente daqui. Fala logo o que quer."},
+	"agressao": {"viu": "Você levantou a mão pra gente daqui. Eu vi.", "ouviu": "Me contaram que você atacou um dos nossos."},
+	"furto": {"viu": "Eu vi você mexendo no que não é seu.", "ouviu": "Andam dizendo que você pega o que não é seu."},
+	"defesa": {"viu": "Eu vi você enfrentar aquela coisa perto do muro. Obrigado.", "ouviu": "Soube que você enfrentou um monstro perto do muro. A gente agradece."},
+}
+const GRAVIDADE := ["assassinato", "agressao", "furto", "defesa"]
+
+
+func _cobranca() -> String:
+	var mem: Array = Reputacao.memoria(npc.comunidade, _ctx["npc"])
+	for ev in GRAVIDADE:
+		for m in mem:
+			var md: Dictionary = m
+			if str(md["ev"]) == ev and not bool(md.get("cobrado", false)):
+				for m2 in mem:
+					if str((m2 as Dictionary)["ev"]) == ev:
+						(m2 as Dictionary)["cobrado"] = true      # cobra uma vez cada tipo
+				return str((COBRANCAS[ev] as Dictionary)[str(md["como"])])
+	return ""
 
 
 func _ir(id: String) -> void:

@@ -208,6 +208,8 @@ func receber_dano(n: float) -> void:
 func _morrer() -> void:
 	morto = true
 	remove_from_group("inimigo")
+	if Comunidades.perto(_mundo(), 15.0 * M) != "":
+		Reputacao.registrar("defesa", _mundo())   # quem viu, conta: você enfrentou um monstro perto do muro
 	$CollisionShape2D.set_deferred("disabled", true)
 	sprite.animation = &"caido"
 	sprite.frame = 0

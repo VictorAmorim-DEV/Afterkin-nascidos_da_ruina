@@ -11,6 +11,8 @@ var _qtd := SpinBox.new()
 var _lugares := OptionButton.new()
 var _destinos: Array = []                 ## Vector2 (mundo) de cada entrada de _lugares
 var _vel := OptionButton.new()
+var _rep := Label.new()
+var _t_rep := 0.0
 
 
 func _ready() -> void:
@@ -108,6 +110,45 @@ func _ready() -> void:
 	lj.add_child(_botao("Mutação", _doenca.bind("Mutação vampírica")))
 	col.add_child(lj)
 	col.add_child(_botao("Matar inimigos num raio de 30 m", _matar_perto))
+
+	_titulo(col, "Reputação")
+	_rep.add_theme_font_size_override("font_size", 12)
+	col.add_child(_rep)
+	var lr := HBoxContainer.new()
+	lr.add_child(_botao("+20 aqui", _mexer_rep.bind(20)))
+	lr.add_child(_botao("−20 aqui", _mexer_rep.bind(-20)))
+	lr.add_child(_botao("Espalhar boatos já", func():
+		for b in Reputacao.pendentes:
+			b["hora"] = 0.0
+		Reputacao.passo()
+		_aviso("Boatos espalhados.")))
+	col.add_child(lr)
+
+
+func _process(delta: float) -> void:
+	if not _raiz.visible:
+		return
+	_t_rep -= delta
+	if _t_rep > 0.0:
+		return
+	_t_rep = 0.5
+	var linhas: PackedStringArray = []
+	for id in Comunidades.ids():
+		linhas.append("%s: %d" % [Comunidades.nome(str(id)), Reputacao.valor(str(id))])
+	linhas.append("Humana geral: %d · boatos a caminho: %d · mortos: %d" % [roundi(Reputacao.humana),
+		Reputacao.pendentes.size(), Reputacao.mortos.size()])
+	_rep.text = "\n".join(linhas)
+
+
+## Reputação da comunidade mais perto (até 300 m).
+func _mexer_rep(n: int) -> void:
+	var j := _j()
+	var com := Comunidades.perto(IsoMath.tela_para_mundo(j.global_position), 300.0 * IsoMath.METRO)
+	if com == "":
+		_aviso("Nenhuma comunidade por perto.")
+		return
+	Reputacao.mudar(com, n)
+	_aviso("%s: %d" % [Comunidades.nome(com), Reputacao.valor(com)])
 
 
 func _titulo(col: Control, t: String) -> void:
