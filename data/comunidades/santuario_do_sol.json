@@ -5,18 +5,127 @@
 	"local": "Acampamento Santuário do Sol",
 	"forte": "caça",
 	"descricao": "Acampamento cercado na beira do lago. Caçadores e catadores; ninguém ali sabe tratar um ferido.",
-	"portao": {"abre": 6, "fecha": 18},
+	"portao": {
+		"abre": 6,
+		"fecha": 18
+	},
 	"figurantes": 1,
 	"npcs": [
-		{"id": "lider", "nome": "Líder (provisório)", "papel": "lider", "habilidades": [], "casa": 0,
-			"rotina": {"madrugada": "casa", "amanhecer": "fogueira", "manha": "praca", "tarde": "praca", "tardezinha": "fogueira", "noite": "casa"}},
-		{"id": "guarda", "nome": "Guarda (provisório)", "papel": "guarda", "habilidades": [], "casa": 1,
-			"rotina": {"madrugada": "casa", "amanhecer": "portao", "manha": "portao", "tarde": "portao", "tardezinha": "portao", "noite": "fogueira"}},
-		{"id": "cacador", "nome": "Caçador (provisório)", "papel": "cacador", "habilidades": ["caca"], "casa": 2,
-			"rotina": {"madrugada": "casa", "amanhecer": "trabalho", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
-		{"id": "catadora", "nome": "Catadora (provisório)", "papel": "comerciante", "habilidades": [], "casa": 3,
-			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "praca", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
-		{"id": "ferido", "nome": "Ferido (provisório)", "papel": "morador", "habilidades": [], "casa": 4,
-			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "casa", "tarde": "fogueira", "tardezinha": "fogueira", "noite": "casa"}}
+		{
+			"id": "lider",
+			"nome": "Caio",
+			"idade": 41,
+			"quem": "Professor de educação física que organizava o acampamento; virou líder por ter o apito.",
+			"fala": "Motivacional, sempre \"a gente\", mas o cansaço aparece no fim das frases.",
+			"quer": "Um médico para o Guga, sem ter de pedir nada à Vila dos Pescadores.",
+			"segredo": "Culpa a Vila pela morte do irmão, que ficou do lado de fora do portão na primeira noite.",
+			"com_jogador": "Acolhedor, e logo tenta convencê-lo a ficar (gente que sabe lutar faz falta).",
+			"papel": "lider",
+			"habilidades": [],
+			"casa": 0,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "fogueira",
+				"manha": "praca",
+				"tarde": "praca",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "guarda",
+			"nome": "Rosa",
+			"nome_completo": "Rosalinda",
+			"idade": 34,
+			"parentes": {
+				"irmao": "ferido"
+			},
+			"quem": "Cabo do Exército que servia na Base Militar Sentinela. Irmã do Guga.",
+			"fala": "Seca e militar; conta tudo em turnos, metros e cartuchos.",
+			"quer": "Mais gente armada no muro; desconfia de todo estranho.",
+			"segredo": "Desertou da base na segunda semana e sabe o que aconteceu lá dentro (gancho de rumor sobre a base).",
+			"com_jogador": "Hostil no começo; com a origem Policial, um pouco menos.",
+			"papel": "guarda",
+			"habilidades": [],
+			"casa": 1,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "portao",
+				"manha": "portao",
+				"tarde": "portao",
+				"tardezinha": "portao",
+				"noite": "fogueira"
+			}
+		},
+		{
+			"id": "cacador",
+			"nome": "Seu Bento",
+			"idade": 58,
+			"quem": "Guia de pesca e caça esportiva no lago há 30 anos; conhece cada trilha.",
+			"fala": "Devagar, com pausas; fala de rastros e de vento como quem lê jornal.",
+			"quer": "Entender as trilhas novas que aparecem na mata, abertas à noite por algo que não é bicho.",
+			"segredo": "Sabe onde fica um ninho de morcegos (o antídoto) e não conta a ninguém, com medo de mandarem gente lá morrer.",
+			"com_jogador": "Respeita quem anda em silêncio; ensina a ler rastros a quem pergunta.",
+			"papel": "cacador",
+			"habilidades": [
+				"caca"
+			],
+			"casa": 2,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "trabalho",
+				"manha": "trabalho",
+				"tarde": "trabalho",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "catadora",
+			"nome": "Tati",
+			"nome_completo": "Tatiane",
+			"idade": 27,
+			"quem": "Ex-entregadora de aplicativo; conhece cada rua de Porto Atlântico e vai à cidade catar.",
+			"fala": "Rápida, prática, irônica; dá endereço como quem ainda faz entrega.",
+			"quer": "Troca justa e companhia para as incursões; é a maior fonte de rumores sobre a cidade.",
+			"segredo": "Guarda um rádio que às vezes pega uma transmissão de outra comunidade (gancho do rádio, Q47).",
+			"com_jogador": "Amigável e interesseira na medida certa.",
+			"papel": "comerciante",
+			"habilidades": [],
+			"casa": 3,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "casa",
+				"manha": "praca",
+				"tarde": "trabalho",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "ferido",
+			"nome": "Guga",
+			"nome_completo": "Gustavo",
+			"idade": 19,
+			"parentes": {
+				"irma": "guarda"
+			},
+			"quem": "Irmão da Rosa. Cortou a perna num vidro na cidade, e o corte infeccionou (não foi mordida).",
+			"fala": "Febril; alterna piada e medo, às vezes delira.",
+			"quer": "Não perder a perna.",
+			"segredo": "Nenhum; ele é a necessidade que abre a parceria. Sem tratamento, piora com os dias e pode morrer (Q44).",
+			"com_jogador": "Pede água, remédio, que alguém fale com o médico da Vila.",
+			"papel": "morador",
+			"habilidades": [],
+			"casa": 4,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "casa",
+				"manha": "casa",
+				"tarde": "fogueira",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		}
 	]
 }

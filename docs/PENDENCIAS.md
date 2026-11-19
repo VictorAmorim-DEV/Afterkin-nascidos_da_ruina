@@ -49,9 +49,11 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     dormir" (6–7 h de jogo passam, descanso 100%). O cansaço sobe com o tempo acordado e limita até onde o fôlego
     recarrega (100% → 80% → 60% → 40% → 15% quando esgotado).
   - ✅ 3 (`a5b62db`). Dados de comunidades e NPCs (arquivos de dados), NPCs no mundo com sprite provisório, rotina pelas fases e portões.
-  - 🔄 4. Rascunho dos NPCs das duas comunidades (nome, história, personalidade, falas) para o Victor revisar.
-    Rascunho em revisão: documento "Afterkin — Personagens das comunidades (rascunho)"
-    (https://claude.ai/artifact/12rxpJCaHWvp9ChuAFt9JX). Aprovado, vai para `data/comunidades/*.json`.
+  - ✅ 4 (commit abaixo). Personagens das duas comunidades aprovados pelo Victor (documento "Afterkin — Personagens
+    das comunidades", https://claude.ai/artifact/12rxpJCaHWvp9ChuAFt9JX) e passados para `data/comunidades/*.json`
+    (nome, idade, quem é, como fala, o que quer, segredo, como recebe o jogador, parentes).
+  - ⬜ 4b. Gênero do personagem (masculino/feminino) na criação, para as falas se ajustarem ("meu filho"/"minha
+    filha" da Dona Iracema) e, quando houver, o sprite.
   - ⬜ 5. Diálogo em árvore (condições: reputação, hora, rumores, origem; consequências).
   - ⬜ 6. Memória dos NPCs (testemunhas e boatos) → reputação por comunidade e humana geral, com atraso entre aliadas.
   - ⬜ 7. Escambo em duas colunas + balança (escassez, saturação, demanda).

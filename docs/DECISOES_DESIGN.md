@@ -299,3 +299,15 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 - Dentro das comunidades não nascem inimigos nem moradores-monstro nas casas.
 - Os NPCs aparecem quando o jogador chega a ~100 m da comunidade e somem a ~145 m. Quem está "em casa" na
   madrugada e à noite entra e dorme (some até a rotina mudar). E num NPC: por enquanto, uma fala curta pelo papel.
+
+### Etapa 4 — personagens (aprovados em 18/11/2026)
+- **Vila dos Pescadores:** Dona Iracema (líder), Toné (guarda do dia), Neide (guarda da noite), Seu Valdir
+  (comerciante), Dr. Heitor (médico, mestre de Medicina), Jajá (pescador) e Dona Marlene (pescadora, mãe do Jajá).
+- **Santuário do Sol:** Caio (líder), Rosa (guarda), Seu Bento (caçador), Tati (catadora) e Guga (ferido, irmão da Rosa).
+- Fichas completas em `data/comunidades/*.json`; o tom: gente comum, desconfiada, fala curta, sem palavrão pesado.
+- Respostas do Victor: os humanos dizem **"os da noite"**, não "vampiro"; **Neide** mantém o lenço no pescoço (gancho
+  do marco 3); **Seu Valdir** troca com os Assassinos (gancho da 2b); o **portão da primeira noite** (Dona Iracema
+  deixou o irmão do Caio do lado de fora) é o conflito central; o **Guga pode morrer** se ninguém ajudar;
+  7 + 5 personagens bastam para o playtest. O tremor do Dr. Heitor fica como o motivo de ele precisar de aprendiz.
+- A Dona Iracema chama o jogador de "meu filho" ou "minha filha" conforme o personagem: o jogo precisa saber o
+  gênero do personagem (pendência 4b).

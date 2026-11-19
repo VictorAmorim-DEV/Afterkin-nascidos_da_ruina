@@ -5,22 +5,173 @@
 	"local": "Vila dos Pescadores",
 	"forte": "pesca",
 	"descricao": "Vilarejo murado na costa leste. Vive da pesca e tem o único médico da região.",
-	"portao": {"abre": 6, "fecha": 18},
+	"portao": {
+		"abre": 6,
+		"fecha": 18
+	},
 	"figurantes": 2,
 	"npcs": [
-		{"id": "lider", "nome": "Líder (provisório)", "papel": "lider", "habilidades": [], "casa": 0,
-			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "praca", "tarde": "praca", "tardezinha": "fogueira", "noite": "casa"}},
-		{"id": "guarda_dia", "nome": "Guarda do dia (provisório)", "papel": "guarda", "habilidades": [], "casa": 1,
-			"rotina": {"madrugada": "casa", "amanhecer": "portao", "manha": "portao", "tarde": "portao", "tardezinha": "portao", "noite": "casa"}},
-		{"id": "guarda_noite", "nome": "Guarda da noite (provisório)", "papel": "guarda", "habilidades": [], "casa": 2,
-			"rotina": {"madrugada": "portao", "amanhecer": "portao", "manha": "casa", "tarde": "casa", "tardezinha": "fogueira", "noite": "portao"}},
-		{"id": "comerciante", "nome": "Comerciante (provisório)", "papel": "comerciante", "habilidades": [], "casa": 3,
-			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "praca", "tarde": "praca", "tardezinha": "fogueira", "noite": "casa"}},
-		{"id": "medico", "nome": "Médico (provisório)", "papel": "mestre_medicina", "habilidades": ["medicina"], "casa": 4,
-			"rotina": {"madrugada": "casa", "amanhecer": "casa", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
-		{"id": "pescador", "nome": "Pescador (provisório)", "papel": "pescador", "habilidades": ["pesca"], "casa": 5,
-			"rotina": {"madrugada": "casa", "amanhecer": "trabalho", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}},
-		{"id": "pescadora", "nome": "Pescadora (provisório)", "papel": "pescador", "habilidades": ["pesca"], "casa": 6,
-			"rotina": {"madrugada": "casa", "amanhecer": "trabalho", "manha": "trabalho", "tarde": "trabalho", "tardezinha": "fogueira", "noite": "casa"}}
+		{
+			"id": "lider",
+			"nome": "Dona Iracema",
+			"idade": 63,
+			"quem": "Dona da peixaria e presidente da colônia de pescadores antes de tudo. Assumiu porque ninguém mais quis.",
+			"fala": "Firme e direta, chama o jogador de \"meu filho\" ou \"minha filha\" (conforme o personagem), decide na hora.",
+			"quer": "Manter a vila de pé e fora das brigas dos outros; aceita parcerias que tragam remédio e munição.",
+			"segredo": "Na primeira noite mandou fechar o portão com gente do lado de fora. Um deles era o irmão do Caio, líder do Santuário.",
+			"com_jogador": "Fria até ele provar que trabalha.",
+			"papel": "lider",
+			"habilidades": [],
+			"casa": 0,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "casa",
+				"manha": "praca",
+				"tarde": "praca",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "guarda_dia",
+			"nome": "Toné",
+			"nome_completo": "Antonio Ferraz",
+			"idade": 38,
+			"quem": "Ex-segurança de banco em Porto Atlântico, veio a pé até a costa.",
+			"fala": "Jargão de segurança (\"cidadão\", \"procedimento\"), sempre perguntando o que você traz.",
+			"quer": "Uma arma de verdade; só tem uma espingarda velha e quatro cartuchos.",
+			"segredo": "Largou o posto e o colega quando a cidade caiu, e isso o persegue.",
+			"com_jogador": "Revista a mochila na entrada; com a origem Policial, respeito e um pouco de inveja.",
+			"papel": "guarda",
+			"habilidades": [],
+			"casa": 1,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "portao",
+				"manha": "portao",
+				"tarde": "portao",
+				"tardezinha": "portao",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "guarda_noite",
+			"nome": "Neide",
+			"nome_completo": "Claudineide",
+			"idade": 29,
+			"quem": "Ex-salva-vidas da praia. Dorme de dia e vigia o muro sozinha à noite.",
+			"fala": "Pouco, em voz baixa, frases cortadas; observa antes de responder.",
+			"quer": "Saber o que são as figuras que ficam paradas nas dunas olhando o muro, sem nunca atacar.",
+			"segredo": "Usa lenço o tempo todo; ninguém viu o pescoço dela desde a segunda semana (gancho do marco 3).",
+			"com_jogador": "Neutra; é a primeira a contar o que viu à noite, se ele perguntar.",
+			"papel": "guarda",
+			"habilidades": [],
+			"casa": 2,
+			"rotina": {
+				"madrugada": "portao",
+				"amanhecer": "portao",
+				"manha": "casa",
+				"tarde": "casa",
+				"tardezinha": "fogueira",
+				"noite": "portao"
+			}
+		},
+		{
+			"id": "comerciante",
+			"nome": "Seu Valdir",
+			"idade": 52,
+			"quem": "Dono do mercadinho da vila; hoje controla o estoque comum e as trocas.",
+			"fala": "Simpático, conta vantagem, usa diminutivo (\"um antibioticozinho\"), \"negócio é negócio\".",
+			"quer": "Munição e antibiótico, que valem ouro; enche o próprio estoque escondido.",
+			"segredo": "Troca às escondidas com os Assassinos do Mangue Vermelho (gancho da etapa 2b).",
+			"com_jogador": "O mais receptivo da vila, porque vê um cliente.",
+			"papel": "comerciante",
+			"habilidades": [],
+			"casa": 3,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "casa",
+				"manha": "praca",
+				"tarde": "praca",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "medico",
+			"nome": "Dr. Heitor",
+			"idade": 67,
+			"quem": "Clínico geral aposentado de Porto Atlântico, que veio passar o fim de semana pescando e ficou.",
+			"fala": "Educado e cansado; usa um termo técnico e logo se corrige para o simples.",
+			"quer": "Um aprendiz antes que seja tarde: as mãos começaram a tremer e ele já não consegue costurar um corte.",
+			"segredo": "O tremor (só Dona Iracema sabe). Por isso não pode viajar até o Santuário: é o nó da parceria.",
+			"com_jogador": "Gentil, mas cobra: \"remédio não se dá, se troca\". Com a origem Enfermeiro(a), interesse imediato.",
+			"papel": "mestre_medicina",
+			"habilidades": [
+				"medicina"
+			],
+			"casa": 4,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "casa",
+				"manha": "trabalho",
+				"tarde": "trabalho",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "pescador",
+			"nome": "Jajá",
+			"nome_completo": "Jaílson",
+			"idade": 24,
+			"parentes": {
+				"mae": "pescadora"
+			},
+			"quem": "O mais novo dos pescadores, sai de barco antes do sol. Filho da Dona Marlene.",
+			"fala": "Rápido, brincalhão, chama o jogador de \"parceiro\".",
+			"quer": "Ir até Porto Atlântico buscar a namorada, que ficou num prédio do centro.",
+			"segredo": "Planeja sair escondido pelo mar; pede ajuda ao jogador.",
+			"com_jogador": "Curioso e amigável, a porta de entrada da vila.",
+			"papel": "pescador",
+			"habilidades": [
+				"pesca"
+			],
+			"casa": 5,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "trabalho",
+				"manha": "trabalho",
+				"tarde": "trabalho",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		},
+		{
+			"id": "pescadora",
+			"nome": "Dona Marlene",
+			"idade": 47,
+			"parentes": {
+				"filho": "pescador"
+			},
+			"quem": "Mãe do Jajá, viúva, conserta as redes da vila inteira.",
+			"fala": "Em ditados do mar (\"mar calmo não faz bom marinheiro\"), protetora.",
+			"quer": "Que o filho fique; desconfia de qualquer um que fale com ele sobre a cidade.",
+			"segredo": "Viu luzes se mexendo debaixo d'água perto do cais e não contou a ninguém.",
+			"com_jogador": "Fria se ele andar com o Jajá; calorosa se trouxer comida.",
+			"papel": "pescador",
+			"habilidades": [
+				"pesca"
+			],
+			"casa": 6,
+			"rotina": {
+				"madrugada": "casa",
+				"amanhecer": "trabalho",
+				"manha": "trabalho",
+				"tarde": "trabalho",
+				"tardezinha": "fogueira",
+				"noite": "casa"
+			}
+		}
 	]
 }
