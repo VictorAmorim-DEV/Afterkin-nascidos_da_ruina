@@ -1,0 +1,46 @@
+{
+	"dunas": {
+		"titulo": "Figuras paradas nas dunas da Vila dos Pescadores",
+		"texto": "A Neide, guarda da noite, vê figuras paradas nas dunas olhando o muro. Nunca atacam; toda noite chegam um pouco mais perto."
+	},
+	"luzes_cais": {
+		"titulo": "Luzes debaixo d'água no cais da Vila",
+		"texto": "Dona Marlene viu luzes se mexendo debaixo d'água perto do cais, de madrugada."
+	},
+	"valdir_madrugada": {
+		"titulo": "Seu Valdir sai de madrugada pelo mangue",
+		"texto": "O Toné viu o comerciante da Vila sair sozinho antes do sol, na direção do mangue."
+	},
+	"namorada_jaja": {
+		"titulo": "A namorada do Jajá ficou no centro de Porto Atlântico",
+		"texto": "A Bia estava viva num prédio azul perto da praça do centro quando o rádio parou."
+	},
+	"hospital_porto": {
+		"titulo": "Remédio no hospital de Porto Atlântico",
+		"texto": "O hospital ainda deve ter antibiótico e bandagem, mas está cheio de mortos. Armário de banheiro das casas também vale."
+	},
+	"medico_vila": {
+		"titulo": "Há um médico na Vila dos Pescadores",
+		"texto": "O Dr. Heitor, médico aposentado, mora na Vila dos Pescadores, na costa leste."
+	},
+	"guga_ferido": {
+		"titulo": "Um rapaz ferido no Santuário do Sol",
+		"texto": "O Guga, irmão da guarda Rosa, tem um corte infeccionado na perna e o acampamento não tem médico."
+	},
+	"base_sentinela": {
+		"titulo": "O que aconteceu na Base Militar Sentinela",
+		"texto": "A Rosa fugiu da base na segunda semana: \"o que tinha lá dentro não era mais gente\"."
+	},
+	"trilhas_noite": {
+		"titulo": "Trilhas abertas à noite na mata do lago",
+		"texto": "Seu Bento acha trilhas novas na mata, com galhos quebrados na altura do ombro de gente."
+	},
+	"ninho_lago": {
+		"titulo": "Um ninho de morcegos depois da curva do lago",
+		"texto": "Seu Bento conhece um lugar que cheira a morcego e coisa podre. Dizem que lá tem remédio para a mordida. Ir de dia."
+	},
+	"radio": {
+		"titulo": "Uma voz no rádio da Tati, de madrugada",
+		"texto": "O radinho da Tati às vezes pega uma voz que diz um nome de lugar e uma hora. Ela nunca ouviu tudo."
+	}
+}

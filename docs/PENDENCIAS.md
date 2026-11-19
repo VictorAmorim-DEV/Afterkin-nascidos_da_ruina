@@ -52,9 +52,9 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 4 (`91308aa`). Personagens das duas comunidades aprovados pelo Victor (documento "Afterkin — Personagens
     das comunidades", https://claude.ai/artifact/12rxpJCaHWvp9ChuAFt9JX) e passados para `data/comunidades/*.json`
     (nome, idade, quem é, como fala, o que quer, segredo, como recebe o jogador, parentes).
-  - ⬜ 4b. Gênero do personagem (masculino/feminino) na criação, para as falas se ajustarem ("meu filho"/"minha
+  - ✅ 4b (commit abaixo). Gênero do personagem (masculino/feminino) na criação, para as falas se ajustarem ("meu filho"/"minha
     filha" da Dona Iracema) e, quando houver, o sprite.
-  - ⬜ 5. Diálogo em árvore (condições: reputação, hora, rumores, origem; consequências).
+  - ✅ 5 (commit abaixo). Diálogo em árvore (condições: reputação, hora, rumores, origem; consequências).
   - ⬜ 6. Memória dos NPCs (testemunhas e boatos) → reputação por comunidade e humana geral, com atraso entre aliadas.
   - ⬜ 7. Escambo em duas colunas + balança (escassez, saturação, demanda).
   - ⬜ 8. Simulação abstrata das comunidades (necessidades, decisões, expedições), real perto do jogador.

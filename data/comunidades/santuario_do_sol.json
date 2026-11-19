@@ -14,6 +14,7 @@
 		{
 			"id": "lider",
 			"nome": "Caio",
+			"titulo": "líder",
 			"idade": 41,
 			"quem": "Professor de educação física que organizava o acampamento; virou líder por ter o apito.",
 			"fala": "Motivacional, sempre \"a gente\", mas o cansaço aparece no fim das frases.",
@@ -36,6 +37,7 @@
 			"id": "guarda",
 			"nome": "Rosa",
 			"nome_completo": "Rosalinda",
+			"titulo": "guarda",
 			"idade": 34,
 			"parentes": {
 				"irmao": "ferido"
@@ -60,6 +62,7 @@
 		{
 			"id": "cacador",
 			"nome": "Seu Bento",
+			"titulo": "caçador",
 			"idade": 58,
 			"quem": "Guia de pesca e caça esportiva no lago há 30 anos; conhece cada trilha.",
 			"fala": "Devagar, com pausas; fala de rastros e de vento como quem lê jornal.",
@@ -84,6 +87,7 @@
 			"id": "catadora",
 			"nome": "Tati",
 			"nome_completo": "Tatiane",
+			"titulo": "catadora",
 			"idade": 27,
 			"quem": "Ex-entregadora de aplicativo; conhece cada rua de Porto Atlântico e vai à cidade catar.",
 			"fala": "Rápida, prática, irônica; dá endereço como quem ainda faz entrega.",
@@ -106,6 +110,7 @@
 			"id": "ferido",
 			"nome": "Guga",
 			"nome_completo": "Gustavo",
+			"titulo": "ferido",
 			"idade": 19,
 			"parentes": {
 				"irma": "guarda"

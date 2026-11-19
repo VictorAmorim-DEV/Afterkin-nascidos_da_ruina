@@ -1,0 +1,860 @@
+{
+	"lider": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"se": {
+					"rep_min": 35
+				},
+				"no": "confia"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "{Mais um/Mais uma}. Escuta, {meu filho/minha filha}: aqui quem não trabalha não come, e quem arruma briga dorme do lado de fora. Entendido?",
+				"opcoes": [
+					{
+						"texto": "Entendido. Só quero um lugar seguro.",
+						"vai": "regras",
+						"efeitos": [
+							{
+								"rep": 2
+							}
+						]
+					},
+					{
+						"texto": "Eu sei me virar. Não preciso de sermão.",
+						"vai": "dura",
+						"efeitos": [
+							{
+								"rep": -3
+							}
+						]
+					},
+					{
+						"texto": "Sou policial. Posso ajudar a manter a ordem.",
+						"vai": "policial",
+						"se": {
+							"origem": "policial"
+						},
+						"efeitos": [
+							{
+								"rep": 3
+							}
+						]
+					},
+					{
+						"texto": "Sou {enfermeiro/enfermeira}. Sei cuidar de ferido.",
+						"vai": "enfermeiro",
+						"se": {
+							"origem": "enfermeiro"
+						},
+						"efeitos": [
+							{
+								"rep": 4
+							}
+						]
+					}
+				]
+			},
+			"regras": {
+				"fala": "Seguro ninguém está. Mas o portão abre às seis da manhã e fecha às seis da tarde. Do lado de dentro, a gente se cuida.",
+				"opcoes": [
+					{
+						"texto": "Como posso ajudar a vila?",
+						"vai": "ajudar"
+					},
+					{
+						"texto": "Quem cuida das trocas?",
+						"vai": "trocas"
+					}
+				]
+			},
+			"dura": {
+				"fala": "Então se vira lá fora. Aqui dentro a regra é minha.",
+				"opcoes": [
+					{
+						"texto": "Tudo bem. Peço desculpa.",
+						"vai": "regras",
+						"efeitos": [
+							{
+								"rep": 1
+							}
+						]
+					}
+				]
+			},
+			"policial": {
+				"fala": "Polícia... A última farda que passou aqui levou nossa gasolina. Mas tá bem. O Toné vai gostar de ter com quem conversar.",
+				"opcoes": [
+					{
+						"texto": "Vou falar com ele.",
+						"vai": "regras"
+					}
+				]
+			},
+			"enfermeiro": {
+				"fala": "{Enfermeiro/Enfermeira}? Então vai falar com o Dr. Heitor. Ele precisa de mãos.",
+				"efeitos": [
+					{
+						"flag": "iracema_indicou_heitor"
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Vou procurar o doutor.",
+						"vai": "fim"
+					}
+				]
+			},
+			"ajudar": {
+				"fala": "Traz comida, remédio, munição. A gente troca de forma justa. E se for à cidade, vai de olho aberto: muita gente sai e não volta.",
+				"opcoes": [
+					{
+						"texto": "Muita gente? Quem?",
+						"vai": "jaja"
+					}
+				]
+			},
+			"jaja": {
+				"fala": "O Jajá vive falando em ir buscar a namorada no centro. A mãe dele não dorme por causa disso. Não vá botar ideia na cabeça do menino.",
+				"efeitos": [
+					{
+						"rumor": "namorada_jaja"
+					}
+				]
+			},
+			"trocas": {
+				"fala": "O Seu Valdir. Ele cuida do estoque. Só não deixa ele te passar a perna."
+			},
+			"oi": {
+				"fala": "Diga, {meu filho/minha filha}. Trabalho não falta.",
+				"opcoes": [
+					{
+						"texto": "Como estão as coisas na vila?",
+						"vai": "situacao"
+					},
+					{
+						"texto": "Ouvi falar do Santuário do Sol.",
+						"vai": "santuario",
+						"se": {
+							"rumor": "guga_ferido"
+						}
+					}
+				]
+			},
+			"confia": {
+				"fala": "Você tem ajudado, {meu filho/minha filha}. Senta aí um pouco.",
+				"opcoes": [
+					{
+						"texto": "Como estão as coisas na vila?",
+						"vai": "situacao"
+					},
+					{
+						"texto": "Ouvi falar do Santuário do Sol.",
+						"vai": "santuario",
+						"se": {
+							"rumor": "guga_ferido"
+						}
+					},
+					{
+						"texto": "O Dr. Heitor está bem?",
+						"vai": "heitor"
+					}
+				]
+			},
+			"situacao": {
+				"fala": "Peixe tem. Remédio, não. E de noite a Neide diz que tem coisa olhando o muro. Eu prefiro não saber."
+			},
+			"santuario": {
+				"fala": "Aquele acampamento do lago? Gente do Caio. Não tenho nada a ver com eles.",
+				"opcoes": [
+					{
+						"texto": "Dizem que o Caio culpa a senhora pela morte do irmão.",
+						"vai": "portao",
+						"se": {
+							"rep_min": 15
+						}
+					}
+				]
+			},
+			"portao": {
+				"fala": "Na primeira noite tinha gente gritando no portão, e coisa atrás deles. Se eu abrisse, entrava tudo. Eu fechei. Faria de novo.",
+				"efeitos": [
+					{
+						"flag": "iracema_contou_portao"
+					},
+					{
+						"rep": 1
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "E se o Santuário pedir ajuda agora?",
+						"vai": "pedido"
+					}
+				]
+			},
+			"pedido": {
+				"fala": "Se pedirem, a gente vê. Mas é o Caio que tem que pedir. Orgulho não cura perna de ninguém.",
+				"efeitos": [
+					{
+						"flag": "iracema_aceita_pedido"
+					}
+				]
+			},
+			"heitor": {
+				"fala": "As mãos dele tremem. Ele não costura mais ninguém. Se você puder aprender com ele, aprende. A vila precisa.",
+				"efeitos": [
+					{
+						"flag": "sabe_tremor_heitor"
+					}
+				]
+			}
+		}
+	},
+	"guarda_dia": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "revista"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"revista": {
+				"fala": "Alto lá, {cidadão/cidadã}. Procedimento: o que tem na mochila? Arma, ferido, mordida?",
+				"opcoes": [
+					{
+						"texto": "Só o básico. Nenhuma mordida.",
+						"vai": "liberado",
+						"efeitos": [
+							{
+								"rep": 2
+							}
+						]
+					},
+					{
+						"texto": "Isso não é da sua conta.",
+						"vai": "tenso",
+						"efeitos": [
+							{
+								"rep": -3
+							}
+						]
+					},
+					{
+						"texto": "Calma, colega. Também já usei farda.",
+						"vai": "colega",
+						"se": {
+							"origem": "policial"
+						},
+						"efeitos": [
+							{
+								"rep": 3
+							}
+						]
+					}
+				]
+			},
+			"liberado": {
+				"fala": "Liberado. O portão abre às seis e fecha às seis. Depois disso, nem a Dona Iracema me faz abrir."
+			},
+			"tenso": {
+				"fala": "Aqui é da minha conta, sim. Ou responde, ou dá meia-volta.",
+				"opcoes": [
+					{
+						"texto": "Tá bom. Nenhuma mordida.",
+						"vai": "liberado",
+						"efeitos": [
+							{
+								"rep": 1
+							}
+						]
+					}
+				]
+			},
+			"colega": {
+				"fala": "Farda, é? ... Eu era segurança de banco. Quando a cidade caiu, eu... Esquece. Seja {bem-vindo/bem-vinda}.",
+				"efeitos": [
+					{
+						"flag": "tone_quase_contou"
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "O que aconteceu na cidade?",
+						"vai": "cidade",
+						"se": {
+							"sem_flag": "tone_contou"
+						}
+					}
+				]
+			},
+			"cidade": {
+				"fala": "Eu larguei o posto. O Mauro, meu parceiro, ficou lá dentro. {Satisfeito/Satisfeita}?",
+				"efeitos": [
+					{
+						"flag": "tone_contou"
+					},
+					{
+						"rep": 2
+					}
+				]
+			},
+			"oi": {
+				"fala": "Movimento tranquilo hoje. Graças a Deus.",
+				"opcoes": [
+					{
+						"texto": "Você precisa de alguma coisa?",
+						"vai": "precisa"
+					},
+					{
+						"texto": "Viu algo estranho por aqui?",
+						"vai": "estranho"
+					},
+					{
+						"texto": "Como você veio parar aqui?",
+						"vai": "cidade",
+						"se": {
+							"rep_min": 15,
+							"sem_flag": "tone_contou"
+						}
+					}
+				]
+			},
+			"precisa": {
+				"fala": "Uma arma decente. Esta espingarda tem quatro cartuchos e é mais velha que eu. Achando munição, me traz. Eu sei pagar."
+			},
+			"estranho": {
+				"fala": "O Seu Valdir sai antes do sol, às vezes. Diz que vai ver as armadilhas de caranguejo. Sozinho. Pelo mangue.",
+				"efeitos": [
+					{
+						"rumor": "valdir_madrugada"
+					}
+				]
+			}
+		}
+	},
+	"guarda_noite": {
+		"inicio": [
+			{
+				"se": {
+					"fase": [
+						"manha",
+						"tarde"
+					]
+				},
+				"no": "sono"
+			},
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"sono": {
+				"fala": "Hm... Eu trabalho de noite. Fala comigo depois."
+			},
+			"primeira": {
+				"fala": "... Você é {novo/nova}. Fica longe do muro de noite.",
+				"opcoes": [
+					{
+						"texto": "Por quê?",
+						"vai": "porque"
+					}
+				]
+			},
+			"porque": {
+				"fala": "Tem coisa nas dunas. Parada. Olhando.",
+				"efeitos": [
+					{
+						"rumor": "dunas"
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Eles atacam?",
+						"vai": "atacam"
+					}
+				]
+			},
+			"atacam": {
+				"fala": "Nunca. Só olham. Toda noite um pouco mais perto. (Ela ajeita o lenço no pescoço.)",
+				"opcoes": [
+					{
+						"texto": "Por que você usa esse lenço?",
+						"vai": "lenco",
+						"se": {
+							"rep_min": 35,
+							"sem_flag": "perguntou_lenco"
+						}
+					}
+				]
+			},
+			"lenco": {
+				"fala": "Frio. ... Não pergunta mais isso.",
+				"efeitos": [
+					{
+						"flag": "perguntou_lenco"
+					},
+					{
+						"rep": -2
+					}
+				]
+			},
+			"oi": {
+				"fala": "Noite comprida.",
+				"opcoes": [
+					{
+						"texto": "Viu as figuras de novo?",
+						"vai": "atacam",
+						"se": {
+							"rumor": "dunas"
+						}
+					},
+					{
+						"texto": "Quer companhia no muro?",
+						"vai": "companhia"
+					}
+				]
+			},
+			"companhia": {
+				"fala": "Se ficar {quieto/quieta}, pode.",
+				"efeitos": [
+					{
+						"rep": 2
+					}
+				]
+			}
+		}
+	},
+	"comerciante": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "Opa! Cara nova! Seu Valdir, ao seu dispor. Tem coisinha pra trocar? Aqui é negócio honesto, viu?",
+				"opcoes": [
+					{
+						"texto": "Quero ver o que você tem.",
+						"vai": "loja"
+					},
+					{
+						"texto": "O que está valendo mais por aqui?",
+						"vai": "valor"
+					}
+				]
+			},
+			"loja": {
+				"fala": "Ainda tô arrumando a mercadoria. Volta mais tarde que eu te faço um precinho.",
+				"efeitos": [
+					{
+						"escambo": true
+					}
+				]
+			},
+			"valor": {
+				"fala": "Munição e antibiótico, {meu amigo/minha amiga}. Isso aí vale ouro. Um antibioticozinho compra uma semana de peixe."
+			},
+			"oi": {
+				"fala": "Voltou! Negócio é negócio.",
+				"opcoes": [
+					{
+						"texto": "Quero trocar.",
+						"vai": "loja"
+					},
+					{
+						"texto": "O que está valendo?",
+						"vai": "valor"
+					},
+					{
+						"texto": "O Toné disse que você sai de madrugada pelo mangue.",
+						"vai": "mangue",
+						"se": {
+							"rumor": "valdir_madrugada",
+							"sem_flag": "valdir_desconversou"
+						}
+					}
+				]
+			},
+			"mangue": {
+				"fala": "Eu? Armadilha de caranguejo, {meu amigo/minha amiga}! Coisa de pescador. (Ele ri alto demais.) Quer um peixinho seco? Por conta da casa.",
+				"efeitos": [
+					{
+						"dar": "comida",
+						"qtd": 1
+					},
+					{
+						"flag": "valdir_desconversou"
+					}
+				]
+			}
+		}
+	},
+	"medico": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "Bom dia... ou boa tarde, já perdi a conta. Heitor. Fui médico. Ainda sou, quando o remédio deixa.",
+				"opcoes": [
+					{
+						"texto": "Preciso de tratamento.",
+						"vai": "tratamento"
+					},
+					{
+						"texto": "Sou {enfermeiro/enfermeira}. Posso ajudar o senhor.",
+						"vai": "colega",
+						"se": {
+							"origem": "enfermeiro"
+						},
+						"efeitos": [
+							{
+								"rep": 5
+							}
+						]
+					},
+					{
+						"texto": "Tem um rapaz ferido no Santuário do Sol.",
+						"vai": "guga",
+						"se": {
+							"flag": "guga_pediu_medico"
+						}
+					}
+				]
+			},
+			"tratamento": {
+				"fala": "Remédio não se dá, se troca. Não por maldade: é o que mantém esta vila viva. Traga antibiótico ou bandagem do hospital de Porto Atlântico e a gente conversa.",
+				"efeitos": [
+					{
+						"rumor": "hospital_porto"
+					}
+				]
+			},
+			"colega": {
+				"fala": "{Enfermeiro/Enfermeira}! Há quanto tempo eu não ouço isso. Venha me ver de novo. Talvez eu tenha trabalho para você... e coisas para ensinar.",
+				"efeitos": [
+					{
+						"flag": "heitor_interessado"
+					}
+				]
+			},
+			"guga": {
+				"fala": "Corte infeccionado, febre... Há quantos dias? (Ele suspira.) Eu não posso ir até lá. Não do jeito que estou.",
+				"opcoes": [
+					{
+						"texto": "Do jeito que está?",
+						"vai": "tremor",
+						"se": {
+							"rep_min": 15,
+							"sem_flag": "sabe_tremor_heitor"
+						}
+					},
+					{
+						"texto": "Então o que eu faço?",
+						"vai": "saidas"
+					}
+				]
+			},
+			"tremor": {
+				"fala": "(Ele mostra as mãos, tremendo.) Já não costuro nem um botão. A Dona Iracema sabe. Agora você também.",
+				"efeitos": [
+					{
+						"flag": "sabe_tremor_heitor"
+					},
+					{
+						"rep": 2
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Então o que eu faço pelo Guga?",
+						"vai": "saidas"
+					}
+				]
+			},
+			"saidas": {
+				"fala": "Tragam o rapaz até aqui, se conseguirem. Ou leve antibiótico e faça exatamente o que eu disser. Ou... (ele olha para você) aprenda. Eu preciso mesmo de alguém.",
+				"efeitos": [
+					{
+						"flag": "heitor_sabe_guga"
+					}
+				]
+			},
+			"oi": {
+				"fala": "Como vai? Nada quebrado, espero.",
+				"opcoes": [
+					{
+						"texto": "Preciso de tratamento.",
+						"vai": "tratamento"
+					},
+					{
+						"texto": "Tem um rapaz ferido no Santuário do Sol.",
+						"vai": "guga",
+						"se": {
+							"flag": "guga_pediu_medico",
+							"sem_flag": "heitor_sabe_guga"
+						}
+					},
+					{
+						"texto": "O senhor ensinaria Medicina?",
+						"vai": "ensinar",
+						"se": {
+							"rep_min": 15
+						}
+					}
+				]
+			},
+			"ensinar": {
+				"fala": "Ensinaria. Mas não é coisa de uma tarde. Primeiro me mostre que você volta da cidade inteiro, e com o que eu pedir.",
+				"efeitos": [
+					{
+						"flag": "pediu_aprender_medicina"
+					}
+				]
+			}
+		}
+	},
+	"pescador": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "E aí, {parceiro/parceira}! Gente nova! Veio da cidade? Como é que tá lá?",
+				"opcoes": [
+					{
+						"texto": "Perigosa. Cheia de mortos andando.",
+						"vai": "bia"
+					},
+					{
+						"texto": "Por que quer saber?",
+						"vai": "bia"
+					}
+				]
+			},
+			"bia": {
+				"fala": "A Bia ficou lá, minha namorada. Prédio azul perto da praça do centro. Ela tava viva quando o rádio parou.",
+				"efeitos": [
+					{
+						"rumor": "namorada_jaja"
+					}
+				]
+			},
+			"oi": {
+				"fala": "Fala, {parceiro/parceira}!",
+				"opcoes": [
+					{
+						"texto": "Ainda pensa em ir até a cidade?",
+						"vai": "plano",
+						"se": {
+							"rumor": "namorada_jaja"
+						}
+					},
+					{
+						"texto": "Como está a pesca?",
+						"vai": "pesca"
+					}
+				]
+			},
+			"pesca": {
+				"fala": "Peixe tem. O mar é que tá esquisito. Minha mãe diz que é coisa da cabeça dela."
+			},
+			"plano": {
+				"fala": "Todo dia. Vou de barco pela costa e entro pelo porto. Se você for comigo... ou se achar a Bia antes, me avisa?",
+				"efeitos": [
+					{
+						"flag": "jaja_pediu_ajuda"
+					},
+					{
+						"rep": 1
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Vou ficar de olho.",
+						"vai": "fim",
+						"efeitos": [
+							{
+								"rep": 2
+							}
+						]
+					},
+					{
+						"texto": "Sua mãe sabe disso?",
+						"vai": "mae"
+					}
+				]
+			},
+			"mae": {
+				"fala": "Nem pensar! E você não conta, hein?",
+				"efeitos": [
+					{
+						"flag": "segredo_jaja"
+					}
+				]
+			}
+		}
+	},
+	"pescadora": {
+		"inicio": [
+			{
+				"se": {
+					"flag": "jaja_pediu_ajuda",
+					"sem_flag": "marlene_desconfia"
+				},
+				"no": "desconfia"
+			},
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "Mar calmo não faz bom marinheiro. Você tem cara de quem já levou muita onda.",
+				"opcoes": [
+					{
+						"texto": "Mais do que eu queria.",
+						"vai": "redes",
+						"efeitos": [
+							{
+								"rep": 2
+							}
+						]
+					},
+					{
+						"texto": "A senhora conserta essas redes todas?",
+						"vai": "redes"
+					}
+				]
+			},
+			"redes": {
+				"fala": "A vila inteira come do que essas redes pegam. Rede rasgada é gente com fome.",
+				"opcoes": [
+					{
+						"texto": "Posso ajudar?",
+						"vai": "ajudar"
+					}
+				]
+			},
+			"ajudar": {
+				"fala": "Traz comida pra quem precisa, já ajuda. E fica longe do meu filho com essas histórias de cidade."
+			},
+			"desconfia": {
+				"fala": "Você anda conversando com o Jajá. Não pense que eu não vejo.",
+				"efeitos": [
+					{
+						"flag": "marlene_desconfia"
+					},
+					{
+						"rep": -2
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Ele só quer achar a namorada.",
+						"vai": "medo"
+					},
+					{
+						"texto": "Não é nada, Dona Marlene.",
+						"vai": "fim"
+					}
+				]
+			},
+			"medo": {
+				"fala": "Eu já enterrei um marido. Não vou enterrar um filho por causa de uma moça que nem sei se tá viva."
+			},
+			"oi": {
+				"fala": "Quem é vivo sempre aparece.",
+				"opcoes": [
+					{
+						"texto": "A senhora viu algo estranho no mar?",
+						"vai": "luzes",
+						"se": {
+							"rep_min": 15
+						}
+					},
+					{
+						"texto": "Trouxe comida.",
+						"vai": "comida",
+						"se": {
+							"tem": {
+								"comida": 1
+							}
+						}
+					}
+				]
+			},
+			"luzes": {
+				"fala": "(Ela baixa a voz.) Luzes. Debaixo d'água, perto do cais, de madrugada. Se mexendo. Não conta pra ninguém, que vão dizer que eu fiquei doida.",
+				"efeitos": [
+					{
+						"rumor": "luzes_cais"
+					}
+				]
+			},
+			"comida": {
+				"fala": "Deus te pague. Vai pra família do Zé, que tá com a criança doente.",
+				"efeitos": [
+					{
+						"pedir": "comida",
+						"qtd": 1
+					},
+					{
+						"rep": 4
+					}
+				]
+			}
+		}
+	}
+}

@@ -1,0 +1,511 @@
+{
+	"lider": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "Opa! Gente nova no Santuário! Caio. A gente aqui é pouco, mas é unido. Você sabe lutar?",
+				"opcoes": [
+					{
+						"texto": "Sei me defender.",
+						"vai": "convite",
+						"efeitos": [
+							{
+								"rep": 2
+							}
+						]
+					},
+					{
+						"texto": "Prefiro evitar briga.",
+						"vai": "convite"
+					}
+				]
+			},
+			"convite": {
+				"fala": "Fica com a gente uns dias. Comida a gente divide. Quem sabe sobreviver lá fora faz falta... a gente tem um ferido.",
+				"efeitos": [
+					{
+						"rumor": "guga_ferido"
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Ferido? Quem?",
+						"vai": "guga"
+					}
+				]
+			},
+			"guga": {
+				"fala": "O Guga, irmão da Rosa. Cortou a perna na cidade e infeccionou. A gente não tem médico. (Ele parece cansado.) A gente vai dar um jeito."
+			},
+			"oi": {
+				"fala": "E aí? A gente tá aguentando.",
+				"opcoes": [
+					{
+						"texto": "Tem um médico na Vila dos Pescadores.",
+						"vai": "vila",
+						"se": {
+							"rumor": "medico_vila",
+							"sem_flag": "caio_aceita_ajuda"
+						}
+					},
+					{
+						"texto": "Como está o Guga?",
+						"vai": "guga2",
+						"se": {
+							"rumor": "guga_ferido"
+						}
+					}
+				]
+			},
+			"vila": {
+				"fala": "(O sorriso some.) Eu sei onde tem médico. Aquela gente fechou o portão na cara do meu irmão. Ele morreu ali, gritando.",
+				"opcoes": [
+					{
+						"texto": "A Dona Iracema disse que ajuda, se você pedir.",
+						"vai": "pedir",
+						"se": {
+							"flag": "iracema_aceita_pedido"
+						}
+					},
+					{
+						"texto": "E o Guga vai morrer por orgulho?",
+						"vai": "orgulho",
+						"se": {
+							"rep_min": 15
+						}
+					}
+				]
+			},
+			"orgulho": {
+				"fala": "... Não fala assim. (Uma pausa longa.) Eu não vou lá. Mas se você levar o recado, e o médico puder ajudar, eu aceito.",
+				"efeitos": [
+					{
+						"flag": "caio_aceita_ajuda"
+					},
+					{
+						"rep": 1
+					}
+				]
+			},
+			"pedir": {
+				"fala": "Ela disse isso? (Ele olha para a tenda do Guga.) Tá. Por ele. Se você puder levar o pedido, eu agradeço.",
+				"efeitos": [
+					{
+						"flag": "caio_aceita_ajuda"
+					},
+					{
+						"rep": 3
+					}
+				]
+			},
+			"guga2": {
+				"fala": "Pior. A febre não baixa. A Rosa não dorme."
+			}
+		}
+	},
+	"guarda": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "Parado. Três metros. Mãos à vista.",
+				"opcoes": [
+					{
+						"texto": "Calma. Venho em paz.",
+						"vai": "regras",
+						"efeitos": [
+							{
+								"rep": 1
+							}
+						]
+					},
+					{
+						"texto": "Polícia. Pode baixar a arma.",
+						"vai": "policial",
+						"se": {
+							"origem": "policial"
+						},
+						"efeitos": [
+							{
+								"rep": 3
+							}
+						]
+					},
+					{
+						"texto": "Aponta isso pra outro lado.",
+						"vai": "regras",
+						"efeitos": [
+							{
+								"rep": -3
+							}
+						]
+					}
+				]
+			},
+			"regras": {
+				"fala": "Portão: das seis às dezoito. Fora disso, não abre. Arma fica no coldre aqui dentro. Entendido?",
+				"opcoes": [
+					{
+						"texto": "Entendido.",
+						"vai": "fim"
+					}
+				]
+			},
+			"policial": {
+				"fala": "Polícia, é? ... Tá. Mas a regra vale pra você também.",
+				"opcoes": [
+					{
+						"texto": "Qual regra?",
+						"vai": "regras"
+					}
+				]
+			},
+			"oi": {
+				"fala": "Turno sem novidade.",
+				"opcoes": [
+					{
+						"texto": "Você era do Exército?",
+						"vai": "base",
+						"se": {
+							"rep_min": 15,
+							"sem_rumor": "base_sentinela"
+						}
+					},
+					{
+						"texto": "Como está seu irmão?",
+						"vai": "irmao",
+						"se": {
+							"rumor": "guga_ferido"
+						}
+					}
+				]
+			},
+			"base": {
+				"fala": "Cabo. Base Sentinela. Saí na segunda semana. (Uma pausa.) Não saí. Fugi. O que tinha lá dentro não era mais gente.",
+				"efeitos": [
+					{
+						"rumor": "base_sentinela"
+					}
+				]
+			},
+			"irmao": {
+				"fala": "Morrendo devagar. Se você souber de remédio, eu pago com o que tiver. Cartucho, inclusive.",
+				"efeitos": [
+					{
+						"flag": "rosa_pediu_remedio"
+					},
+					{
+						"rep": 1
+					}
+				]
+			}
+		}
+	},
+	"cacador": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "... Pisada leve. Gosto disso. (Uma pausa.) Bento. Guia aqui do lago, trinta anos.",
+				"opcoes": [
+					{
+						"texto": "O que tem na mata hoje em dia?",
+						"vai": "mata"
+					}
+				]
+			},
+			"mata": {
+				"fala": "Bicho, menos. Trilha, mais. Trilha nova, aberta de noite. Galho quebrado na altura do ombro de gente.",
+				"efeitos": [
+					{
+						"rumor": "trilhas_noite"
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Gente fazendo trilha de noite?",
+						"vai": "gente"
+					}
+				]
+			},
+			"gente": {
+				"fala": "Eu não disse gente."
+			},
+			"oi": {
+				"fala": "O vento virou.",
+				"opcoes": [
+					{
+						"texto": "Me ensina a ler rastro?",
+						"vai": "rastro"
+					},
+					{
+						"texto": "Para onde levam as trilhas?",
+						"vai": "ninho",
+						"se": {
+							"rumor": "trilhas_noite",
+							"rep_min": 35,
+							"sem_rumor": "ninho_lago"
+						}
+					}
+				]
+			},
+			"rastro": {
+				"fala": "Olha o chão antes de olhar o horizonte. Terra mexida, folha virada. E nunca anda com o vento nas costas.",
+				"efeitos": [
+					{
+						"rep": 1
+					}
+				]
+			},
+			"ninho": {
+				"fala": "(Um silêncio longo.) Tem um lugar depois da curva do lago. Cheira a morcego e coisa podre. Dizem que lá tem remédio pra mordida. Eu não volto lá. Se você for, vai de dia.",
+				"efeitos": [
+					{
+						"rumor": "ninho_lago"
+					},
+					{
+						"flag": "bento_contou_ninho"
+					}
+				]
+			}
+		}
+	},
+	"catadora": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "Olha só, cara nova. Tati. Se precisar chegar em algum lugar de Porto Atlântico, me pergunta. Eu entregava pizza em cada esquina daquela cidade.",
+				"opcoes": [
+					{
+						"texto": "Onde dá pra achar remédio?",
+						"vai": "remedio"
+					},
+					{
+						"texto": "Quer trocar alguma coisa?",
+						"vai": "troca"
+					}
+				]
+			},
+			"remedio": {
+				"fala": "O hospital tá cheio deles... dos mortos, digo. A farmácia da avenida já foi raspada. Tenta as casas: armário de banheiro é ouro.",
+				"efeitos": [
+					{
+						"rumor": "hospital_porto"
+					}
+				]
+			},
+			"troca": {
+				"fala": "Tô sem nada que preste hoje. Amanhã eu volto da cidade.",
+				"efeitos": [
+					{
+						"escambo": true
+					}
+				]
+			},
+			"oi": {
+				"fala": "Sobreviveu mais um dia? Parabéns, a gente é dois.",
+				"opcoes": [
+					{
+						"texto": "Onde dá pra achar remédio?",
+						"vai": "remedio"
+					},
+					{
+						"texto": "Conhece um prédio azul perto da praça do centro?",
+						"vai": "predio",
+						"se": {
+							"rumor": "namorada_jaja",
+							"sem_flag": "tati_sabe_predio"
+						}
+					},
+					{
+						"texto": "Você ouve rádio?",
+						"vai": "radio",
+						"se": {
+							"rep_min": 35,
+							"sem_rumor": "radio"
+						}
+					}
+				]
+			},
+			"predio": {
+				"fala": "O azul da praça? Entregava lá todo sábado. Entra pelos fundos, que a frente tava bloqueada. Por quê?",
+				"efeitos": [
+					{
+						"flag": "tati_sabe_predio"
+					}
+				]
+			},
+			"radio": {
+				"fala": "(Ela olha para os lados.) Tenho um radinho. De vez em quando pega uma voz, de madrugada. Diz um nome de lugar e uma hora. Nunca consegui ouvir tudo.",
+				"efeitos": [
+					{
+						"rumor": "radio"
+					}
+				]
+			}
+		}
+	},
+	"ferido": {
+		"inicio": [
+			{
+				"se": {
+					"visto": false
+				},
+				"no": "primeira"
+			},
+			{
+				"no": "oi"
+			}
+		],
+		"nos": {
+			"primeira": {
+				"fala": "Ei... você tem água? ... Desculpa. A febre.",
+				"opcoes": [
+					{
+						"texto": "Tenho. Toma.",
+						"vai": "agua",
+						"se": {
+							"tem": {
+								"agua_limpa": 1
+							}
+						}
+					},
+					{
+						"texto": "O que aconteceu com você?",
+						"vai": "corte"
+					}
+				]
+			},
+			"agua": {
+				"fala": "Valeu... sério.",
+				"efeitos": [
+					{
+						"pedir": "agua_limpa",
+						"qtd": 1
+					},
+					{
+						"rep": 5
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "O que aconteceu com a sua perna?",
+						"vai": "corte"
+					}
+				]
+			},
+			"corte": {
+				"fala": "Vidro, numa loja da cidade. Achei que não era nada. Agora tá roxo e quente. Dizem que tem um médico na Vila dos Pescadores, mas o Caio não quer nem ouvir falar.",
+				"efeitos": [
+					{
+						"rumor": "medico_vila"
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Eu falo com o médico.",
+						"vai": "promessa",
+						"se": {
+							"sem_flag": "guga_pediu_medico"
+						}
+					}
+				]
+			},
+			"promessa": {
+				"fala": "Sério? Se ele puder... qualquer coisa. Eu não quero perder a perna.",
+				"efeitos": [
+					{
+						"flag": "guga_pediu_medico"
+					},
+					{
+						"rep": 2
+					}
+				]
+			},
+			"oi": {
+				"fala": "Ainda aqui. A perna também, por enquanto.",
+				"opcoes": [
+					{
+						"texto": "Falei com o médico.",
+						"vai": "noticia",
+						"se": {
+							"flag": "heitor_sabe_guga",
+							"sem_flag": "guga_esperanca"
+						}
+					},
+					{
+						"texto": "Trouxe água.",
+						"vai": "agua",
+						"se": {
+							"tem": {
+								"agua_limpa": 1
+							}
+						}
+					},
+					{
+						"texto": "O que aconteceu com a sua perna?",
+						"vai": "corte"
+					}
+				]
+			},
+			"noticia": {
+				"fala": "E aí? Ele vem?",
+				"opcoes": [
+					{
+						"texto": "Ele não pode viajar, mas vai ajudar.",
+						"vai": "esperanca"
+					}
+				]
+			},
+			"esperanca": {
+				"fala": "Já é alguma coisa. Obrigado, de verdade.",
+				"efeitos": [
+					{
+						"flag": "guga_esperanca"
+					},
+					{
+						"rep": 2
+					}
+				]
+			}
+		}
+	}
+}

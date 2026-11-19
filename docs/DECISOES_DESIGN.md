@@ -311,3 +311,16 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   7 + 5 personagens bastam para o playtest. O tremor do Dr. Heitor fica como o motivo de ele precisar de aprendiz.
 - A Dona Iracema chama o jogador de "meu filho" ou "minha filha" conforme o personagem: o jogo precisa saber o
   gênero do personagem (pendência 4b).
+
+### Etapa 5 — diálogo em árvore (provisório até o playtest)
+- **Criação do personagem** pergunta "Você é: Homem / Mulher"; as falas usam a forma certa (`{filho/filha}` no texto).
+- **Conversas** em `data/dialogos/<comunidade>.json` (uma árvore por NPC) e **rumores** em `data/rumores.json`.
+  Condições: reputação na comunidade, fase do dia, origem, gênero, flags, rumores conhecidos, já ter conversado,
+  ter um item. Efeitos: reputação, flags, rumor anotado, dar/pedir item, abrir as trocas (etapa 7).
+- A janela de conversa fica embaixo, **sem pausar o jogo**: o NPC para e olha para você; respostas por clique ou
+  teclas 1–9; afastar-se, ESC ou "Até mais" encerra. Figurantes continuam só com uma fala curta.
+- Primeiras conversas dos 12 personagens escritas (90 falas, 11 rumores). Faixas de reputação usadas: 15 (já te
+  conhecem) e 35 (confiam em você). A parceria do médico já anda pelas conversas: Guga pede → Dr. Heitor explica as
+  três saídas → Dona Iracema aceita ajudar se o Caio pedir → o Caio aceita por orgulho ferido ou pelo recado.
+- A reputação, por enquanto, é um número por comunidade mexido pelas conversas; a etapa 6 a liga a testemunhas e
+  boatos.

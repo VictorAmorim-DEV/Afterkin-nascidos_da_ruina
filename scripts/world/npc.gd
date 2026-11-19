@@ -2,7 +2,8 @@ class_name Npc
 extends CharacterBody2D
 ## Morador de uma comunidade (Comunidades, marco 2). Segue a rotina do arquivo da comunidade: a cada fase do dia vai
 ## para casa, portão, fogueira, praça ou trabalho. Na madrugada e à noite, quem está "em casa" entra e dorme (some
-## do mapa até a rotina mudar). E perto dele: por enquanto só uma fala curta; o diálogo em árvore é a etapa 5.
+## do mapa até a rotina mudar). E perto dele abre a conversa (DialogoUI, árvore em data/dialogos); sem árvore,
+## só uma fala curta pelo papel.
 ## Sprite provisório: o humano do jogador, com uma cor por NPC, até chegarem as folhas de sprite dos NPCs.
 
 const M := IsoMath.METRO
@@ -17,6 +18,7 @@ var dados: Dictionary = {}                    ## entrada do NPC no JSON (id, nom
 var indice: int = 0                           ## posição na lista (espalha quem tem a mesma tarefa)
 var tarefa: String = ""
 var dormindo := false
+var conversando := false                      ## parado, olhando para o jogador, enquanto a DialogoUI está aberta
 
 var _alvo := Vector2.INF                      ## mundo
 var _passo := 0.0
@@ -121,6 +123,11 @@ func _physics_process(delta: float) -> void:
 				_dormir(false)                # acordou: sai de casa
 	if dormindo:
 		return
+	if conversando:
+		velocity = Vector2.ZERO
+		_olhar_para_jogador()
+		_animar(false)
+		return
 	var em := _mundo()
 	var v := _alvo - em
 	if v.length() < 26.0:
@@ -202,7 +209,7 @@ func prioridade_interacao() -> int:
 
 
 func texto_interacao() -> String:
-	return "E — falar com %s" % nome() if _e_o_alvo() else ""
+	return "E — falar com %s" % nome() if _e_o_alvo() and not conversando else ""
 
 
 ## Fala curta pelo papel e pela hora (provisório até o diálogo em árvore, etapa 5).
@@ -232,4 +239,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if j == null or j.dirigindo != null or j.morto:
 		return
 	get_viewport().set_input_as_handled()
-	j.aviso("%s: “%s”" % [nome(), fala()])
+	if conversando:
+		return
+	if Conversas.arvore(comunidade, str(dados.get("id", ""))).is_empty():
+		j.aviso("%s: “%s”" % [nome(), fala()])     # figurante (ou NPC sem conversa escrita): fala curta
+		return
+	var ui := DialogoUI.new()
+	ui.npc = self
+	get_tree().current_scene.add_child(ui)

@@ -34,6 +34,9 @@ var _grade := GridContainer.new()       ## botões de raça: só aparecem no F9 
 var _grade_origem := GridContainer.new()  ## botões de origem: só no começo da partida
 var _botoes_origem: Dictionary = {}
 var origem: String = "policial"
+var genero: String = "m"
+var _linha_genero := HBoxContainer.new()  ## homem ou mulher (só no começo da partida)
+var _botoes_genero: Dictionary = {}
 var _grade_local := GridContainer.new()   ## onde você estava quando tudo começou (Inicio)
 var _rotulo_local := Label.new()
 var _botoes_local: Dictionary = {}
@@ -126,6 +129,21 @@ func _montar() -> void:
 		b.pressed.connect(_escolher_origem.bind(o))
 		_grade_origem.add_child(b)
 		_botoes_origem[o] = b
+	_linha_genero.add_theme_constant_override("separation", 10)
+	var rot_g := Label.new()
+	rot_g.text = "Você é:"
+	_linha_genero.add_child(rot_g)
+	var grupo_g := ButtonGroup.new()
+	for g in [["m", "Homem"], ["f", "Mulher"]]:
+		var bg := Button.new()
+		bg.toggle_mode = true
+		bg.button_group = grupo_g
+		bg.text = g[1]
+		bg.custom_minimum_size = Vector2(120, 34)
+		bg.pressed.connect(func(): genero = g[0])
+		_linha_genero.add_child(bg)
+		_botoes_genero[g[0]] = bg
+	col.add_child(_linha_genero)
 	_rotulo_local.text = "Onde você estava quando tudo começou?"
 	_rotulo_local.add_theme_font_size_override("font_size", 15)
 	col.add_child(_rotulo_local)
@@ -201,6 +219,7 @@ func abrir(reiniciar: bool) -> void:
 	escolhida = j.raca if (j != null and not reiniciar) else "human"
 	_grade.visible = not reiniciar
 	_grade_origem.visible = reiniciar
+	_linha_genero.visible = reiniciar
 	_grade_local.visible = reiniciar
 	_mapa.visible = reiniciar
 	_rotulo_local.visible = reiniciar
@@ -210,6 +229,7 @@ func abrir(reiniciar: bool) -> void:
 	if reiniciar:
 		_botoes_origem[origem].button_pressed = true
 		_escolher_origem(origem)
+		_botoes_genero[genero].button_pressed = true
 	_continuar.visible = reiniciar and SaveJogo.existe()
 	_raiz.visible = true
 	get_tree().paused = true
@@ -221,6 +241,7 @@ func confirmar() -> void:
 		j.definir_raca(escolhida, _reiniciar)
 		if _reiniciar:
 			j.definir_origem(origem)
+			j.genero = genero
 			var onde := _levar_ao_inicio(j)
 			_raiz.visible = false
 			if introducao_ligada():
@@ -266,6 +287,7 @@ func _levar_ao_inicio(j: Node) -> String:
 	# você conhece o lugar onde morava: a área já vem revelada no mapa (e o acampamento, descoberto)
 	Descobertas.zerar()
 	Respawn.zerar()
+	Conversas.zerar()
 	var area := _mapa._area_destaque()
 	if area.has_area():
 		Descobertas.revelar_retangulo(area.grow(20.0 * IsoMath.METRO))

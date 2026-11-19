@@ -296,6 +296,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			var mapa := get_tree().get_first_node_in_group("tela_mapa")
 			if mapa != null and mapa.aberto():
 				return                                # o Esc fecha o mapa (TelaMapa), não abre o menu
+			if get_tree().get_first_node_in_group("janela_jogo") != null:
+				return                                # o Esc fecha a conversa ou o menu da cama
 			abrir()
 			get_viewport().set_input_as_handled()
 

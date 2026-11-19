@@ -14,6 +14,7 @@
 		{
 			"id": "lider",
 			"nome": "Dona Iracema",
+			"titulo": "líder",
 			"idade": 63,
 			"quem": "Dona da peixaria e presidente da colônia de pescadores antes de tudo. Assumiu porque ninguém mais quis.",
 			"fala": "Firme e direta, chama o jogador de \"meu filho\" ou \"minha filha\" (conforme o personagem), decide na hora.",
@@ -36,6 +37,7 @@
 			"id": "guarda_dia",
 			"nome": "Toné",
 			"nome_completo": "Antonio Ferraz",
+			"titulo": "guarda do dia",
 			"idade": 38,
 			"quem": "Ex-segurança de banco em Porto Atlântico, veio a pé até a costa.",
 			"fala": "Jargão de segurança (\"cidadão\", \"procedimento\"), sempre perguntando o que você traz.",
@@ -58,6 +60,7 @@
 			"id": "guarda_noite",
 			"nome": "Neide",
 			"nome_completo": "Claudineide",
+			"titulo": "guarda da noite",
 			"idade": 29,
 			"quem": "Ex-salva-vidas da praia. Dorme de dia e vigia o muro sozinha à noite.",
 			"fala": "Pouco, em voz baixa, frases cortadas; observa antes de responder.",
@@ -79,6 +82,7 @@
 		{
 			"id": "comerciante",
 			"nome": "Seu Valdir",
+			"titulo": "comerciante",
 			"idade": 52,
 			"quem": "Dono do mercadinho da vila; hoje controla o estoque comum e as trocas.",
 			"fala": "Simpático, conta vantagem, usa diminutivo (\"um antibioticozinho\"), \"negócio é negócio\".",
@@ -100,6 +104,7 @@
 		{
 			"id": "medico",
 			"nome": "Dr. Heitor",
+			"titulo": "médico",
 			"idade": 67,
 			"quem": "Clínico geral aposentado de Porto Atlântico, que veio passar o fim de semana pescando e ficou.",
 			"fala": "Educado e cansado; usa um termo técnico e logo se corrige para o simples.",
@@ -124,6 +129,7 @@
 			"id": "pescador",
 			"nome": "Jajá",
 			"nome_completo": "Jaílson",
+			"titulo": "pescador",
 			"idade": 24,
 			"parentes": {
 				"mae": "pescadora"
@@ -150,6 +156,7 @@
 		{
 			"id": "pescadora",
 			"nome": "Dona Marlene",
+			"titulo": "pescadora e remendeira de redes",
 			"idade": 47,
 			"parentes": {
 				"filho": "pescador"

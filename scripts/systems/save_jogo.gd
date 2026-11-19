@@ -54,6 +54,7 @@ static func salvar(arvore: SceneTree) -> String:
 		"mundo": m.dados_para_salvar(),
 		"descobertas": Descobertas.dados_para_salvar(),
 		"respawn": Respawn.dados_para_salvar(arvore),
+		"conversas": Conversas.dados_para_salvar(),
 	}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f == null:
@@ -114,6 +115,7 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 		ciclo.minutos = float(rel["minutos"])
 	Descobertas.restaurar(pendente.get("descobertas", {}))
 	Respawn.restaurar(arvore, pendente.get("respawn", {}))
+	Conversas.restaurar(pendente.get("conversas", {}))
 	if j != null and bool(j.passos.get("_ativo", false)):
 		arvore.call_group("primeiros_passos", "iniciar", j)
 	pendente = {}

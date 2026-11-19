@@ -79,6 +79,7 @@ var golpe_t: float = 0.0                 ## tempo restante da animação de golp
 var passos: Dictionary = {}               ## progresso dos PrimeirosPassos (contagem por evento, "_ativo", "noite")
 var local_inicio: String = ""            ## onde estava quando tudo começou (Inicio)
 var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
+var genero: String = "m"                 ## "m" ou "f": as falas dos NPCs se ajustam (Conversas.texto)
 var _tiro_t: float = 0.0                 ## tempo restante do estampido do último tiro (barulho)
 var morto: bool = false
 var descanso: float = 100.0              ## 100 = descansado; cai acordado e limita o teto do fôlego
@@ -1309,7 +1310,7 @@ func usar_antidoto() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(),
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "genero": genero, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(),
 		"stamina": stamina, "descanso": descanso, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
@@ -1326,6 +1327,7 @@ func restaurar(d: Dictionary) -> void:
 	fome = float(d.get("fome", 100.0))
 	sede = float(d.get("sede", 100.0))
 	origem = str(d.get("origem", ""))
+	genero = str(d.get("genero", "m"))
 	local_inicio = str(d.get("local_inicio", ""))
 	incubacao_h = float(d.get("incubacao", -1.0))
 	passo_restaurar(d.get("passos", {}))

@@ -8,6 +8,7 @@ var cama: Node2D = null
 
 func _ready() -> void:
 	layer = 35
+	add_to_group("janela_jogo")
 	var fundo := ColorRect.new()
 	fundo.color = Color(0, 0, 0, 0.12)
 	fundo.set_anchors_preset(Control.PRESET_FULL_RECT)
