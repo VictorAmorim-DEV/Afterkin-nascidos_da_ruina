@@ -55,7 +55,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 4b (`50b342f`). Gênero do personagem (masculino/feminino) na criação, para as falas se ajustarem ("meu filho"/"minha
     filha" da Dona Iracema) e, quando houver, o sprite.
   - ✅ 5 (`50b342f`). Diálogo em árvore (condições: reputação, hora, rumores, origem; consequências).
-  - ✅ 6 (commit abaixo). Memória dos NPCs (testemunhas e boatos) → reputação por comunidade e humana geral, com atraso entre aliadas.
+  - ✅ 6 (`d7873fc`). Memória dos NPCs (testemunhas e boatos) → reputação por comunidade e humana geral, com atraso entre aliadas.
   - ⬜ 7. Escambo em duas colunas + balança (escassez, saturação, demanda).
   - ⬜ 8. Simulação abstrata das comunidades (necessidades, decisões, expedições), real perto do jogador.
   - ⬜ 9. Rumores por conversa, conversas ouvidas, mural/bilhetes e rádio, marcando regiões no mapa.
