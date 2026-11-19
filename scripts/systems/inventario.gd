@@ -199,6 +199,8 @@ func usar(i: int) -> void:
 			jogador.usar_bandagem()
 		"cama":
 			Respawn.colocar_cama(jogador, i)
+		"radio":
+			Rumores.usar_radio(jogador)
 
 
 func fabricar(id: String) -> void:

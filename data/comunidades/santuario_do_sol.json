@@ -27,6 +27,40 @@
 		]
 	},
 	"figurantes": 1,
+	"mural": [
+		{
+			"texto": "Não andem sozinhos na mata depois do pôr do sol. As trilhas novas não são de bicho. — Bento",
+			"rumor": "trilhas_noite"
+		},
+		{
+			"texto": "Precisa-se de quem saiba tratar ferida. O Guga piora a cada dia.",
+			"rumor": "guga_ferido"
+		},
+		{
+			"texto": "Turnos do muro com a Rosa. Quem faltar, fica sem janta."
+		}
+	],
+	"conversas_ouvidas": [
+		{
+			"a": "A Rosa não dorme desde que o Guga caiu de cama.",
+			"b": "Nem o Caio. Mas o orgulho dele dorme bem."
+		},
+		{
+			"a": "A Tati jura que o rádio dela fala de madrugada.",
+			"b": "Fala o quê? Que o mundo acabou? Isso a gente já sabe.",
+			"rumor": "radio"
+		},
+		{
+			"a": "Tem médico na Vila dos Pescadores, sabia?",
+			"b": "Sabia. O Caio prefere enterrar o Guga a pedir pra eles.",
+			"rumor": "medico_vila"
+		},
+		{
+			"a": "Dizem que a Rosa fugiu da base militar.",
+			"b": "Ninguém foge de lá. Ou foge e não fala.",
+			"rumor": "base_sentinela"
+		}
+	],
 	"npcs": [
 		{
 			"id": "lider",

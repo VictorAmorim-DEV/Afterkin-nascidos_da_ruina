@@ -58,6 +58,7 @@ static func salvar(arvore: SceneTree) -> String:
 		"reputacao": Reputacao.dados_para_salvar(),
 		"escambo": Escambo.dados_para_salvar(),
 		"simulacao": Simulacao.dados_para_salvar(),
+		"rumores": Rumores.dados_para_salvar(),
 	}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f == null:
@@ -121,6 +122,7 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 	Reputacao.restaurar(pendente.get("reputacao", {}))
 	Escambo.restaurar(pendente.get("escambo", {}))
 	Simulacao.restaurar(pendente.get("simulacao", {}))
+	Rumores.restaurar(pendente.get("rumores", {}))
 	Conversas.restaurar(pendente.get("conversas", {}))
 	if j != null and bool(j.passos.get("_ativo", false)):
 		arvore.call_group("primeiros_passos", "iniciar", j)

@@ -16,6 +16,12 @@ static func vasculhar(jogador: Node, tipo: String, rng: RandomNumberGenerator, a
 		Reputacao.registrar("furto", p)          # tudo ali é de alguém; só é furto se alguém vir
 	jogador.get_tree().call_group("primeiros_passos", "evento", "vasculhou")
 	ao_concluir.call()
+	if randf() < 0.07:                          # um bilhete no meio das coisas (Rumores, canal "bilhete")
+		var rid := Rumores.sortear_do_canal("bilhete")
+		if rid != "":
+			Rumores.conhecer(rid)
+			jogador.aviso("Um bilhete no meio das coisas: %s (Rumor anotado: %s)" % [str(Rumores.dados(rid).get("texto", "")), Rumores.titulo(rid)])
+			return
 	if g.is_empty():
 		jogador.aviso("Nada útil %s %s." % ["na" if nome.ends_with("a") else "no", nome])
 	else:

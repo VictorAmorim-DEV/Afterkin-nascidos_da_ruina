@@ -1,46 +1,184 @@
 {
 	"dunas": {
 		"titulo": "Figuras paradas nas dunas da Vila dos Pescadores",
-		"texto": "A Neide, guarda da noite, vê figuras paradas nas dunas olhando o muro. Nunca atacam; toda noite chegam um pouco mais perto."
+		"texto": "A Neide, guarda da noite, vê figuras paradas nas dunas olhando o muro. Nunca atacam; toda noite chegam um pouco mais perto.",
+		"regiao": {
+			"tipo": "comunidade",
+			"ref": "vila_dos_pescadores",
+			"raio_m": 160,
+			"desvio_m": 90
+		}
 	},
 	"luzes_cais": {
 		"titulo": "Luzes debaixo d'água no cais da Vila",
-		"texto": "Dona Marlene viu luzes se mexendo debaixo d'água perto do cais, de madrugada."
+		"texto": "Dona Marlene viu luzes se mexendo debaixo d'água perto do cais, de madrugada.",
+		"regiao": {
+			"tipo": "comunidade",
+			"ref": "vila_dos_pescadores",
+			"raio_m": 130,
+			"desvio_m": 70
+		}
 	},
 	"valdir_madrugada": {
 		"titulo": "Seu Valdir sai de madrugada pelo mangue",
-		"texto": "O Toné viu o comerciante da Vila sair sozinho antes do sol, na direção do mangue."
+		"texto": "O Toné viu o comerciante da Vila sair sozinho antes do sol, na direção do mangue.",
+		"regiao": {
+			"tipo": "acampamento",
+			"ref": "Acampamento Mangue Vermelho",
+			"raio_m": 320,
+			"desvio_m": 150
+		}
 	},
 	"namorada_jaja": {
 		"titulo": "A namorada do Jajá ficou no centro de Porto Atlântico",
-		"texto": "A Bia estava viva num prédio azul perto da praça do centro quando o rádio parou."
+		"texto": "A Bia estava viva num prédio azul perto da praça do centro quando o rádio parou.",
+		"regiao": {
+			"tipo": "area",
+			"ref": "Porto Atlântico",
+			"raio_m": 260,
+			"desvio_m": 60
+		}
 	},
 	"hospital_porto": {
 		"titulo": "Remédio no hospital de Porto Atlântico",
-		"texto": "O hospital ainda deve ter antibiótico e bandagem, mas está cheio de mortos. Armário de banheiro das casas também vale."
+		"texto": "O hospital ainda deve ter antibiótico e bandagem, mas está cheio de mortos. Armário de banheiro das casas também vale.",
+		"regiao": {
+			"tipo": "poi",
+			"ref": "hospital",
+			"area": "Porto Atlântico",
+			"raio_m": 130,
+			"desvio_m": 60
+		}
 	},
 	"medico_vila": {
 		"titulo": "Há um médico na Vila dos Pescadores",
-		"texto": "O Dr. Heitor, médico aposentado, mora na Vila dos Pescadores, na costa leste."
+		"texto": "O Dr. Heitor, médico aposentado, mora na Vila dos Pescadores, na costa leste.",
+		"regiao": {
+			"tipo": "comunidade",
+			"ref": "vila_dos_pescadores",
+			"raio_m": 110,
+			"desvio_m": 20
+		}
 	},
 	"guga_ferido": {
 		"titulo": "Um rapaz ferido no Santuário do Sol",
-		"texto": "O Guga, irmão da guarda Rosa, tem um corte infeccionado na perna e o acampamento não tem médico."
+		"texto": "O Guga, irmão da guarda Rosa, tem um corte infeccionado na perna e o acampamento não tem médico.",
+		"regiao": {
+			"tipo": "comunidade",
+			"ref": "santuario_do_sol",
+			"raio_m": 110,
+			"desvio_m": 20
+		}
 	},
 	"base_sentinela": {
 		"titulo": "O que aconteceu na Base Militar Sentinela",
-		"texto": "A Rosa fugiu da base na segunda semana: \"o que tinha lá dentro não era mais gente\"."
+		"texto": "A Rosa fugiu da base na segunda semana: \"o que tinha lá dentro não era mais gente\".",
+		"regiao": {
+			"tipo": "area",
+			"ref": "Base Militar Sentinela",
+			"raio_m": 320,
+			"desvio_m": 80
+		}
 	},
 	"trilhas_noite": {
 		"titulo": "Trilhas abertas à noite na mata do lago",
-		"texto": "Seu Bento acha trilhas novas na mata, com galhos quebrados na altura do ombro de gente."
+		"texto": "Seu Bento acha trilhas novas na mata, com galhos quebrados na altura do ombro de gente.",
+		"regiao": {
+			"tipo": "comunidade",
+			"ref": "santuario_do_sol",
+			"raio_m": 420,
+			"desvio_m": 260
+		}
 	},
 	"ninho_lago": {
 		"titulo": "Um ninho de morcegos depois da curva do lago",
-		"texto": "Seu Bento conhece um lugar que cheira a morcego e coisa podre. Dizem que lá tem remédio para a mordida. Ir de dia."
+		"texto": "Seu Bento conhece um lugar que cheira a morcego e coisa podre. Dizem que lá tem remédio para a mordida. Ir de dia.",
+		"regiao": {
+			"tipo": "ninho_perto",
+			"ref": "santuario_do_sol",
+			"raio_m": 150,
+			"desvio_m": 90
+		}
 	},
 	"radio": {
 		"titulo": "Uma voz no rádio da Tati, de madrugada",
 		"texto": "O radinho da Tati às vezes pega uma voz que diz um nome de lugar e uma hora. Ela nunca ouviu tudo."
+	},
+	"deposito_posto": {
+		"canal": "bilhete",
+		"titulo": "Um depósito trancado no Posto da Estrada",
+		"texto": "\"Deixamos o resto da comida no depósito atrás do posto. A chave fica no balcão. Se voltarmos, é nosso.\"",
+		"regiao": {
+			"tipo": "area",
+			"ref": "Posto da Estrada",
+			"raio_m": 180,
+			"desvio_m": 60
+		}
+	},
+	"farmacia_sao_jorge": {
+		"canal": "bilhete",
+		"titulo": "Remédio escondido em São Jorge",
+		"texto": "\"Escondi os antibióticos da farmácia de São Jorge no forro do teto. Não conta pra ninguém.\"",
+		"regiao": {
+			"tipo": "area",
+			"ref": "São Jorge",
+			"raio_m": 220,
+			"desvio_m": 90
+		}
+	},
+	"barracas_aguia": {
+		"canal": "bilhete",
+		"titulo": "Barracas no Lago da Águia",
+		"texto": "\"Fomos para o Lago da Águia. Tem água limpa da cachoeira. Venha se puder.\"",
+		"regiao": {
+			"tipo": "acampamento",
+			"ref": "Acampamento Lago da Águia",
+			"raio_m": 260,
+			"desvio_m": 120
+		}
+	},
+	"mangue_armados": {
+		"canal": "bilhete",
+		"titulo": "Gente armada no Mangue Vermelho",
+		"texto": "\"Não vai pro mangue. Tem gente armada lá, e eles não perguntam antes de atirar.\"",
+		"regiao": {
+			"tipo": "acampamento",
+			"ref": "Acampamento Mangue Vermelho",
+			"raio_m": 320,
+			"desvio_m": 150
+		}
+	},
+	"radio_forte": {
+		"canal": "radio",
+		"titulo": "Uma voz chama para o Forte do Leste",
+		"texto": "\"...Forte do Leste... quem ouvir, venha antes do sol... repito, antes do sol...\"",
+		"regiao": {
+			"tipo": "area",
+			"ref": "Forte do Leste",
+			"raio_m": 260,
+			"desvio_m": 60
+		}
+	},
+	"radio_aeroporto": {
+		"canal": "radio",
+		"titulo": "Pedido de socorro no Aeroporto Costa Leste",
+		"texto": "\"...presos no terminal... três dias sem água... Aeroporto Costa Leste, alguém...\"",
+		"regiao": {
+			"tipo": "area",
+			"ref": "Aeroporto Costa Leste",
+			"raio_m": 300,
+			"desvio_m": 80
+		}
+	},
+	"radio_cruz": {
+		"canal": "radio",
+		"titulo": "Aviso sobre a igreja de Cruz das Almas",
+		"texto": "\"...não entrem na igreja de Cruz das Almas. De dia parece vazia. Não está.\"",
+		"regiao": {
+			"tipo": "area",
+			"ref": "Cruz das Almas",
+			"raio_m": 220,
+			"desvio_m": 70
+		}
 	}
 }

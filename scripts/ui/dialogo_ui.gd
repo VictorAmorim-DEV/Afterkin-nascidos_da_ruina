@@ -13,6 +13,7 @@ var _fala := Label.new()
 var _opcoes := VBoxContainer.new()
 var _botoes: Array = []                ## [Button, opção] na ordem das teclas
 var _msgs: PackedStringArray = []
+var _abertura := ""                     ## nó que abriu a conversa (ganha a opção "Alguma novidade?")
 
 
 func _ready() -> void:
@@ -76,6 +77,8 @@ func _ready() -> void:
 		if Conversas.vale(ed.get("se", {}), _ctx):
 			abertura = str(ed["no"])
 			break
+	_arvore = _arvore.duplicate(true)            # o cache de Conversas não pode ser mexido
+	_abertura = abertura
 	Conversas.vistos["%s/%s" % [_ctx["com"], _ctx["npc"]]] = true
 	_ir(abertura)
 
@@ -122,6 +125,16 @@ func _ir(id: String) -> void:
 	for o in no.get("opcoes", []):
 		if Conversas.vale((o as Dictionary).get("se", {}), _ctx):
 			lista.append(o)
+	if id == _abertura and not _arvore["nos"].has("_novidade") and Reputacao.valor(npc.comunidade) > -40:
+		var n := Rumores.novidade_para(npc.comunidade)
+		if not n.is_empty():
+			_arvore["nos"]["_novidade"] = {"fala": "Ficou sabendo? %s" % str(n["texto"]), "_ouvir": n,
+				"opcoes": [{"texto": "E o que mais?", "vai": _abertura}]}
+			lista.append({"texto": "Alguma novidade por aqui?", "vai": "_novidade"})
+	if no.has("_ouvir"):
+		var av := Rumores.ouvir(no["_ouvir"])
+		if av != "":
+			_msgs.append(av)
 	if not bool(no.get("sem_sair", false)):
 		lista.append({"texto": "Até mais.", "vai": "fim"})
 	for i in lista.size():

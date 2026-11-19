@@ -110,3 +110,19 @@ func _desenhar_legenda() -> void:
 		Color(1, 1, 1, 0.6))
 	_legenda.draw_string(fonte, Vector2(4, y + 32), "Ícones aparecem de perto (zoom)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
 		Color(1, 1, 1, 0.6))
+	# rumores conhecidos (os mais recentes primeiro)
+	y += 62.0
+	_legenda.draw_string(fonte, Vector2(4, y), "RUMORES", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.85, 0.75, 1.0))
+	y += 18.0
+	var ids: Array = Conversas.rumores.keys()
+	ids.reverse()
+	if ids.is_empty():
+		_legenda.draw_string(fonte, Vector2(4, y), "Nenhum ainda. Converse, ouça, leia.", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
+			Color(1, 1, 1, 0.5))
+	for rid in ids.slice(0, 10):
+		var t := Rumores.titulo(str(rid))
+		if t.length() > 30:
+			t = t.substr(0, 29) + "…"
+		var marca := "• " if Rumores.regiao(str(rid)).is_empty() else "R "
+		_legenda.draw_string(fonte, Vector2(4, y), marca + t, HORIZONTAL_ALIGNMENT_LEFT, 196, 12, Color(1, 1, 1, 0.8))
+		y += 16.0

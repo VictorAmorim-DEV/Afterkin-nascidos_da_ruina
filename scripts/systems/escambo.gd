@@ -13,7 +13,7 @@ extends RefCounted
 const VALORES := {
 	"sucata": 1.0, "madeira": 1.5, "pedra": 1.5, "garrafa": 2.0, "pano": 2.0, "agua_suja": 2.0, "comida": 4.0,
 	"municao": 6.0, "fogueira": 8.0, "agua_limpa": 8.0, "bandagem": 10.0, "machado": 15.0, "picareta": 15.0,
-	"cama": 20.0, "antibiotico": 25.0, "pistola": 60.0, "antidoto": 60.0,
+	"cama": 20.0, "antibiotico": 25.0, "radio": 30.0, "pistola": 60.0, "antidoto": 60.0,
 }
 const NAO_TROCA := ["totem"]
 const MARGEM := 1.25                 ## o comerciante cobra 25% acima do que paga

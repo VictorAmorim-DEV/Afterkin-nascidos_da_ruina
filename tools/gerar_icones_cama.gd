@@ -1,5 +1,6 @@
 extends SceneTree
-## Gera os ícones de inventário do pano e da cama (marco 2, etapa 2), no tamanho dos ícones existentes.
+## Gera os ícones de inventário do pano e da cama (marco 2, etapa 2) e do rádio de pilha (etapa 9), no tamanho dos
+## ícones existentes.
 ## Rodar: <godot> --headless --path . -s tools/gerar_icones_cama.gd
 ## Depois: <godot> --headless --import, para criar os .import.
 
@@ -12,6 +13,7 @@ func _init() -> void:
 	var n: int = ref.get_width() if ref != null else 128
 	_pano(n).save_png(ProjectSettings.globalize_path(PASTA % "pano"))
 	_cama(n).save_png(ProjectSettings.globalize_path(PASTA % "cama"))
+	_radio(n).save_png(ProjectSettings.globalize_path(PASTA % "radio"))
 	print("ícones gerados (%d px)" % n)
 	quit()
 
@@ -53,4 +55,24 @@ func _cama(n: int) -> Image:
 	_ret(img, s, 22.0, 58.0, 108.0, 76.0, Color(0.6, 0.55, 0.45))    # colchão
 	_ret(img, s, 24.0, 48.0, 50.0, 62.0, Color(0.8, 0.77, 0.7))      # travesseiro
 	_ret(img, s, 52.0, 54.0, 108.0, 68.0, Color(0.34, 0.38, 0.47))   # cobertor
+	return img
+
+
+## Rádio de pilha: caixa com alto-falante gradeado, dial e antena.
+func _radio(n: int) -> Image:
+	var img := Image.create_empty(n, n, false, Image.FORMAT_RGBA8)
+	var s := n / 128.0
+	for k in 40:                                      # antena inclinada
+		var x := roundi((84 + k * 0.6) * s)
+		var y := roundi((44 - k) * s)
+		for d in 2:
+			if x + d < n and y >= 0:
+				img.set_pixel(x + d, y, BORDA)
+	_ret(img, s, 14.0, 44.0, 114.0, 108.0, Color(0.36, 0.3, 0.24))     # caixa
+	_ret(img, s, 24.0, 54.0, 66.0, 98.0, Color(0.18, 0.17, 0.16))      # alto-falante
+	for y in range(58, 96, 6):
+		for x in range(roundi(26 * s), roundi(64 * s)):
+			img.set_pixel(x, roundi(y * s), Color(0.42, 0.4, 0.36))
+	_ret(img, s, 74.0, 56.0, 106.0, 70.0, Color(0.85, 0.78, 0.5))      # dial
+	_ret(img, s, 80.0, 80.0, 94.0, 94.0, Color(0.6, 0.58, 0.55))       # botão
 	return img

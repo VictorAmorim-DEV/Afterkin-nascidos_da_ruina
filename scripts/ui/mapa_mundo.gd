@@ -43,9 +43,10 @@ const ICONES := {
 	"abrigo": ["A", Color("#4ab0a0"), Color("#0a1a18"), "Seu abrigo"],
 	"cama": ["Z", Color("#6a8ad8"), Color("#ffffff"), "Sua cama"],
 	"mochila": ["M", Color("#9a3a2a"), Color("#ffffff"), "Sua mochila (onde morreu)"],
+	"rumor": ["R", Color("#9a6ad0"), Color("#ffffff"), "Rumor (região aproximada)"],
 }
 const ORDEM_LEGENDA := ["hospital", "farmacia", "mercado", "delegacia", "posto", "oficina", "escola", "igreja",
-	"restaurante", "acampamento", "desconhecido", "npc", "totem", "abrigo", "cama", "mochila", "marcador"]
+	"restaurante", "acampamento", "desconhecido", "npc", "totem", "abrigo", "cama", "mochila", "rumor", "marcador"]
 
 @export var modo_inicio := false
 var destaque := ""                     ## id de Inicio realçado (tela inicial e tela de respawn)
@@ -216,6 +217,17 @@ func _desenhar_sobre() -> void:
 			icone(_sobre, para_tela(IsoMath.tela_para_mundo(t.totem.no.global_position)), "totem", 8.0, fonte)
 		if t._no_abrigo != null and is_instance_valid(t._no_abrigo):
 			icone(_sobre, para_tela(IsoMath.tela_para_mundo(t._no_abrigo.global_position)), "abrigo", 8.0, fonte)
+	for rid in Rumores.no_mapa():
+		var rg: Dictionary = Rumores.regiao(rid)
+		var pc := para_tela(rg["centro"])
+		var rr := maxf(6.0, float(rg["raio"]) / MinimapaBase.PX * _esc())
+		_sobre.draw_circle(pc, rr, Color(0.6, 0.42, 0.82, 0.10))
+		for k in 24:
+			if k % 2 == 0:
+				_sobre.draw_arc(pc, rr, TAU * k / 24.0, TAU * (k + 1) / 24.0, 4, Color(0.7, 0.52, 0.92, 0.9), 1.5)
+		icone(_sobre, pc, "rumor", 7.0, fonte)
+		if _zoom >= 3.0:
+			_rotulo(fonte, pc + Vector2(0, rr + 12.0), Rumores.titulo(rid), 11, Color(0.85, 0.75, 1.0))
 	for c in Respawn.camas:
 		if is_instance_valid(c["no"]):
 			icone(_sobre, para_tela(c["p"]), "cama", 8.0, fonte)

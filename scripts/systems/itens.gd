@@ -24,6 +24,8 @@ const DB := {
 	"municao": {"nome": "Munição", "stack": 30, "peso": 0.012, "desc": "Bala de pistola. Rara."},
 	"fogueira": {"nome": "Fogueira", "stack": 2, "peso": 2.0, "uso": true,
 		"desc": "Use para acender à sua frente. Ferve água suja, mas faz luz e barulho. Apaga em ~3 h de jogo."},
+	"radio": {"nome": "Rádio de pilha", "stack": 1, "peso": 0.6, "uso": true,
+		"desc": "Use de madrugada (0h–5h): às vezes pega uma transmissão. De dia, só chiado."},
 	"pano": {"nome": "Pano", "stack": 16, "peso": 0.15, "desc": "Lençol, cortina ou roupa velha. Serve para fazer uma cama."},
 	"cama": {"nome": "Cama", "stack": 1, "peso": 4.0, "uso": true,
 		"desc": "Use dentro de uma casa ou do seu abrigo para montá-la. Quando morrer, você pode renascer nela."},
@@ -102,9 +104,10 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 				["agua_limpa", 1 if rng.randf() < 0.06 else 0], ["pano", rng.randi_range(0, 2)]]
 		"comoda":
 			l = [["antibiotico", 1 if rng.randf() < 0.12 else 0], ["sucata", rng.randi_range(0, 1)],
-				["municao", rng.randi_range(1, 3) if rng.randf() < 0.05 else 0], ["pano", rng.randi_range(0, 1)]]
+				["municao", rng.randi_range(1, 3) if rng.randf() < 0.05 else 0], ["pano", rng.randi_range(0, 1)],
+				["radio", 1 if rng.randf() < 0.03 else 0]]
 		"estante":
-			l = [["madeira", rng.randi_range(0, 2)], ["sucata", rng.randi_range(0, 1)]]
+			l = [["madeira", rng.randi_range(0, 2)], ["sucata", rng.randi_range(0, 1)], ["radio", 1 if rng.randf() < 0.02 else 0]]
 		"balcao":
 			l = [["comida", rng.randi_range(0, 1)], ["sucata", rng.randi_range(0, 1)],
 				["agua_limpa", 1 if rng.randf() < 0.1 else 0], ["garrafa", 1 if rng.randf() < 0.25 else 0]]

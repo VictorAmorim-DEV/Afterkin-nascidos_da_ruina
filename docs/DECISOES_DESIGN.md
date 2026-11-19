@@ -381,3 +381,23 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 - Tudo vai para o **diário** ("Seu Bento voltou da cidade de mãos vazias", "O Santuário do Sol levou Guga até a Vila dos
   Pescadores para ser tratado"), que a etapa 9 transforma em rumores. O modo dev (F1) mostra reservas, feridos, a ação
   de cada comunidade e as últimas linhas do diário, com um botão "Simular 1 dia".
+
+### Etapa 9 — rumores
+- **Fixos** em `data/rumores.json` (18 hoje): título, texto e a **região** aproximada (Q23): o centro do círculo é
+  deslocado de forma fixa do lugar real, e o raio vai de ~110 m a ~420 m. Tipos de região: comunidade, acampamento,
+  área urbana, ponto de interesse (ex.: o hospital de Porto Atlântico) e o ninho mais perto de uma comunidade.
+  Rumor que aponta um acampamento o descobre no mapa.
+- **Novidades** saem do diário da simulação: um NPC conta as da comunidade dele (até 3 dias) e as das outras depois de
+  meio dia (o tempo de a notícia viajar).
+- **Quatro canais (Q47):**
+  1. **Conversa:** os efeitos das falas e, em todo NPC com novidade, a opção "Alguma novidade por aqui?".
+  2. **Conversas ouvidas:** dois moradores parados a até 5 m um do outro e o jogador a até 8 m conversam em balões a
+     cada 30–50 s; contam uma novidade ou uma das conversas fixas da comunidade (`"conversas_ouvidas"`), cada uma
+     uma vez; algumas dão rumor.
+  3. **Mural** na praça de cada comunidade (E — ler): portão, pedidos que saem da simulação (comida, remédio, quem
+     saiba tratar ferida), recados fixos (`"mural"`), quem morreu e as novidades. **Bilhete:** 7% de chance ao
+     vasculhar, de um grupo de rumores do canal "bilhete".
+  4. **Rádio de pilha** (item novo, raro na cômoda e na estante, vale 30 no escambo): usado das 0h às 5h, pega uma
+     transmissão por noite (canal "radio"); de dia, só chiado.
+- **Mapa:** cada rumor com região aparece como um círculo tracejado roxo com "R" (com o título de perto); a legenda
+  ganhou "Rumor (região aproximada)" e a lista dos últimos 10 rumores.

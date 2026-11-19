@@ -256,6 +256,38 @@ func acordar_assustado() -> void:
 	_fuga_t = 3.0
 
 
+## Balão de fala sobre a cabeça por alguns segundos (conversas ouvidas, Rumores).
+func falar(texto: String, dur: float = 4.0) -> void:
+	var antigo := get_node_or_null("Balao")
+	if antigo != null:
+		antigo.name = "BalaoVelho"                # o queue_free só vale no fim do quadro: tira o nome já
+		antigo.queue_free()
+	var p := PanelContainer.new()
+	p.name = "Balao"
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.05, 0.05, 0.06, 0.82)
+	sb.set_corner_radius_all(6)
+	sb.set_content_margin_all(6)
+	p.add_theme_stylebox_override("panel", sb)
+	var l := Label.new()
+	l.text = texto
+	l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	l.custom_minimum_size = Vector2(190, 0)
+	l.add_theme_font_size_override("font_size", 11)
+	p.add_child(l)
+	p.z_index = 50
+	p.position = Vector2(-101, -150)
+	add_child(p)
+	var t := p.create_tween()
+	t.tween_interval(dur)
+	t.tween_property(p, "modulate:a", 0.0, 0.6)
+	t.tween_callback(p.queue_free)
+
+
+func parado() -> bool:
+	return not dormindo and not morto and not fora and not conversando and _fuga_t <= 0.0 and velocity.length() < 1.0
+
+
 func _olhar_para_jogador() -> void:
 	var j := get_tree().get_first_node_in_group("jogador") as Node2D
 	if j == null:

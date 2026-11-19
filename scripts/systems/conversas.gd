@@ -126,10 +126,10 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 			flags[str(ed["flag"])] = true
 		if ed.has("tira_flag"):
 			flags.erase(str(ed["tira_flag"]))
-		if ed.has("rumor") and not rumores.has(str(ed["rumor"])):
-			rumores[str(ed["rumor"])] = true
-			var r := rumor(str(ed["rumor"]))
-			msgs.append("Rumor anotado: %s" % str(r.get("titulo", ed["rumor"])))
+		if ed.has("rumor"):
+			var a := Rumores.conhecer(str(ed["rumor"]))
+			if a != "":
+				msgs.append(a)
 		if ed.has("dar") and j != null:
 			var qtd := int(ed.get("qtd", 1))
 			var resto: int = j.inventario.adicionar_parcial(str(ed["dar"]), qtd)

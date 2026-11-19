@@ -21,6 +21,38 @@
 		"producao": 1.1
 	},
 	"figurantes": 2,
+	"mural": [
+		{
+			"texto": "Procura-se: Bia, 22 anos, estava no prédio azul da praça do centro de Porto Atlântico. Falar com o Jajá.",
+			"rumor": "namorada_jaja"
+		},
+		{
+			"texto": "Quem tiver munição para trocar, procure o Seu Valdir no mercadinho."
+		},
+		{
+			"texto": "Remédio não se dá, se troca. Ferido grave, chame o Dr. Heitor a qualquer hora.",
+			"rumor": "medico_vila"
+		}
+	],
+	"conversas_ouvidas": [
+		{
+			"a": "Viu a Neide hoje? Não tira aquele lenço por nada.",
+			"b": "Deixa a moça. Cada um com seus medos."
+		},
+		{
+			"a": "O Seu Valdir de novo, de madrugada, pro lado do mangue...",
+			"b": "Caranguejo, ele diz. Sei.",
+			"rumor": "valdir_madrugada"
+		},
+		{
+			"a": "O mar tá esquisito. A Marlene não quer mais pescar de noite.",
+			"b": "Ela viu alguma coisa. Só não conta o quê."
+		},
+		{
+			"a": "Se a Dona Iracema não tivesse fechado aquele portão...",
+			"b": "A gente tava todo mundo morto. Ela fez o certo."
+		}
+	],
 	"npcs": [
 		{
 			"id": "lider",
