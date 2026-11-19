@@ -107,6 +107,31 @@
 				"tarde": "trabalho",
 				"tardezinha": "fogueira",
 				"noite": "casa"
+			},
+			"loja": {
+				"estoque": {
+					"sucata": 15,
+					"garrafa": 4,
+					"pano": 6,
+					"madeira": 6,
+					"bandagem": 2,
+					"municao": 3
+				},
+				"repoe": {
+					"sucata": 3,
+					"pano": 1,
+					"garrafa": 1,
+					"madeira": 2
+				},
+				"demanda": {
+					"comida": 1.6,
+					"agua_limpa": 1.3,
+					"antibiotico": 1.5,
+					"sucata": 0.5
+				},
+				"rep_min": {
+					"municao": 15
+				}
 			}
 		},
 		{

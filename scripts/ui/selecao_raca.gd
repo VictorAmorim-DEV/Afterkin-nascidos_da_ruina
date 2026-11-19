@@ -289,6 +289,7 @@ func _levar_ao_inicio(j: Node) -> String:
 	Respawn.zerar()
 	Conversas.zerar()
 	Reputacao.zerar()
+	Escambo.zerar()
 	var area := _mapa._area_destaque()
 	if area.has_area():
 		Descobertas.revelar_retangulo(area.grow(20.0 * IsoMath.METRO))

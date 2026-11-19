@@ -110,6 +110,8 @@ func _ir(id: String) -> void:
 		return
 	var no: Dictionary = nos[id]
 	_msgs.append_array(Conversas.aplicar(no.get("efeitos", []), _ctx))
+	if _abrir_escambo():
+		return
 	var titulo: String = str(npc.dados.get("titulo", npc.dados.get("papel", "morador")))
 	_nome.text = "%s — %s, %s" % [npc.nome(), titulo, Comunidades.nome(npc.comunidade)]
 	_fala.text = Conversas.texto(str(no.get("fala", "...")), _ctx)
@@ -137,7 +139,23 @@ func _ir(id: String) -> void:
 
 func _escolher(o: Dictionary) -> void:
 	_msgs.append_array(Conversas.aplicar(o.get("efeitos", []), _ctx))
+	if _abrir_escambo():
+		return
 	_ir(str(o.get("vai", "fim")))
+
+
+## Efeito "escambo": troca a conversa pela tela de trocas (se o NPC tiver loja).
+func _abrir_escambo() -> bool:
+	if not bool(_ctx.get("abrir_escambo", false)):
+		return false
+	_ctx.erase("abrir_escambo")
+	var alvo := npc
+	_fechar()
+	if Escambo.tem_loja(alvo) and is_instance_valid(alvo):
+		var t := TelaEscambo.new()
+		t.npc = alvo
+		get_tree().current_scene.add_child(t)
+	return true
 
 
 func _avisar() -> void:

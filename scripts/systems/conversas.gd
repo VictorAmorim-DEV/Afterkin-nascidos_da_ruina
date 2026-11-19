@@ -135,7 +135,7 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 			j.inventario.remover(str(ed["pedir"]), qtd2)
 			msgs.append("Você entregou %d %s." % [qtd2, Itens.nome(str(ed["pedir"])).to_lower()])
 		if ed.has("escambo"):
-			msgs.append("(As trocas ainda não estão abertas: chegam na próxima etapa.)")
+			ctx["abrir_escambo"] = true            # a DialogoUI fecha a conversa e abre a TelaEscambo
 	return msgs
 
 

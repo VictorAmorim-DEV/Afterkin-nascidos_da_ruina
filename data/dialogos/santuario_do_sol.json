@@ -333,7 +333,7 @@
 				]
 			},
 			"troca": {
-				"fala": "Tô sem nada que preste hoje. Amanhã eu volto da cidade.",
+				"fala": "Bora ver. Mas não me vem com sucata enferrujada, que disso eu tenho de sobra.",
 				"efeitos": [
 					{
 						"escambo": true
@@ -346,6 +346,10 @@
 					{
 						"texto": "Onde dá pra achar remédio?",
 						"vai": "remedio"
+					},
+					{
+						"texto": "Quer trocar alguma coisa?",
+						"vai": "troca"
 					},
 					{
 						"texto": "Conhece um prédio azul perto da praça do centro?",

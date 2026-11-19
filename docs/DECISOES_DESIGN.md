@@ -343,3 +343,19 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   ("Some daqui"). Condição nova nos diálogos: `"lembra": "furto"`.
 - **Modo dev (F1):** mostra a reputação de cada comunidade, a humana geral e os boatos a caminho; botões ±20 e
   "Espalhar boatos já".
+
+### Etapa 7 — escambo (valores provisórios)
+- **Comerciantes:** Seu Valdir (Vila: peixe seco, água, sucata, pano; quer munição, antibiótico e madeira), Tati
+  (Santuário: sucata, pano, madeira, garrafa, bandagem e munição; quer comida, água limpa e antibiótico) e o
+  **Dr. Heitor** (bandagem e antibiótico; antibiótico só a partir da reputação 15). Abre pela conversa.
+- **Valor base** pela escassez (`Escambo.VALORES`): sucata 1 · madeira e pedra 1,5 · garrafa, pano, água suja 2 ·
+  comida 4 · munição 6 · fogueira e água limpa 8 · bandagem 10 · machado e picareta 15 · cama 20 · antibiótico 25 ·
+  pistola e antídoto 60. O totem não se troca. O comerciante cobra 25% acima do que paga.
+- **Demanda** por comerciante (multiplica o que ele paga; sucata vale pouco para quem já tem). **Saturação:** cada
+  unidade do mesmo item recebida baixa 12% o que ele paga pela próxima; some 1/3 por dia. O estoque se repõe por
+  dia até o inicial. **Reputação:** de +60 (cobra 20% menos e paga mais) a −60 (cobra 40% mais).
+- **Tela:** mochila à esquerda, estoque à direita; no meio, "Você oferece", a balança e "Você leva". Clique passa 1,
+  Shift + clique passa 5. A balança diz só "Nem pensar", "Quer bem mais", "Quer um pouco mais", "Aceita" ou "Aceita
+  na hora (você está dando mais do que precisa)". Não pausa o jogo.
+- Tudo isso fica nos arquivos da comunidade (`"loja"` dentro do NPC): estoque, reposição, demanda e reputação mínima
+  por item.

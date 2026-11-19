@@ -473,7 +473,7 @@
 				]
 			},
 			"loja": {
-				"fala": "Ainda tô arrumando a mercadoria. Volta mais tarde que eu te faço um precinho.",
+				"fala": "Vamos ver o que você tem, {meu amigo/minha amiga}. Negócio é negócio.",
 				"efeitos": [
 					{
 						"escambo": true
@@ -539,6 +539,10 @@
 						"vai": "tratamento"
 					},
 					{
+						"texto": "Quero trocar por remédio.",
+						"vai": "remedios"
+					},
+					{
 						"texto": "Sou {enfermeiro/enfermeira}. Posso ajudar o senhor.",
 						"vai": "colega",
 						"se": {
@@ -564,6 +568,12 @@
 				"efeitos": [
 					{
 						"rumor": "hospital_porto"
+					}
+				],
+				"opcoes": [
+					{
+						"texto": "Então vamos trocar.",
+						"vai": "remedios"
 					}
 				]
 			},
@@ -625,6 +635,10 @@
 						"vai": "tratamento"
 					},
 					{
+						"texto": "Quero trocar por remédio.",
+						"vai": "remedios"
+					},
+					{
 						"texto": "Tem um rapaz ferido no Santuário do Sol.",
 						"vai": "guga",
 						"se": {
@@ -646,6 +660,14 @@
 				"efeitos": [
 					{
 						"flag": "pediu_aprender_medicina"
+					}
+				]
+			},
+			"remedios": {
+				"fala": "Vamos ver o que você traz. Antibiótico, só para quem eu já conheço.",
+				"efeitos": [
+					{
+						"escambo": true
 					}
 				]
 			}
