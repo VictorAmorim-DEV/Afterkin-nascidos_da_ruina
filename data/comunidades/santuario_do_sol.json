@@ -1,6 +1,7 @@
 {
 	"id": "santuario_do_sol",
 	"nome": "Santuário do Sol",
+	"artigo": "o",
 	"tipo": "acampamento",
 	"local": "Acampamento Santuário do Sol",
 	"forte": "caça",
@@ -12,12 +13,26 @@
 	"relacoes": {
 		"vila_dos_pescadores": "neutra"
 	},
+	"simulacao": {
+		"pop": 15,
+		"comida": 3,
+		"remedio": 0,
+		"municao": 6,
+		"producao": 0.9,
+		"feridos": [
+			{
+				"quem": "ferido",
+				"grav": 0.35
+			}
+		]
+	},
 	"figurantes": 1,
 	"npcs": [
 		{
 			"id": "lider",
 			"nome": "Caio",
 			"titulo": "líder",
+			"genero": "m",
 			"idade": 41,
 			"quem": "Professor de educação física que organizava o acampamento; virou líder por ter o apito.",
 			"fala": "Motivacional, sempre \"a gente\", mas o cansaço aparece no fim das frases.",
@@ -41,6 +56,7 @@
 			"nome": "Rosa",
 			"nome_completo": "Rosalinda",
 			"titulo": "guarda",
+			"genero": "f",
 			"idade": 34,
 			"parentes": {
 				"irmao": "ferido"
@@ -66,6 +82,7 @@
 			"id": "cacador",
 			"nome": "Seu Bento",
 			"titulo": "caçador",
+			"genero": "m",
 			"idade": 58,
 			"quem": "Guia de pesca e caça esportiva no lago há 30 anos; conhece cada trilha.",
 			"fala": "Devagar, com pausas; fala de rastros e de vento como quem lê jornal.",
@@ -91,6 +108,7 @@
 			"nome": "Tati",
 			"nome_completo": "Tatiane",
 			"titulo": "catadora",
+			"genero": "f",
 			"idade": 27,
 			"quem": "Ex-entregadora de aplicativo; conhece cada rua de Porto Atlântico e vai à cidade catar.",
 			"fala": "Rápida, prática, irônica; dá endereço como quem ainda faz entrega.",
@@ -139,6 +157,7 @@
 			"nome": "Guga",
 			"nome_completo": "Gustavo",
 			"titulo": "ferido",
+			"genero": "m",
 			"idade": 19,
 			"parentes": {
 				"irma": "guarda"

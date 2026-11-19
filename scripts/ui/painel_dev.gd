@@ -111,12 +111,17 @@ func _ready() -> void:
 	col.add_child(lj)
 	col.add_child(_botao("Matar inimigos num raio de 30 m", _matar_perto))
 
-	_titulo(col, "Reputação")
+	_titulo(col, "Comunidades (reputação, reservas, diário)")
 	_rep.add_theme_font_size_override("font_size", 12)
 	col.add_child(_rep)
 	var lr := HBoxContainer.new()
 	lr.add_child(_botao("+20 aqui", _mexer_rep.bind(20)))
 	lr.add_child(_botao("−20 aqui", _mexer_rep.bind(-20)))
+	lr.add_child(_botao("Simular 1 dia", func():
+		Simulacao._iniciar()
+		Simulacao._ultimo_h -= 24.0
+		Simulacao.passo()
+		_aviso("Um dia de simulação.")))
 	lr.add_child(_botao("Espalhar boatos já", func():
 		for b in Reputacao.pendentes:
 			b["hora"] = 0.0
@@ -137,6 +142,19 @@ func _process(delta: float) -> void:
 		linhas.append("%s: %d" % [Comunidades.nome(str(id)), Reputacao.valor(str(id))])
 	linhas.append("Humana geral: %d · boatos a caminho: %d · mortos: %d" % [roundi(Reputacao.humana),
 		Reputacao.pendentes.size(), Reputacao.mortos.size()])
+	for id in Comunidades.ids():
+		var c := Simulacao.estado(str(id))
+		if c.is_empty():
+			continue
+		var fer: PackedStringArray = []
+		for f in c["feridos"]:
+			fer.append("%s %d%%%s" % [f["nome"], roundi(float(f["grav"]) * 100.0), " (tratado)" if f["tratado"] else ""])
+		var acao: String = str((c["acao"] as Dictionary).get("tipo", "-"))
+		linhas.append("%s: comida %.1f d · remédio %d · munição %d · pop %d · ação %s%s" % [Comunidades.nome(str(id)),
+			float(c["comida"]), int(c["remedio"]), int(c["municao"]), int(c["pop"]), acao,
+			(" · feridos: " + ", ".join(fer)) if not fer.is_empty() else ""])
+	for e in Simulacao.diario.slice(maxi(0, Simulacao.diario.size() - 5)):
+		linhas.append("  D%d %02dh: %s" % [int(e["dia"]), int(e["hora"]), e["texto"]])
 	_rep.text = "\n".join(linhas)
 
 

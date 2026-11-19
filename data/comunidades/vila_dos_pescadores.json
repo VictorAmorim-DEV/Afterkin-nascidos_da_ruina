@@ -1,6 +1,7 @@
 {
 	"id": "vila_dos_pescadores",
 	"nome": "Vila dos Pescadores",
+	"artigo": "a",
 	"tipo": "vilarejo",
 	"local": "Vila dos Pescadores",
 	"forte": "pesca",
@@ -12,12 +13,20 @@
 	"relacoes": {
 		"santuario_do_sol": "neutra"
 	},
+	"simulacao": {
+		"pop": 40,
+		"comida": 6,
+		"remedio": 3,
+		"municao": 4,
+		"producao": 1.1
+	},
 	"figurantes": 2,
 	"npcs": [
 		{
 			"id": "lider",
 			"nome": "Dona Iracema",
 			"titulo": "líder",
+			"genero": "f",
 			"idade": 63,
 			"quem": "Dona da peixaria e presidente da colônia de pescadores antes de tudo. Assumiu porque ninguém mais quis.",
 			"fala": "Firme e direta, chama o jogador de \"meu filho\" ou \"minha filha\" (conforme o personagem), decide na hora.",
@@ -41,6 +50,7 @@
 			"nome": "Toné",
 			"nome_completo": "Antonio Ferraz",
 			"titulo": "guarda do dia",
+			"genero": "m",
 			"idade": 38,
 			"quem": "Ex-segurança de banco em Porto Atlântico, veio a pé até a costa.",
 			"fala": "Jargão de segurança (\"cidadão\", \"procedimento\"), sempre perguntando o que você traz.",
@@ -64,6 +74,7 @@
 			"nome": "Neide",
 			"nome_completo": "Claudineide",
 			"titulo": "guarda da noite",
+			"genero": "f",
 			"idade": 29,
 			"quem": "Ex-salva-vidas da praia. Dorme de dia e vigia o muro sozinha à noite.",
 			"fala": "Pouco, em voz baixa, frases cortadas; observa antes de responder.",
@@ -86,6 +97,7 @@
 			"id": "comerciante",
 			"nome": "Seu Valdir",
 			"titulo": "comerciante",
+			"genero": "m",
 			"idade": 52,
 			"quem": "Dono do mercadinho da vila; hoje controla o estoque comum e as trocas.",
 			"fala": "Simpático, conta vantagem, usa diminutivo (\"um antibioticozinho\"), \"negócio é negócio\".",
@@ -130,6 +142,7 @@
 			"id": "medico",
 			"nome": "Dr. Heitor",
 			"titulo": "médico",
+			"genero": "m",
 			"idade": 67,
 			"quem": "Clínico geral aposentado de Porto Atlântico, que veio passar o fim de semana pescando e ficou.",
 			"fala": "Educado e cansado; usa um termo técnico e logo se corrige para o simples.",
@@ -176,6 +189,7 @@
 			"nome": "Jajá",
 			"nome_completo": "Jaílson",
 			"titulo": "pescador",
+			"genero": "m",
 			"idade": 24,
 			"parentes": {
 				"mae": "pescadora"
@@ -203,6 +217,7 @@
 			"id": "pescadora",
 			"nome": "Dona Marlene",
 			"titulo": "pescadora e remendeira de redes",
+			"genero": "f",
 			"idade": 47,
 			"parentes": {
 				"filho": "pescador"

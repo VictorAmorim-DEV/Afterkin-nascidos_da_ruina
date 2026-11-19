@@ -53,6 +53,21 @@ static func nome(id: String) -> String:
 	return str(dados(id).get("nome", id))
 
 
+## "da Vila dos Pescadores" / "do Santuário do Sol" (artigo no arquivo da comunidade).
+static func de(id: String) -> String:
+	return "d%s %s" % [str(dados(id).get("artigo", "o")), nome(id)]
+
+
+## "na Vila dos Pescadores" / "no Santuário do Sol".
+static func em_nome(id: String) -> String:
+	return "n%s %s" % [str(dados(id).get("artigo", "o")), nome(id)]
+
+
+## "a Vila dos Pescadores" / "o Santuário do Sol".
+static func com_artigo(id: String) -> String:
+	return "%s %s" % [str(dados(id).get("artigo", "o")), nome(id)]
+
+
 ## Id da comunidade que mora no vilarejo/acampamento 'local' ("" se nenhuma).
 static func do_local(local: String) -> String:
 	carregar()

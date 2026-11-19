@@ -24,6 +24,7 @@ var morto := false
 var vida: float = 40.0
 var _fuga_t := 0.0                            ## segundos fugindo do jogador depois de apanhar
 var _t_agressao := -99.0                      ## quando foi a última agressão registrada (s, para não repetir a cada golpe)
+var fora := false                             ## saiu em expedição ou viagem (Simulacao): some até voltar
 
 var _alvo := Vector2.INF                      ## mundo
 var _passo := 0.0
@@ -69,8 +70,10 @@ func _mundo() -> Vector2:
 	return IsoMath.tela_para_mundo(global_position)
 
 
-## Fase atual do dia (DiaNoite.Fase) e a tarefa da rotina para ela.
+## Fase atual do dia (DiaNoite.Fase) e a tarefa da rotina para ela. Ferido (Simulacao) fica em casa.
 func _tarefa_agora() -> String:
+	if not Simulacao.ferido(comunidade, str(dados.get("id", ""))).is_empty():
+		return "casa"
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
 	var fase: int = int(ciclo.fase()) if ciclo != null else 2
 	var rotina: Dictionary = dados.get("rotina", {})
@@ -101,6 +104,21 @@ func posicionar() -> void:
 	_alvo = ponto_da_tarefa(tarefa)
 	global_position = IsoMath.mundo_para_tela(_alvo)
 	_dormir(_deve_dormir())
+	_conferir_fora()
+
+
+## Saiu ou voltou de uma expedição/viagem da Simulacao: some ou reaparece em casa.
+func _conferir_fora() -> void:
+	var f := Simulacao.ausente(comunidade, str(dados.get("id", "")))
+	if f == fora:
+		return
+	fora = f
+	if fora:
+		visible = false
+		_col.set_deferred("disabled", true)
+	else:
+		global_position = IsoMath.mundo_para_tela(ponto_da_tarefa("casa"))
+		_dormir(_deve_dormir())
 
 
 func _deve_dormir() -> bool:
@@ -120,13 +138,14 @@ func _physics_process(delta: float) -> void:
 	_t_pensar -= delta
 	if _t_pensar <= 0.0:
 		_t_pensar = 1.0
+		_conferir_fora()
 		var t := _tarefa_agora()
 		if t != tarefa:
 			tarefa = t
 			_alvo = ponto_da_tarefa(t)
 			if dormindo:
 				_dormir(false)                # acordou: sai de casa
-	if dormindo or morto:
+	if dormindo or morto or fora:
 		return
 	if _fuga_t > 0.0:
 		_fugir(delta)
@@ -272,7 +291,7 @@ func _dist_jogador() -> float:
 
 
 func _e_o_alvo() -> bool:
-	if dormindo or morto:
+	if dormindo or morto or fora:
 		return false
 	var d := _dist_jogador()
 	if d > ALCANCE_FALA:

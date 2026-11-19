@@ -16,6 +16,8 @@ extends RefCounted
 ##
 ## A reputação é a da Reputacao (testemunhas e boatos); o efeito "rep" de uma conversa muda a da comunidade na hora.
 ## Condição "lembra": o NPC lembra de um evento (furto, agressao, assassinato, defesa) que viu ou ouviu.
+## Condição "ferido": "sem_tratamento", "tratado" ou "nao" (o próprio NPC, na Simulacao).
+## Efeito {"tratar": "<npc>"}: o jogador tratou o ferido (Simulacao.tratar).
 
 const PASTA := "res://data/dialogos"
 const RUMORES := "res://data/rumores.json"
@@ -94,6 +96,10 @@ static func vale(se: Dictionary, ctx: Dictionary) -> bool:
 					if str((m as Dictionary)["ev"]) == str(v):
 						achou = true
 				if not achou: return false
+			"ferido":
+				var fd := Simulacao.ferido(com, str(ctx["npc"]))
+				var st := "nao" if fd.is_empty() else ("tratado" if bool(fd["tratado"]) else "sem_tratamento")
+				if st != str(v): return false
 			"tem":
 				for item in (v as Dictionary):
 					if j == null or j.inventario.contar(str(item)) < int((v as Dictionary)[item]): return false
@@ -134,6 +140,8 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 			var qtd2 := int(ed.get("qtd", 1))
 			j.inventario.remover(str(ed["pedir"]), qtd2)
 			msgs.append("Você entregou %d %s." % [qtd2, Itens.nome(str(ed["pedir"])).to_lower()])
+		if ed.has("tratar"):
+			Simulacao.tratar(str(ctx["com"]), str(ed["tratar"]))
 		if ed.has("escambo"):
 			ctx["abrir_escambo"] = true            # a DialogoUI fecha a conversa e abre a TelaEscambo
 	return msgs

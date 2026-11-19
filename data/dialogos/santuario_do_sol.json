@@ -391,6 +391,12 @@
 		"inicio": [
 			{
 				"se": {
+					"flag": "santuario_do_sol_ferido_curado"
+				},
+				"no": "curado"
+			},
+			{
+				"se": {
 					"visto": false
 				},
 				"no": "primeira"
@@ -445,6 +451,28 @@
 				],
 				"opcoes": [
 					{
+						"texto": "Trouxe antibiótico. O médico me disse o que fazer.",
+						"vai": "tratar",
+						"se": {
+							"tem": {
+								"antibiotico": 1
+							},
+							"flag": "heitor_sabe_guga",
+							"ferido": "sem_tratamento"
+						}
+					},
+					{
+						"texto": "Deixa eu ver essa perna. Sou {enfermeiro/enfermeira}.",
+						"vai": "tratar_enf",
+						"se": {
+							"tem": {
+								"antibiotico": 1
+							},
+							"origem": "enfermeiro",
+							"ferido": "sem_tratamento"
+						}
+					},
+					{
 						"texto": "Eu falo com o médico.",
 						"vai": "promessa",
 						"se": {
@@ -467,6 +495,35 @@
 			"oi": {
 				"fala": "Ainda aqui. A perna também, por enquanto.",
 				"opcoes": [
+					{
+						"texto": "Trouxe antibiótico. O médico me disse o que fazer.",
+						"vai": "tratar",
+						"se": {
+							"tem": {
+								"antibiotico": 1
+							},
+							"flag": "heitor_sabe_guga",
+							"ferido": "sem_tratamento"
+						}
+					},
+					{
+						"texto": "Deixa eu ver essa perna. Sou {enfermeiro/enfermeira}.",
+						"vai": "tratar_enf",
+						"se": {
+							"tem": {
+								"antibiotico": 1
+							},
+							"origem": "enfermeiro",
+							"ferido": "sem_tratamento"
+						}
+					},
+					{
+						"texto": "Como você está?",
+						"vai": "melhorando",
+						"se": {
+							"ferido": "tratado"
+						}
+					},
 					{
 						"texto": "Falei com o médico.",
 						"vai": "noticia",
@@ -509,6 +566,42 @@
 						"rep": 2
 					}
 				]
+			},
+			"curado": {
+				"fala": "Olha só quem tá de pé! A perna ainda dói, mas é minha. Te devo essa."
+			},
+			"tratar": {
+				"fala": "(Você limpa o corte e dá o remédio como o Dr. Heitor explicou.) Tá ardendo... mas é um ardido bom, né? Obrigado.",
+				"efeitos": [
+					{
+						"pedir": "antibiotico",
+						"qtd": 1
+					},
+					{
+						"tratar": "ferido"
+					},
+					{
+						"rep": 8
+					}
+				]
+			},
+			"tratar_enf": {
+				"fala": "(Você limpa o corte, drena e dá o antibiótico, como aprendeu no hospital.) Você sabe o que tá fazendo, hein? Obrigado.",
+				"efeitos": [
+					{
+						"pedir": "antibiotico",
+						"qtd": 1
+					},
+					{
+						"tratar": "ferido"
+					},
+					{
+						"rep": 8
+					}
+				]
+			},
+			"melhorando": {
+				"fala": "A febre baixou um pouco. Acho que vou ficar bom."
 			}
 		}
 	}

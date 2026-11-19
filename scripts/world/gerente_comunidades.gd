@@ -19,6 +19,7 @@ func _process(delta: float) -> void:
 		return
 	_t = 0.5
 	Reputacao.passo()                          # boatos que chegaram à hora de correr
+	Simulacao.passo()                          # turnos do ecossistema das comunidades (longe e perto)
 	var j := get_tree().get_first_node_in_group("jogador") as Node2D
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
 	if j == null:

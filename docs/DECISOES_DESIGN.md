@@ -359,3 +359,25 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   na hora (você está dando mais do que precisa)". Não pausa o jogo.
 - Tudo isso fica nos arquivos da comunidade (`"loja"` dentro do NPC): estoque, reposição, demanda e reputação mínima
   por item.
+
+### Etapa 8 — ecossistema das comunidades (valores provisórios)
+- Cada comunidade tem **reservas** (comida em dias, remédio, munição), população, feridos, habilidades e a **relação**
+  com as outras (`"simulacao"` no arquivo da comunidade: Vila 40 pessoas, 6 dias de comida, 3 remédios, pesca rende um
+  pouco mais do que come; Santuário 15 pessoas, 3 dias de comida, sem remédio, caça rende um pouco menos, e o Guga
+  ferido em 35%).
+- A cada **6 h de jogo** (também durante o sono) ela produz, consome, cuida dos feridos e decide **uma ação** pela
+  necessidade: levar o ferido a quem sabe Medicina, expedição à cidade (remédio, comida, material), trocar munição por
+  comida com a vizinha, aprender Medicina com a vizinha amiga (relação 30+, 3 dias) ou ficar quieta. Expedição: 18 h
+  fora, 3% de morte, 15% de ferido, 42% de achar o que foi buscar; metade das vezes vai um grupo de moradores e não um
+  personagem com nome.
+- **Ferido** sem tratamento piora 8% por dia e morre em 100%; com médico e remédio (ou tratado pelo jogador) melhora 25%
+  por dia. **O orgulho do Caio:** o Santuário só leva o Guga à Vila depois do recado (flag `caio_aceita_ajuda`) ou,
+  no desespero (acima de 75%), com 8% de chance por turno. Em 8 rodadas de teste sem o jogador o Guga sobreviveu em 3.
+- **O jogador interfere:** as trocas com os comerciantes entram e saem das reservas da comunidade; o que falta faz o
+  comerciante pagar mais (comida, remédio, munição); o Guga pode ser tratado com antibiótico, com as instruções do
+  Dr. Heitor (flag `heitor_sabe_guga`) ou pela origem Enfermeiro(a).
+- **Perto do jogador:** quem saiu em expedição ou foi levado para tratamento some da comunidade; quem está ferido fica
+  em casa; quem morreu não volta.
+- Tudo vai para o **diário** ("Seu Bento voltou da cidade de mãos vazias", "O Santuário do Sol levou Guga até a Vila dos
+  Pescadores para ser tratado"), que a etapa 9 transforma em rumores. O modo dev (F1) mostra reservas, feridos, a ação
+  de cada comunidade e as últimas linhas do diário, com um botão "Simular 1 dia".

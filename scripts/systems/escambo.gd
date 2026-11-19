@@ -74,7 +74,7 @@ static func paga(npc: Npc, item: String, ja_na_oferta: int = 0) -> float:
 	if NAO_TROCA.has(item) or not VALORES.has(item):
 		return 0.0
 	var def: Dictionary = npc.dados.get("loja", {})
-	var dem: float = float((def.get("demanda", {}) as Dictionary).get(item, 1.0))
+	var dem: float = float((def.get("demanda", {}) as Dictionary).get(item, 1.0)) * Simulacao.demanda(npc.comunidade, item)
 	var sat: float = float((loja(npc)["sat"] as Dictionary).get(item, 0.0)) + ja_na_oferta
 	return float(VALORES[item]) * dem / (1.0 + SATURACAO * sat) / _fator_rep(npc)
 
@@ -146,12 +146,14 @@ static func trocar(npc: Npc, j: Node, oferta: Dictionary, pedido: Dictionary) ->
 	for item in oferta:
 		inv.remover(str(item), int(oferta[item]))
 		est[item] = int(est.get(item, 0)) + int(oferta[item])
+		Simulacao.ajustar(npc.comunidade, str(item), int(oferta[item]))   # entra na reserva da comunidade
 		var sat: Dictionary = e["sat"]
 		sat[item] = float(sat.get(item, 0.0)) + int(oferta[item])
 	var lista: Array = []
 	for item in pedido:
 		lista.append([str(item), int(pedido[item])])
 		est[item] = int(est[item]) - int(pedido[item])
+		Simulacao.ajustar(npc.comunidade, str(item), -int(pedido[item]))
 	inv.adicionar_itens(lista)
 	return "Troca feita com %s." % npc.nome()
 
