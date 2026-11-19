@@ -56,7 +56,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     filha" da Dona Iracema) e, quando houver, o sprite.
   - ✅ 5 (`50b342f`). Diálogo em árvore (condições: reputação, hora, rumores, origem; consequências).
   - ✅ 6 (`d7873fc`). Memória dos NPCs (testemunhas e boatos) → reputação por comunidade e humana geral, com atraso entre aliadas.
-  - ✅ 7 (commit abaixo). Escambo em duas colunas + balança (escassez, saturação, demanda).
+  - ✅ 7 (`77b0683`). Escambo em duas colunas + balança (escassez, saturação, demanda).
   - ⬜ 8. Simulação abstrata das comunidades (necessidades, decisões, expedições), real perto do jogador.
   - ⬜ 9. Rumores por conversa, conversas ouvidas, mural/bilhetes e rádio, marcando regiões no mapa.
   - ⬜ 10. Sobreviventes errantes na cidade (pedem ajuda, trocam, roubar/matar, hostis, em combate, encaminhar).
