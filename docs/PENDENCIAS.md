@@ -80,6 +80,8 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 12 (`b6e3b8b`). Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa
     (respostas de 21/11/2026: dormir só com reputação alta; trabalhos de vigia, pesca/caça/roça, recados e consertos;
     tudo em tempo real; abaixo de −20 só se fala pelo portão).
+  - ⬜ 12b. Cama de hóspede dentro de uma barraca/casa acessível (hoje fica ao lado da fogueira, sem lógica). Fazer
+    depois da troca de sprites e assets que o Victor vai trazer.
   - ⬜ 13. Log de eventos em user://, exportar o diário e ferramenta de resumo visual.
   - ⬜ 14. Playtest da 2a.
   **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.
