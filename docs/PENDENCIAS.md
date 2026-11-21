@@ -84,13 +84,25 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     depois da troca de sprites e assets que o Victor vai trazer.
   - ✅ 13 (`d929603`). Log de eventos, exportar o diário e ferramenta de resumo visual (21/11/2026: sem botão; exporta sozinho
     ao morrer e ao fechar o jogo, na pasta do jogo; o resumo é uma página HTML).
-  - 🔄 14. Playtest da 2a (roteiro em `docs/PLAYTEST_MARCO2A.md`).
+  - ✅ 14. Playtest da 2a (roteiro em `docs/PLAYTEST_MARCO2A.md`; relatório em `docs/PLAYTEST_MARCO2.md`).
+  - 🔄 14b. Ajustes do playtest (21/11/2026), antes do marco 3:
+    - ⬜ Diálogo que emenda: a reação do NPC (elogio, agradecimento) vira a abertura, sem recomeçar a conversa.
+    - ⬜ Retorno dos trabalhos: o NPC que deu o trabalho comenta quando você volta ("Como foi a vigília?").
+    - ⬜ Guga: não oferecer "vou falar com o doutor" se a missão já está ativa ou cumprida.
+    - ⬜ Reputação visível: aviso a cada mudança, com o motivo, e o valor e o nível no mapa (M).
+    - ⬜ Menos rumores do mundo (metade), repetidos juntados, prioridade para gente conhecida; corrigir o "..".
+    - ⬜ Nomes únicos dos errantes (mortos não voltam com o mesmo nome).
+    - ⬜ Diário: o trabalho das redes não foi gravado como trabalho.
   **Rumo (21/11/2026):** depois do playtest, congelar sistemas sociais novos e ir para o marco 3 (ver "Rumo depois do
   marco 2" em `docs/DECISOES_DESIGN.md`; ideias novas passam pela skill `afterkin-ideia`).
   **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.
   - ⬜ Sprites novos dos NPCs (o Victor traz as folhas; eu recorto e animo).
   - ⬜ Skill `afterkin-npc` (rascunhar um NPC novo no formato dos JSON de comunidade e diálogo), na etapa 2b.
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
+  Do playtest da 2a (21/11/2026):
+  - ⬜ Gancho das primeiras horas: a infecção começa cedo e dá o norte ("descubra o que está acontecendo com você").
+  - ⬜ Medicina com peso: tratar e retardar a infecção, lições com casos reais e progresso por uso (pensar junto com o Victor).
+  - ⬜ Laços pela infecção: quem esconde, quem denuncia, quem cuida de você.
 - ⬜ Depois do marco 3: teste curto de 3D (2–3 dias, num ramo separado) para decidir entre 3D completo, 3D gravado em
   sprite ou 2D. Montar um personagem completo (corpo base MPFB2 ou pacote modular, uma troca de roupa, uma armadura,
   uma arma na mão, uma capa com SpringBone, um ataque com animação Mixamo/Quaternius) e uma criatura gerada no Tripo
@@ -105,6 +117,8 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 - 💭 Loot: rever o que cada recipiente/local dá (a discutir).
 - 💭 Construções e funções de cada local; casas e prédios em lugares estranhos; distribuição de árvores e ruas.
 - 💭 Dificuldade dos monstros e o nome deles (em estudo: "Transformados").
+- 💭 Habilidades que melhoram com os trabalhos (costura, atenção, precisão…); pode casar com o marco 3 (playtest 2a).
+- 💭 Trabalhos com algo para fazer (vigia que avista e avisa, rede como pequena tarefa) (playtest 2a).
 - 💭 Tamanho do mapa e distâncias entre os lugares (o Victor ainda está avaliando; não mexer por enquanto).
 
 ## Feito recentemente
