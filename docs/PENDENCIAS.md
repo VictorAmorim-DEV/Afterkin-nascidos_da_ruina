@@ -61,7 +61,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 9 (`689ffde`). Rumores por conversa, conversas ouvidas, mural/bilhetes e rádio, marcando regiões no mapa.
   - ✅ 9b (`d7ab01d`). Rumor no mapa como "?" âmbar com "Rumor: <rótulo>"; ao chegar ao lugar de verdade,
     "Local descoberto: <nome>" e o "?" vira o ícone do que foi achado (morcego no ninho, perigo, suprimentos...).
-  - ✅ 10 (commit abaixo). Sobreviventes errantes na cidade (pedem ajuda, trocam, roubar/matar, hostis, em combate, encaminhar).
+  - ✅ 10 (`8c28cb6`). Sobreviventes errantes na cidade (pedem ajuda, trocam, roubar/matar, hostis, em combate, encaminhar).
   - ⬜ 11. Medicina: mestre, cadeia gerada pela necessidade, habilidades.
   - ⬜ 12. Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa.
   - ⬜ 13. Log de eventos em user://, exportar o diário e ferramenta de resumo visual.
