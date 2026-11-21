@@ -725,6 +725,8 @@ var _confirma_t := 0.0
 
 ## Atacar um morador pede um segundo clique: o primeiro só avisa (evita golpe sem querer numa conversa).
 func _confirmar_ataque(npc: Npc) -> bool:
+	if npc.has_method("hostil") and npc.hostil():
+		return true                                # saqueador vindo para cima: sem pergunta
 	var agora := Time.get_ticks_msec() / 1000.0
 	if _confirma_npc == npc and agora - _confirma_t < 2.0:
 		return true

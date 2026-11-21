@@ -6,6 +6,7 @@ extends CanvasLayer
 const LONGE := 3.5 * IsoMath.METRO
 
 var npc: Npc = null
+var arvore_pronta: Dictionary = {}       ## árvore gerada (errantes); vazia = a do arquivo da comunidade
 var _ctx: Dictionary = {}
 var _arvore: Dictionary = {}
 var _nome := Label.new()
@@ -53,7 +54,8 @@ func _ready() -> void:
 	_opcoes.add_theme_constant_override("separation", 4)
 	col.add_child(_opcoes)
 	_ctx = {"com": npc.comunidade, "npc": str(npc.dados.get("id", "")), "jogador": get_tree().get_first_node_in_group("jogador")}
-	_arvore = Conversas.arvore(npc.comunidade, _ctx["npc"])
+	_arvore = arvore_pronta if not arvore_pronta.is_empty() else Conversas.arvore(npc.comunidade, _ctx["npc"])
+	_ctx["no"] = npc
 	npc.conversando = true
 	var abertura := "fim"
 	var cobranca := _cobranca()
@@ -88,9 +90,11 @@ const COBRANCAS := {
 	"assassinato": {"viu": "Eu vi o que você fez. Não chega perto de mim.", "ouviu": "Dizem que você matou gente daqui. Fala logo o que quer."},
 	"agressao": {"viu": "Você levantou a mão pra gente daqui. Eu vi.", "ouviu": "Me contaram que você atacou um dos nossos."},
 	"furto": {"viu": "Eu vi você mexendo no que não é seu.", "ouviu": "Andam dizendo que você pega o que não é seu."},
+	"roubo_errante": {"viu": "Eu vi você assaltando aquela gente.", "ouviu": "Passou um andarilho aqui dizendo que você assalta gente na estrada."},
+	"ajuda_errante": {"viu": "Eu vi você ajudando aquela gente.", "ouviu": "Passou um andarilho aqui falando bem de você. Disse que você salvou a pele dele."},
 	"defesa": {"viu": "Eu vi você enfrentar aquela coisa perto do muro. Obrigado.", "ouviu": "Soube que você enfrentou um monstro perto do muro. A gente agradece."},
 }
-const GRAVIDADE := ["assassinato", "agressao", "furto", "defesa"]
+const GRAVIDADE := ["assassinato", "agressao", "roubo_errante", "furto", "ajuda_errante", "defesa"]
 
 
 func _cobranca() -> String:
@@ -116,7 +120,8 @@ func _ir(id: String) -> void:
 	if _abrir_escambo():
 		return
 	var titulo: String = str(npc.dados.get("titulo", npc.dados.get("papel", "morador")))
-	_nome.text = "%s — %s, %s" % [npc.nome(), titulo, Comunidades.nome(npc.comunidade)]
+	_nome.text = "%s — %s, %s" % [npc.nome(), titulo, Comunidades.nome(npc.comunidade)] if npc.comunidade != "" \
+		else "%s — %s" % [npc.nome(), titulo]
 	_fala.text = Conversas.texto(str(no.get("fala", "...")), _ctx)
 	for b in _opcoes.get_children():
 		b.queue_free()

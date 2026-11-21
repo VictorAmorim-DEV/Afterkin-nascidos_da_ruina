@@ -84,8 +84,8 @@ static func registrar(ev: String, p: Vector2, vitima: Node = null) -> int:
 	var viram: Array = []
 	for n in arv.get_nodes_in_group("npc"):
 		var npc := n as Npc
-		if npc == null or npc.morto:
-			continue
+		if npc == null or npc.morto or npc.comunidade == "":
+			continue                               # errante não leva o boato a comunidade nenhuma por aqui
 		if npc == vitima or _viu(npc, j, p):
 			viram.append(npc)
 	viram.append_array(_dono_acordado(ev, p, viram))
@@ -182,6 +182,27 @@ static func passo() -> void:
 						novos.append({"com": str(outra), "ev": bd["ev"], "peso": peso, "hora": h + float(par[0]),
 							"testemunha": "", "origem": com})
 	pendentes = restam + novos
+
+
+## Um errante ajudado ou roubado escapa e conta na comunidade mais perto, 8–16 h depois (Q40: "se uma
+## testemunha escapar, ela conta"). A reputação humana geral acompanha metade.
+static func boato_errante(peso: int, ev: String) -> void:
+	var arv := Engine.get_main_loop() as SceneTree
+	var j := arv.get_first_node_in_group("jogador") as Node2D
+	if j == null:
+		return
+	var pj := IsoMath.tela_para_mundo(j.global_position)
+	var melhor := ""
+	var dist := INF
+	for id in Comunidades.ids():
+		var g := Comunidades.geo(str(id))
+		if not g.is_empty() and (g["centro"] as Vector2).distance_to(pj) < dist:
+			dist = (g["centro"] as Vector2).distance_to(pj)
+			melhor = str(id)
+	if melhor == "":
+		return
+	pendentes.append({"com": melhor, "ev": ev, "peso": peso, "hora": agora_h() + randf_range(8.0, 16.0),
+		"testemunha": "", "origem": melhor})
 
 
 ## Morador morto: não volta, e o que ele viu sem contar morre junto (passo() descarta).

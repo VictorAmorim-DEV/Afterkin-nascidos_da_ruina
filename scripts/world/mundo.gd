@@ -69,6 +69,9 @@ func _ready() -> void:
 	var gerente := GerenteComunidades.new()      # moradores das comunidades perto do jogador e os portões delas
 	gerente.name = "GerenteComunidades"
 	add_child(gerente)
+	var errantes := GerenteErrantes.new()        # sobreviventes soltos nas ruas das cidades (etapa 10)
+	errantes.name = "GerenteErrantes"
+	add_child(errantes)
 	TerrenoTexturas.preparar_todas()
 	TexturasParede.atlas_relevo()                # gera o atlas (e o relevo dele) na carga, não no primeiro edifício
 	# carga inicial síncrona (limitada): o jogador já nasce com chão e a vizinhança de volta

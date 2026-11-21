@@ -42,7 +42,7 @@ func _ready() -> void:
 	col.add_theme_constant_override("separation", 10)
 	painel.add_child(col)
 	var titulo := Label.new()
-	titulo.text = "Trocas com %s — %s" % [npc.nome(), Comunidades.nome(npc.comunidade)]
+	titulo.text = "Trocas com %s%s" % [npc.nome(), (" — " + Comunidades.nome(npc.comunidade)) if npc.comunidade != "" else ""]
 	titulo.add_theme_font_size_override("font_size", 18)
 	titulo.add_theme_color_override("font_color", Color(1.0, 0.85, 0.55))
 	col.add_child(titulo)

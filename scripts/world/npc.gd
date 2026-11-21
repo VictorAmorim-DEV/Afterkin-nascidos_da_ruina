@@ -224,7 +224,7 @@ func receber_dano(n: float) -> void:
 		return
 	_fuga_t = 6.0
 	var agora := Time.get_ticks_msec() / 1000.0
-	if agora - _t_agressao > 20.0:
+	if comunidade != "" and agora - _t_agressao > 20.0:
 		_t_agressao = agora
 		Reputacao.registrar("agressao", _mundo(), self)
 
@@ -238,7 +238,7 @@ func _morrer() -> void:
 	_sprite.animation = &"caido" if _sprite.sprite_frames.has_animation(&"caido") else _sprite.animation
 	_sprite.frame = 0
 	var id := str(dados.get("id", ""))
-	if not id.begins_with("figurante"):
+	if not id.begins_with("figurante") and comunidade != "":
 		Reputacao.npc_morreu(comunidade, id)
 	Reputacao.registrar("assassinato", _mundo())
 	var j := get_tree().get_first_node_in_group("jogador")

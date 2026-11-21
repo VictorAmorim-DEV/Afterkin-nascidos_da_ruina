@@ -146,6 +146,16 @@ static func _morreu(id: String, fd: Dictionary, como: String) -> void:
 	_registrar(id, "%s, %s, %s." % [fd["nome"], Comunidades.de(id), como])
 
 
+## Um sobrevivente encaminhado pelo jogador chegou: a comunidade cresce e registra no diário.
+static func receber_sobrevivente(id: String, quem: String, fem: bool = false) -> void:
+	var c := estado(id)
+	if c.is_empty():
+		return
+	c["pop"] = int(c["pop"]) + 1
+	_registrar(id, "%s chegou %s dizendo que foi %s por alguém de fora." % [quem, Comunidades.em_nome(id),
+		"mandada" if fem else "mandado"])
+
+
 ## O jogador tratou um ferido (antibiótico + instruções do médico): passa a melhorar.
 static func tratar(id: String, npc: String) -> bool:
 	for fr in estado(id).get("feridos", []):

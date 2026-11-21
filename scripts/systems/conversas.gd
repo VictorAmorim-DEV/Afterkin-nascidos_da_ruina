@@ -18,6 +18,7 @@ extends RefCounted
 ## Condição "lembra": o NPC lembra de um evento (furto, agressao, assassinato, defesa) que viu ou ouviu.
 ## Condição "ferido": "sem_tratamento", "tratado" ou "nao" (o próprio NPC, na Simulacao).
 ## Efeito {"tratar": "<npc>"}: o jogador tratou o ferido (Simulacao.tratar).
+## Condição "tem_arma": machado, picareta ou pistola na mão. Efeito {"acao": "..."}: o próprio NPC trata (Errante.acao).
 
 const PASTA := "res://data/dialogos"
 const RUMORES := "res://data/rumores.json"
@@ -96,6 +97,9 @@ static func vale(se: Dictionary, ctx: Dictionary) -> bool:
 					if str((m as Dictionary)["ev"]) == str(v):
 						achou = true
 				if not achou: return false
+			"tem_arma":
+				var eq: String = j.inventario.id_equipado() if j != null else ""
+				if (eq in ["machado", "picareta", "pistola"]) != bool(v): return false
 			"ferido":
 				var fd := Simulacao.ferido(com, str(ctx["npc"]))
 				var st := "nao" if fd.is_empty() else ("tratado" if bool(fd["tratado"]) else "sem_tratamento")
@@ -140,6 +144,10 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 			var qtd2 := int(ed.get("qtd", 1))
 			j.inventario.remover(str(ed["pedir"]), qtd2)
 			msgs.append("Você entregou %d %s." % [qtd2, Itens.nome(str(ed["pedir"])).to_lower()])
+		if ed.has("acao"):
+			var no: Node = ctx.get("no")
+			if no != null and no.has_method("acao"):
+				msgs.append_array(no.acao(str(ed["acao"]), ctx))
 		if ed.has("tratar"):
 			Simulacao.tratar(str(ctx["com"]), str(ed["tratar"]))
 		if ed.has("escambo"):

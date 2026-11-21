@@ -406,3 +406,19 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   ícone do que foi achado, no ponto exato: morcego (ninho), "!" (perigo), suprimentos, transmissão de rádio, pessoa
   procurada, coisa estranha, comunidade ou acampamento. Cada rumor do JSON tem `"rotulo"` e
   `"descoberta": {"nome", "icone"}`. A legenda lista os ícones e os últimos 10 rumores ("?" a conferir, "✓" achado).
+
+### Etapa 10 — sobreviventes errantes (valores provisórios)
+- Aparecem nas **ruas das cidades** (zona urbana, longe das comunidades), a 25–40 m do jogador, com 20% de chance a cada
+  3 s, no máximo 2 por vez; somem a ~95 m. De dia: assustado 25, ferido 20, andarilho 15, saqueador 18, em combate 22
+  (pesos); **à noite metade são saqueadores**. Nomes e gênero sorteados.
+- **Assustado:** conversa, pode ser **encaminhado** (Vila ou Santuário: a comunidade cresce, +4 de reputação lá e
+  registro no diário, Q45) ou **roubado** (só com machado, picareta ou pistola na mão).
+- **Ferido:** caído, pede bandagem, água ou comida; ajudado, dá um item e, 60% das vezes, um rumor (bilhete) — e
+  pode ser encaminhado. **Andarilho:** troca o que carrega (escambo, sem comunidade) ou pode ser roubado.
+- **Saqueador:** vem para cima a até 11 m ("Passa a mochila!"), bate 7 a cada 1,2 s, foge ferido; atacar não pede
+  confirmação e matá-lo não pesa na reputação (larga um item).
+- **Em combate:** 1–2 zumbis acordados em volta; perde vida enquanto houver zumbi colado nele. Salvo, fica **grato**:
+  recompensa, boato bom e o **convite** para o Santuário (rumor do Guga).
+- **Boato do errante (Q40, "a testemunha escapa"):** ajudar (+5) ou roubar (−8) chega à comunidade mais perto 8–16 h
+  depois; matar sem testemunha, ninguém sabe. Nas conversas, o NPC cobra: "Passou um andarilho aqui falando bem de
+  você" / "...dizendo que você assalta gente na estrada".
