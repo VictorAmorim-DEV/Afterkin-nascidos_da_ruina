@@ -85,7 +85,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 13 (`d929603`). Log de eventos, exportar o diário e ferramenta de resumo visual (21/11/2026: sem botão; exporta sozinho
     ao morrer e ao fechar o jogo, na pasta do jogo; o resumo é uma página HTML).
   - ✅ 14. Playtest da 2a (roteiro em `docs/PLAYTEST_MARCO2A.md`; relatório em `docs/PLAYTEST_MARCO2.md`).
-  - ✅ 14b (HASH). Ajustes do playtest (21/11/2026): diálogo que emenda, retorno dos trabalhos, falas do Guga e do
+  - ✅ 14b (`f6aec85`). Ajustes do playtest (21/11/2026): diálogo que emenda, retorno dos trabalhos, falas do Guga e do
     Caio, reputação visível (HUD e mapa), menos rumores (novidade não é pista; intervalo de 3 h), nomes únicos dos
     errantes. O diário grava o trabalho do forte (testado); as redes do playtest provavelmente não chegaram ao fim.
   **Rumo (21/11/2026):** depois do playtest, congelar sistemas sociais novos e ir para o marco 3 (ver "Rumo depois do
