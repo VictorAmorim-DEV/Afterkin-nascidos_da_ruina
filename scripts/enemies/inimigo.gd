@@ -2,6 +2,7 @@ class_name Inimigo
 extends CharacterBody2D
 ## Zumbi ou rato gigante (V13: atualizarInimigos). Dorme até ouvir o jogador, persegue,
 ## abre ou arromba portas e ataca de perto. Trabalha em "mundo" (u) como o jogador.
+## Etapa 10b: a presa pode ser o jogador ou um humano por perto (errante, morador) que ele ouça ou veja.
 
 const FRAMES := {
 	"zombie": "res://resources/sprite_frames/zumbi.tres",
@@ -31,6 +32,8 @@ var _desvio_t: float = 0.0
 var _passo: float = 0.0
 var _flip_dorme: bool = false
 var _ciclo: Node = null
+var _golpe_jogador := false            ## o último dano veio do jogador (recompensa e "defesa" só nesse caso)
+const OUVE_HUMANO := 9.0 * M           ## de quantos u um monstro acordado percebe um humano andando
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -68,20 +71,32 @@ func _noite() -> bool:
 func _physics_process(delta: float) -> void:
 	if morto:
 		return
-	var j := get_tree().get_first_node_in_group("jogador")
-	if j == null or j.vida <= 0.0:
+	var jog := get_tree().get_first_node_in_group("jogador")
+	if jog == null:
 		return
 	ataque_t -= delta
 	golpe_t -= delta
 	var em := _mundo()
-	var pm: Vector2 = IsoMath.tela_para_mundo(j.global_position)
-	var d := em.distance_to(pm)
 	var eb := _edif_em(em)
+	var j: Node = jog
+	var pm: Vector2 = IsoMath.tela_para_mundo(jog.global_position)
+	var d := em.distance_to(pm)
 	var pb := _edif_em(pm)
-	var ouve: float = j.ruido_efetivo() * (1.0 if eb == pb else 0.55)
+	var ouve: float = jog.ruido_efetivo() * (1.0 if eb == pb else 0.55) if jog.vida > 0.0 else 0.0
 	# acordado, também enxerga: só no mesmo ambiente (mesmo prédio, ou os dois na rua), conforme luz, neblina,
 	# postura e lanterna do jogador
-	var ve: bool = eb == pb and d < float(j.alcance_ser_visto())
+	var ve: bool = jog.vida > 0.0 and eb == pb and d < float(jog.alcance_ser_visto())
+	if not dorme or alerta > 0.0:
+		var h := _humano_perto(em, eb, d if (d < ouve or ve) else INF)
+		if h != null:
+			j = h                                # a presa agora é um humano: errante ou morador
+			pm = IsoMath.tela_para_mundo(h.global_position)
+			d = em.distance_to(pm)
+			pb = _edif_em(pm)
+			ouve = OUVE_HUMANO
+			ve = true
+	elif jog.vida <= 0.0:
+		return
 
 	if dorme:
 		if d < ouve:
@@ -143,7 +158,7 @@ func _physics_process(delta: float) -> void:
 			# rato e vampiro abrem a porta; zumbi arromba
 			if raca == "zombie":
 				bloqueada = true
-				if r[3].bater_porta(porta, delta) and d < 16.0 * M:
+				if r[3].bater_porta(porta, delta) and em.distance_to(IsoMath.tela_para_mundo(jog.global_position)) < 16.0 * M:
 					get_tree().call_group("hud", "aviso", "Um zumbi arrombou a porta!")
 			else:
 				r[3].abrir_porta(porta)
@@ -169,10 +184,29 @@ func _physics_process(delta: float) -> void:
 	if d < 24.0 and ataque_t <= 0.0 and eb == pb:
 		ataque_t = 1.3
 		golpe_t = 0.25
-		j.receber_dano(8.0 if raca == "zombie" else 6.0, raca)
-		if randf() < 0.12:
-			j.infectar(raca)
+		if j == jog:
+			j.receber_dano(8.0 if raca == "zombie" else 6.0, raca)
+			if randf() < 0.12:
+				j.infectar(raca)
+		else:
+			j.receber_dano(8.0 if raca == "zombie" else 6.0, false)   # humano atacado pelo monstro
 	_animar(dir if dir != Vector2.ZERO else (pm - em), dir != Vector2.ZERO)
+
+
+## Humano (errante ou morador acordado) mais perto que o jogador e ao alcance de percepção; null se nenhum.
+func _humano_perto(em: Vector2, eb: Edificio, d_jogador: float) -> Node2D:
+	var melhor: Node2D = null
+	var dist := minf(d_jogador, OUVE_HUMANO)
+	for n in get_tree().get_nodes_in_group("npc"):
+		var h := n as Npc
+		if h == null or h.morto or h.dormindo or h.fora:
+			continue
+		var ph := IsoMath.tela_para_mundo(h.global_position)
+		var dh := em.distance_to(ph)
+		if dh < dist and _edif_em(ph) == eb:
+			dist = dh
+			melhor = h
+	return melhor
 
 
 ## Devolve [ponto, porta|null, posição do edifício em mundo, edifício] — V13: rota().
@@ -192,9 +226,10 @@ func _rota(em: Vector2, alvo: Vector2, eb: Edificio, pb: Edificio) -> Array:
 	return [r[0] + off, r[1], off, ed]
 
 
-func receber_dano(n: float) -> void:
+func receber_dano(n: float, por_jogador: bool = true) -> void:
 	if morto:
 		return
+	_golpe_jogador = por_jogador
 	hp -= n
 	dorme = false
 	alerta = 4.0
@@ -208,14 +243,14 @@ func receber_dano(n: float) -> void:
 func _morrer() -> void:
 	morto = true
 	remove_from_group("inimigo")
-	if Comunidades.perto(_mundo(), 15.0 * M) != "":
+	if _golpe_jogador and Comunidades.perto(_mundo(), 15.0 * M) != "":
 		Reputacao.registrar("defesa", _mundo())   # quem viu, conta: você enfrentou um monstro perto do muro
 	$CollisionShape2D.set_deferred("disabled", true)
 	sprite.animation = &"caido"
 	sprite.frame = 0
 	sprite.flip_h = _flip_dorme
 	var j := get_tree().get_first_node_in_group("jogador")
-	if j != null:
+	if j != null and _golpe_jogador:
 		if j.inventario.adicionar_itens([["comida", 1]]):
 			j.aviso("Inimigo derrotado. +1 comida.")
 		else:

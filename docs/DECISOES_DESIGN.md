@@ -407,7 +407,37 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   procurada, coisa estranha, comunidade ou acampamento. Cada rumor do JSON tem `"rotulo"` e
   `"descoberta": {"nome", "icone"}`. A legenda lista os ícones e os últimos 10 rumores ("?" a conferir, "✓" achado).
 
-### Etapa 10 — sobreviventes errantes (valores provisórios)
+### Etapa 10b — ecossistema vivo de errantes (pedido de 20/11/2026; substitui o "aparece perto" da etapa 10)
+- **População persistente** (`Errantes`): ~30 errantes no começo (sozinhos, em duplas/famílias e **3 bandos de
+  saqueadores** de 3–4 com uma **toca** numa cidade); chegam novos pelas estradas quando a população cai abaixo de 24;
+  morrem de vez. Cada um: nome, gênero, papel (andarilho, catador, caçador, saqueador, expedição), **índole**
+  (pacífico, desconfiado, oportunista, hostil), fome, sede, vida, munição, o que carrega, objetivo, posição e a
+  **opinião sobre o jogador**.
+- **Longe do jogador (a cada hora de jogo):** necessidades (fome −2,2/h, sede −3,5/h; água em rio/poça, comida achada na
+  cidade ou caçando), objetivo (vasculhar a cidade mais perto, água, caçar, abrigo numa comunidade quando ferido, trocar,
+  vagar; os bandos emboscam perto da toca ou saem para saquear com fome; quem anda em grupo segue o líder), anda
+  **~200 m por hora de jogo** (a mesma velocidade de um corpo), e os encontros são sorteados: **monstros** pelo perigo
+  da zona (cidade 3,5%/h, mato 2%/h, ×1,8 de noite; vence, se fere, foge ou morre conforme a força do grupo, a vida, a
+  munição e a índole), **outros errantes** (o hostil ou o oportunista faminto assalta, às vezes mata; dois em paz se
+  ajudam e às vezes viram grupo) e **comunidades** (pede abrigo: fica, se houver comida; quem o jogador encaminhou é
+  aceito e dá +4 de reputação). A fome empurra a índole para o saque; ser ajudado acalma.
+- **Perto do jogador:** a menos de 160 m o agente anda em tempo real; a 60 m ganha **corpo** onde estiver (quem já
+  estava na cidade aparece; quem chega, aparece chegando) e continua o que fazia; a 80 m volta ao abstrato com o estado.
+  O corpo vasculha agachado, embosca agachado, cai ferido e pede ajuda, **luta com monstros** (atira se tem munição,
+  bate se tem coragem) ou foge.
+- **Monstros caçam humanos:** o Inimigo escolhe a presa entre o jogador e os humanos por perto (errantes e moradores)
+  que ele perceba; humano atacado perde vida de verdade. Recompensa e "defesa" só quando quem mata é o jogador.
+- **Bandos e reputação "saqueadores":** sobe com os crimes do jogador que viram boato (um terço do peso), cai 10 quando
+  ele mata um membro na frente do bando. Abaixo de **30**, o bando embosca ("Passa a mochila!"); acima, deixa passar,
+  conversa e **convida** ("Tá dentro. Aparece na toca.") — o rumor da toca vira "?" no mapa e "Toca dos saqueadores"
+  quando achada. A opinião de cada errante (ajudado +30, roubado −60, atacado −40) muda a conversa.
+- **Expedições das comunidades são agentes:** saem, andam até a cidade mais perto, vasculham ~4 h e voltam com o que
+  acharam; correm os mesmos riscos (ferido, morte). A comunidade espera (até 60 h) e recebe o que veio.
+- Diário: "Marta, uma andarilha, foi morta pelos da noite perto do Mirante do Vale", "Rafael chegou no Santuário do Sol
+  pedindo abrigo e foi aceito", "Rosa voltou da cidade com 2 sucata". Em 5 dias de teste sem o jogador, de ~40 que
+  passaram pelo mapa, ~16 morreram (fome, emboscadas, monstros): calibrar no playtest.
+
+### Etapa 10 — sobreviventes errantes (valores provisórios; a forma de aparecer foi substituída pela 10b)
 - Aparecem nas **ruas das cidades** (zona urbana, longe das comunidades), a 25–40 m do jogador, com 20% de chance a cada
   3 s, no máximo 2 por vez; somem a ~95 m. De dia: assustado 25, ferido 20, andarilho 15, saqueador 18, em combate 22
   (pesos); **à noite metade são saqueadores**. Nomes e gênero sorteados.

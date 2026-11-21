@@ -1,97 +1,66 @@
 class_name GerenteErrantes
 extends Node
-## Põe sobreviventes errantes (Errante) nas ruas das cidades perto do jogador, de vez em quando, e os tira quando
-## ele se afasta (marco 2, etapa 10; Q42). No máximo MAX ao mesmo tempo; à noite, mais saqueadores.
+## Ponte entre o ecossistema abstrato de errantes (Errantes) e o mundo (etapa 10b): roda as horas da simulação e,
+## a cada segundo, dá corpo (Errante) aos agentes que estão perto do jogador — onde quer que a vida deles os tenha
+## levado — e devolve ao abstrato os que ficaram longe. Ninguém nasce "para o jogador": se você chega a uma cidade,
+## quem já estava lá aparece; se alguém chega à cidade onde você está, ele aparece chegando.
+## Agentes dentro das comunidades não ganham corpo (estão lá dentro).
 
-const MAX := 2
-const LONGE := 95.0 * IsoMath.METRO
-const PESOS_DIA := {"assustado": 25, "ferido": 20, "andarilho": 15, "saqueador": 18, "em_combate": 22}
-const PESOS_NOITE := {"assustado": 10, "ferido": 15, "andarilho": 5, "saqueador": 50, "em_combate": 20}
+const PERTO := 60.0 * IsoMath.METRO
+const LONGE := 80.0 * IsoMath.METRO
 
-var _vivos: Array = []
-var _t := 5.0
-var _rng := RandomNumberGenerator.new()
-
-
-func _ready() -> void:
-	_rng.randomize()
+var _corpos: Dictionary = {}       ## id do agente -> Errante
+var _t := 0.0
 
 
 func _process(delta: float) -> void:
 	_t -= delta
 	if _t > 0.0:
 		return
-	_t = 3.0
+	_t = 1.0
+	Errantes.passo()
 	var j := get_tree().get_first_node_in_group("jogador") as Node2D
-	if j == null or j.morto:
+	if j == null:
 		return
 	var pj := IsoMath.tela_para_mundo((j.dirigindo if j.dirigindo != null else j).global_position)
-	for e in _vivos.duplicate():
+	for id in _corpos.keys():
+		var e: Errante = _corpos[id]
 		if not is_instance_valid(e):
-			_vivos.erase(e)
-		elif IsoMath.tela_para_mundo((e as Node2D).global_position).distance_to(pj) > LONGE:
-			for z in (e as Errante).zumbis:
-				if is_instance_valid(z):
-					(z as Node).queue_free()
-			(e as Node).queue_free()
-			_vivos.erase(e)
-	if _vivos.size() >= MAX or MundoGen.zona(pj) != "urbano" or Comunidades.perto(pj, 60.0 * IsoMath.METRO) != "":
-		return
-	if _rng.randf() < 0.2:
-		criar(_sortear_tipo(), pj)
-
-
-func _sortear_tipo() -> String:
-	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
-	var pesos: Dictionary = PESOS_NOITE if ciclo != null and ciclo.eh_noite() else PESOS_DIA
-	var total := 0
-	for k in pesos:
-		total += int(pesos[k])
-	var r := _rng.randi_range(1, total)
-	for k in pesos:
-		r -= int(pesos[k])
-		if r <= 0:
-			return str(k)
-	return "assustado"
-
-
-## Um ponto de rua a 25–40 m do jogador (INF se não achar).
-func _ponto_de_rua(pj: Vector2) -> Vector2:
-	var area := Rect2(pj - Vector2.ONE * 45.0 * IsoMath.METRO, Vector2.ONE * 90.0 * IsoMath.METRO)
-	var faixas := MundoGen.ruas(area)
-	for tent in 20:
-		if faixas.is_empty():
-			break
-		var fd: Dictionary = faixas[_rng.randi() % faixas.size()]
-		var r: Rect2 = (fd["r"] as Rect2).intersection(area)
-		if r.size.x <= 0.0 or r.size.y <= 0.0:
+			_corpos.erase(id)
 			continue
-		var p := Vector2(_rng.randf_range(r.position.x, r.end.x), _rng.randf_range(r.position.y, r.end.y))
-		var d := p.distance_to(pj)
-		if d > 25.0 * IsoMath.METRO and d < 40.0 * IsoMath.METRO:
-			return p
-	return Vector2.INF
+		if e.morto:
+			continue
+		if not bool(e.agente["vivo"]) or e._mundo().distance_to(pj) > LONGE or Comunidades.em(e._mundo()) != "":
+			e.devolver()
+			e.queue_free()
+			_corpos.erase(id)
+	for a in Errantes.vivos():
+		var aid := str(a["id"])
+		var dist := (a["p"] as Vector2).distance_to(pj)
+		a["perto"] = dist < Errantes.PERTO_JOGADOR
+		if not _corpos.has(aid) and bool(a["perto"]):
+			_andar_um_segundo(a)                    # chega andando, em tempo real, até ganhar corpo
+		if _corpos.has(aid) or dist > PERTO:
+			continue
+		if Comunidades.em(a["p"]) != "":
+			continue
+		var e2 := Errante.de_agente(a)
+		get_parent().add_child(e2)
+		_corpos[aid] = e2
 
 
-func criar(tipo: String, pj: Vector2) -> Errante:
-	var p := _ponto_de_rua(pj)
-	if p == Vector2.INF:
-		return null
-	var e := Errante.criar(tipo, p, _rng)
-	var mundo := get_parent()
-	mundo.add_child(e)
-	_vivos.append(e)
-	if tipo == "em_combate":
-		var cena := load("res://scenes/enemies/inimigo.tscn") as PackedScene
-		for k in _rng.randi_range(1, 2):
-			var z := cena.instantiate() as Inimigo
-			z.raca = "zombie"
-			z.dorme = false
-			z.position = IsoMath.mundo_para_tela(p + Vector2.from_angle(_rng.randf() * TAU) * 1.6 * IsoMath.METRO)
-			mundo.add_child(z)
-			e.zumbis.append(z)
-	return e
+## Agente sem corpo, mas perto do jogador: anda 1 s na velocidade de um corpo rumo ao destino.
+func _andar_um_segundo(a: Dictionary) -> void:
+	Errantes._objetivo(a)
+	var v: Vector2 = (a["destino"] as Vector2) - (a["p"] as Vector2)
+	var passo := Npc.VEL * (0.7 if bool(a["ferido"]) else 1.0)
+	a["p"] = a["destino"] if v.length() <= passo else (a["p"] as Vector2) + v.normalized() * passo
 
 
+func corpos() -> Array:
+	return _corpos.values().filter(func(e): return is_instance_valid(e))
+
+
+## Compatibilidade com o teste antigo (lista dos errantes com corpo).
 func errantes() -> Array:
-	return _vivos.filter(func(e): return is_instance_valid(e))
+	return corpos()

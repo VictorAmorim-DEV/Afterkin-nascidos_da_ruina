@@ -172,6 +172,8 @@ static func passo() -> void:
 				_lembrar(chave, str(bd["ev"]), "ouviu")
 		if str(bd["origem"]) == com:           # primeira vez que o boato corre: segue para as outras comunidades
 			humana = clampf(humana + float(bd["peso"]) * 0.5, -100.0, 100.0)
+			if int(bd["peso"]) < 0:
+				mudar("saqueadores", int(-int(bd["peso"]) / 3.0))    # o que espanta as comunidades agrada os bandos
 			var rel: Dictionary = Comunidades.dados(com).get("relacoes", {})
 			for outra in rel:
 				var tipo := str(rel[outra])

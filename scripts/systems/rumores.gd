@@ -87,6 +87,9 @@ static func regiao(id: String) -> Dictionary:
 static func _ponto(reg: Dictionary) -> Vector2:
 	var ref := str(reg.get("ref", ""))
 	match str(reg.get("tipo", "")):
+		"ponto":
+			var lp: Array = reg.get("p", [])
+			return Vector2(float(lp[0]), float(lp[1])) if lp.size() == 2 else Vector2.INF
 		"comunidade":
 			var g := Comunidades.geo(ref)
 			return g["centro"] if not g.is_empty() else Vector2.INF

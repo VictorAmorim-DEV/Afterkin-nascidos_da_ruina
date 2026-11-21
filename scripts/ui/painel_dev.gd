@@ -153,6 +153,15 @@ func _process(delta: float) -> void:
 		linhas.append("%s: comida %.1f d · remédio %d · munição %d · pop %d · ação %s%s" % [Comunidades.nome(str(id)),
 			float(c["comida"]), int(c["remedio"]), int(c["municao"]), int(c["pop"]), acao,
 			(" · feridos: " + ", ".join(fer)) if not fer.is_empty() else ""])
+	var vivos_e := Errantes.vivos()
+	var bando := vivos_e.filter(func(a): return a["papel"] == "saqueador").size()
+	var perto := 0
+	var j := _j()
+	if j != null:
+		var pj := IsoMath.tela_para_mundo(j.global_position)
+		perto = vivos_e.filter(func(a): return (a["p"] as Vector2).distance_to(pj) < 300.0 * IsoMath.METRO).size()
+	linhas.append("Errantes vivos: %d (saqueadores %d, a menos de 300 m: %d) · reputação com os saqueadores: %d" % [
+		vivos_e.size(), bando, perto, Reputacao.valor("saqueadores")])
 	for e in Simulacao.diario.slice(maxi(0, Simulacao.diario.size() - 5)):
 		linhas.append("  D%d %02dh: %s" % [int(e["dia"]), int(e["hora"]), e["texto"]])
 	_rep.text = "\n".join(linhas)

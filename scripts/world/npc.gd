@@ -210,8 +210,9 @@ func _fugir(delta: float) -> void:
 		_alvo = ponto_da_tarefa(tarefa)
 
 
-## Golpe ou tiro do jogador. A primeira agressão em alguns segundos vira um evento com testemunhas; morrer, outro.
-func receber_dano(n: float) -> void:
+## Golpe ou tiro do jogador (ou ataque de monstro: por_jogador = false). A primeira agressão do jogador em alguns
+## segundos vira um evento com testemunhas; morrer, outro.
+func receber_dano(n: float, por_jogador: bool = true) -> void:
 	if morto:
 		return
 	vida -= n
@@ -224,7 +225,7 @@ func receber_dano(n: float) -> void:
 		return
 	_fuga_t = 6.0
 	var agora := Time.get_ticks_msec() / 1000.0
-	if comunidade != "" and agora - _t_agressao > 20.0:
+	if por_jogador and comunidade != "" and agora - _t_agressao > 20.0:
 		_t_agressao = agora
 		Reputacao.registrar("agressao", _mundo(), self)
 

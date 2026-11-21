@@ -90,12 +90,24 @@ static func nome_do_lugar(p: Vector2) -> String:
 	for l in lugares:
 		var r: Rect2 = l[1]
 		if r.has_point(p):
-			return "em %s" % l[0]
+			return "%s %s" % [_prep(l[0], "em"), l[0]]
 		var d := r.get_center().distance_to(p)
 		if d < dist:
 			dist = d
 			melhor = l[0]
-	return "perto de %s" % melhor if melhor != "" else "no meio do nada"
+	return "perto %s %s" % [_prep(melhor, "de"), melhor] if melhor != "" else "no meio do nada"
+
+
+## "em"/"de" com o artigo que o nome do lugar pede: "no Acampamento", "da Vila", "em Porto Atlântico".
+static func _prep(lugar: String, prep: String) -> String:
+	var masc := ["Acampamento", "Aeroporto", "Forte", "Posto", "Mirante", "Recanto", "Sítio", "Rancho", "Areal", "Cruzeiro"]
+	var fem := ["Vila", "Base", "Baía", "Enseada", "Fazenda"]
+	var primeira := lugar.split(" ")[0]
+	if primeira in masc:
+		return "no" if prep == "em" else "do"
+	if primeira in fem:
+		return "na" if prep == "em" else "da"
+	return prep
 
 
 # ───────────────────────────── morte e renascimento ─────────────────────────────

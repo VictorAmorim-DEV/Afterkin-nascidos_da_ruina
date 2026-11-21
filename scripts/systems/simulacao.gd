@@ -8,6 +8,8 @@ extends RefCounted
 ## a vizinha, aprender uma habilidade ou ficar quieta. O resultado é sorteado com risco (ferido, morte, nada achado).
 ## Perto do jogador, os efeitos aparecem: quem saiu em expedição some da comunidade, quem se feriu fica em casa,
 ## quem morreu não volta (Reputacao.mortos). Tudo vai para o diário, de onde a etapa 9 tira os rumores.
+## A expedição é um agente do ecossistema de errantes (Errantes, etapa 10b): sai, anda até a cidade, vasculha, corre
+## os riscos do caminho e volta (ou não); a comunidade espera e recebe o que ele trouxe.
 ## Os valores iniciais ficam em "simulacao" no arquivo da comunidade.
 
 const TURNO_H := 6.0
@@ -101,7 +103,12 @@ static func _turno(id: String, h: float) -> void:
 	# ação em andamento
 	var a: Dictionary = c["acao"]
 	if not a.is_empty():
-		if h >= float(a["ate"]):
+		if str(a["tipo"]) == "expedicao":
+			var ag: Dictionary = Errantes.agentes.get(str(a.get("agente", "")), {})
+			if ag.is_empty() or not bool(ag["vivo"]) or h >= float(a["ate"]):
+				_concluir(id, a)
+				c["acao"] = {}
+		elif h >= float(a["ate"]):
 			_concluir(id, a)
 			c["acao"] = {}
 		return
@@ -147,13 +154,21 @@ static func _morreu(id: String, fd: Dictionary, como: String) -> void:
 
 
 ## Um sobrevivente encaminhado pelo jogador chegou: a comunidade cresce e registra no diário.
-static func receber_sobrevivente(id: String, quem: String, fem: bool = false) -> void:
+static func receber_sobrevivente(id: String, quem: String, fem: bool = false, pelo_jogador: bool = true) -> void:
 	var c := estado(id)
 	if c.is_empty():
 		return
 	c["pop"] = int(c["pop"]) + 1
-	_registrar(id, "%s chegou %s dizendo que foi %s por alguém de fora." % [quem, Comunidades.em_nome(id),
-		"mandada" if fem else "mandado"])
+	if pelo_jogador:
+		_registrar(id, "%s chegou %s dizendo que foi %s por alguém de fora." % [quem, Comunidades.em_nome(id),
+			"mandada" if fem else "mandado"])
+	else:
+		_registrar(id, "%s chegou %s pedindo abrigo e foi %s." % [quem, Comunidades.em_nome(id), "aceita" if fem else "aceito"])
+
+
+## Notícia do mundo lá fora (errantes): vai para o diário com a comunidade mais perto (ou "").
+static func registrar_noticia(id: String, texto: String) -> void:
+	_registrar(id, texto)
 
 
 ## O jogador tratou um ferido (antibiótico + instruções do médico): passa a melhorar.
@@ -252,8 +267,9 @@ static func _escolher_quem(id: String, papeis: Array) -> String:
 static func _expedicao(id: String, alvo: String, h: float) -> void:
 	var c: Dictionary = com[id]
 	var quem := _escolher_quem(id, ["cacador", "pescador", "guarda", "comerciante"]) if randf() < 0.5 else ""
-	c["acao"] = {"tipo": "expedicao", "alvo": alvo, "ate": h + 18.0, "quem": [quem] if quem != "" else [], "destino": ""}
 	var nome := _nome_npc(id, quem) if quem != "" else "um grupo de moradores"
+	var agente := Errantes.expedicao(id, alvo, quem, _Cap(nome) if quem == "" else nome, _g(id, quem, "m", "f") == "f")
+	c["acao"] = {"tipo": "expedicao", "alvo": alvo, "ate": h + 60.0, "quem": [quem] if quem != "" else [], "agente": agente}
 	_registrar(id, "%s saiu %s atrás de %s na cidade." % [_Cap(nome), Comunidades.de(id),
 		{"remedio": "remédio", "comida": "comida", "sucata": "material"}[alvo]])
 
@@ -290,32 +306,50 @@ static func _concluir(id: String, a: Dictionary) -> void:
 	var c: Dictionary = com[id]
 	match str(a["tipo"]):
 		"expedicao":
-			var quem: Array = a.get("quem", [])
-			var nome := _nome_npc(id, str(quem[0])) if not quem.is_empty() else "O grupo"
-			var r := randf()
-			var vitima := nome if not quem.is_empty() else "Um morador do grupo"     # quem se fere ou morre
-			if r < 0.03:
-				var fd := {"quem": str(quem[0]) if not quem.is_empty() else "", "nome": vitima}
-				_morreu(id, fd, "não voltou da cidade")
-			elif r < 0.18:
-				var npc_id := str(quem[0]) if not quem.is_empty() else ""
-				(c["feridos"] as Array).append({"quem": npc_id, "nome": vitima, "grav": randf_range(0.25, 0.45), "tratado": false, "hosp": ""})
-				_registrar(id, "%s voltou %s da cidade (%s)." % [vitima, _g(id, npc_id, "ferido", "ferida"), Comunidades.nome(id)])
-			elif r < 0.6:
-				match str(a["alvo"]):
-					"remedio":
-						c["remedio"] = int(c["remedio"]) + randi_range(1, 2)
-					"comida":
-						c["comida"] = float(c["comida"]) + randf_range(2.0, 4.0)
-					_:
-						c["municao"] = int(c["municao"]) + randi_range(0, 2)
-				_registrar(id, "%s voltou da cidade com o que foi buscar (%s)." % [nome, Comunidades.nome(id)])
-			else:
-				_registrar(id, "%s voltou da cidade de mãos vazias (%s)." % [nome, Comunidades.nome(id)])
+			_fim_expedicao(id, a)
 		"aprender":
 			if not (c["hab"] as Array).has(str(a["hab"])):
 				(c["hab"] as Array).append(str(a["hab"]))
 			_registrar(id, "%s agora tem alguém que sabe %s." % [_Cap(Comunidades.com_artigo(id)), "Medicina" if a["hab"] == "medicina" else a["hab"]])
+
+
+## A expedição (agente do Errantes) voltou, morreu ou sumiu: a comunidade recebe o que veio.
+static func _fim_expedicao(id: String, a: Dictionary) -> void:
+	var c: Dictionary = com[id]
+	var aid := str(a.get("agente", ""))
+	var ag: Dictionary = Errantes.agentes.get(aid, {})
+	var quem: Array = a.get("quem", [])
+	var npc_id := str(quem[0]) if not quem.is_empty() else ""
+	if ag.is_empty() or not bool(ag.get("voltou", false)):
+		if not ag.is_empty() and bool(ag["vivo"]):
+			Errantes.morrer(ag, "perdido na cidade")          # passou do tempo: não volta mais
+		c["pop"] = maxi(0, int(c["pop"]) - 1)
+		Errantes.agentes.erase(aid)
+		return
+	var trouxe: Dictionary = ag.get("itens", {})
+	var partes: PackedStringArray = []
+	for item in trouxe:
+		var n := int(trouxe[item])
+		if n <= 0:
+			continue
+		match str(item):
+			"comida":
+				c["comida"] = float(c["comida"]) + n * 1.0
+			"antibiotico", "bandagem":
+				c["remedio"] = int(c["remedio"]) + n
+			"municao":
+				c["municao"] = int(c["municao"]) + n
+		partes.append("%d %s" % [n, Itens.nome(str(item)).to_lower()])
+	var nome := str(ag["nome"])
+	if float(ag["vida"]) < 70.0:
+		(c["feridos"] as Array).append({"quem": npc_id, "nome": nome, "grav": clampf((100.0 - float(ag["vida"])) / 100.0, 0.2, 0.7),
+			"tratado": false, "hosp": ""})
+		_registrar(id, "%s voltou %s da cidade (%s)." % [nome, _g(id, npc_id, "ferido", "ferida"), Comunidades.nome(id)])
+	if partes.is_empty():
+		_registrar(id, "%s voltou da cidade de mãos vazias (%s)." % [nome, Comunidades.nome(id)])
+	else:
+		_registrar(id, "%s voltou da cidade com %s (%s)." % [nome, ", ".join(partes), Comunidades.nome(id)])
+	Errantes.agentes.erase(aid)
 
 
 static func _incidente(id: String) -> void:
