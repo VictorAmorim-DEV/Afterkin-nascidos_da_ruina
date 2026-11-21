@@ -70,7 +70,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 11 (`704a5d5`). Medicina: mestre, cadeia gerada pela necessidade, habilidades (pedido de 21/11/2026: as quatro habilidades,
     Diagnóstico, Tratar ferimentos, Preparar remédios e Cirurgia de campo, uma por passo; o Enfermeiro(a) pula o primeiro;
     depois de aprender, as comunidades sem médico pedem ajuda ao jogador).
-  - ✅ 11b (HASH). Retorno do teste de 21/11/2026 (fases A–E, confirmado):
+  - ✅ 11b (`9640519`). Retorno do teste de 21/11/2026 (fases A–E, confirmado):
     - ✅ Cobrança: vítima ≠ testemunha, falam do alvo pelo nome/parentesco, a vítima não conversa até você se redimir;
       desculpas (com ou sem reparação), mentir e ameaçar.
     - ✅ Dona Iracema viva de novo: não se reproduziu; morador que consta como morto agora some na hora, e as falas que
