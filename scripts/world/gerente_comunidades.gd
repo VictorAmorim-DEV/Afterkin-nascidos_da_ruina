@@ -13,6 +13,8 @@ var _vivos: Dictionary = {}    ## id da comunidade -> [Npc]
 var _murais: Dictionary = {}   ## id da comunidade -> MuralNo
 var _t := 0.0
 var _t_ouvir := 10.0           ## espera até a próxima conversa ouvida (s)
+var _ultimo_h := -1.0          ## hora de jogo da última passada (trabalhos da VidaComunidade)
+var _estruturas: Dictionary = {}   ## id da comunidade -> [nós da VidaComunidade: barril, bancada, cama de hóspede]
 const RESPOSTAS := ["Deus nos ajude.", "Era só o que faltava.", "E a gente aqui, esperando a próxima.",
 	"Quem sabe amanhã melhora.", "Não fala alto, que dá azar.", "É... cada dia uma."]
 
@@ -27,6 +29,10 @@ func _process(delta: float) -> void:
 	_t = 0.5
 	Reputacao.passo()                          # boatos que chegaram à hora de correr
 	Simulacao.passo()                          # turnos do ecossistema das comunidades (longe e perto)
+	var agora_h := Reputacao.agora_h()
+	if _ultimo_h >= 0.0 and agora_h > _ultimo_h and agora_h - _ultimo_h < 1.0:
+		VidaComunidade.passo(agora_h - _ultimo_h)     # trabalho em tempo real (o sono não conta)
+	_ultimo_h = agora_h
 	var j := get_tree().get_first_node_in_group("jogador") as Node2D
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
 	if j == null:
@@ -45,8 +51,9 @@ func _process(delta: float) -> void:
 		for p in get_tree().get_nodes_in_group("portao"):
 			var pt := p as PortaoNo
 			if pt != null and pt.comunidade != "":
-				pt.definir_aberto(Comunidades.portao_aberto(pt.comunidade, float(ciclo.minutos)) \
-					and not Consequencias.portao_fechado_para(pt.comunidade, pj))
+				var pelo_horario := Comunidades.portao_aberto(pt.comunidade, float(ciclo.minutos)) or VidaComunidade.aberto_para_jogador(pt.comunidade)
+				pt.definir_aberto(pelo_horario and not Consequencias.portao_fechado_para(pt.comunidade, pj) \
+					and not VidaComunidade.portao_fechado_para(pt.comunidade, pj))
 
 
 static func _dist_rect(p: Vector2, r: Rect2) -> float:
@@ -81,6 +88,22 @@ func _criar(id: String) -> void:
 		mundo.add_child(m)
 		m.global_position = IsoMath.mundo_para_tela((g["fogueira"] as Vector2) + Vector2(140.0, -130.0))
 		_murais[id] = m
+	if not _estruturas.has(id) and not g.is_empty():
+		var lista_e: Array = []
+		var f: Vector2 = g["fogueira"]
+		for par in [["agua", Vector2(-170.0, -150.0)], ["bancada", Vector2(230.0, 60.0)]]:
+			var e := EstruturaNo.new()
+			e.comunidade = id
+			e.tipo = par[0]
+			mundo.add_child(e)
+			e.global_position = IsoMath.mundo_para_tela(f + (par[1] as Vector2))
+			lista_e.append(e)
+		var ch := CamaHospede.new()
+		ch.comunidade = id
+		mundo.add_child(ch)
+		ch.global_position = IsoMath.mundo_para_tela(f + Vector2(-230.0, 90.0))
+		lista_e.append(ch)
+		_estruturas[id] = lista_e
 
 
 func _remover(id: String) -> void:
@@ -92,6 +115,10 @@ func _remover(id: String) -> void:
 		if is_instance_valid(_murais[id]):
 			(_murais[id] as Node).queue_free()
 		_murais.erase(id)
+	for e in _estruturas.get(id, []):
+		if is_instance_valid(e):
+			(e as Node).queue_free()
+	_estruturas.erase(id)
 
 
 ## Dois moradores parados conversando perto do jogador: ele ouve. Novidade do diário vira rumor; senão, uma das

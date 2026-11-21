@@ -525,3 +525,25 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   hostis não fogem quando apanham (só muito feridos); o guarda às vezes atira.
 - **Morto não volta:** um morador que consta como morto e aparece no mundo some na hora (o caso da Dona Iracema não
   se reproduziu). O modo dev (F1) lista os mortos e as investigações.
+
+### Etapa 12 — vida na comunidade (respostas de 21/11/2026; valores provisórios)
+- **Respostas do Victor:** dormir **só com reputação alta**; trabalhos de **vigia, pesca/caça/roça, recados e
+  consertos**; tudo **em tempo real**; com reputação baixa **só se fala pelo portão**. Sistema em `VidaComunidade`.
+- **Dormir:** cama de hóspede perto da fogueira (`CamaHospede`), com reputação 30+: descansar ou dormir como na cama
+  do jogador, sem recolher e sem ser ponto de renascimento (Q51). De noite, com 30+, E no portão chama o guarda, que
+  abre por ~25 s; dentro dos muros nada ataca.
+- **Estrutura:** barril de água limpa (enche as garrafas vazias; de graça com 15+, senão 1 comida por garrafa, que
+  vai para a comunidade); bancada (com 15+, perto dela as receitas gastam 25% menos madeira, pedra, sucata e pano);
+  enfermaria (o médico da comunidade cuida de você uma vez por dia: de graça com 20+, senão com um item de valor 10;
+  cura a vida conforme o nível dele e a disenteria/leptospirose se a comunidade tiver remédio).
+- **Trabalhos** (oferecidos na conversa; um de cada vez; com reputação negativa ninguém oferece): **vigiar o portão**
+  (guarda; 2 h de jogo perto do portão, +3), **ajudar no forte** (pescador, caçador, catadora; 2 h no ponto de
+  trabalho, +2, +3 comidas para a comunidade e 35% de 1 comida para você), **consertar o muro** (líder; 1,5 h num
+  trecho do muro, gasta 3 madeiras, +3). Afastar-se pausa; o HUD mostra o progresso e para onde ir. Teto de **+8 de
+  reputação por dia** com trabalhos.
+- **Recados** (líder, pela necessidade): **buscar** o que falta (comida, bandagem, sucata, madeira, pano, água
+  limpa; +5) ou **levar uma encomenda** ao líder da vizinha (item "Encomenda"; +5 na sua, +3 na vizinha e +5 na
+  relação entre as duas). Recados não contam no teto.
+- **Portão com reputação −20 ou menos:** fecha quando você chega perto; o guarda conversa pela grade ("Daí mesmo...")
+  e oferece uma **tarefa de redenção** (buscar o que falta, +8) ou aceita **um presente por dia** (valor 10, +4).
+  Abaixo de −40 ninguém conversa; com assassinato conhecido vale a expulsão da 11b.

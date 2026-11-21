@@ -117,6 +117,9 @@ func _process(delta: float) -> void:
 		_saude_texto.text += "\nSOL %d/60%s" % [int(_jogador.sol), " · QUEIMANDO" if _jogador.sol > 60.0 else ""]
 	if _jogador.territorio.tem_totem():
 		_saude_texto.text += "\nTOTEM: " + _jogador.territorio.resumo()
+	var trab := VidaComunidade.linha_hud()
+	if trab != "":
+		_saude_texto.text += "\n" + trab
 	var med := Medicina.linha_hud()
 	if med != "":
 		_saude_texto.text += "\n" + med

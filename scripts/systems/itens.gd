@@ -34,6 +34,8 @@ const DB := {
 	"radio": {"nome": "Rádio de pilha", "stack": 1, "peso": 0.6, "uso": true,
 		"desc": "Use de madrugada (0h–5h): às vezes pega uma transmissão. De dia, só chiado."},
 	"pano": {"nome": "Pano", "stack": 16, "peso": 0.15, "desc": "Lençol, cortina ou roupa velha. Serve para fazer uma cama."},
+	"encomenda": {"nome": "Encomenda", "stack": 1, "peso": 2.0,
+		"desc": "Pacote amarrado com corda. Não é seu: entregue a quem o recado mandou."},
 	"cama": {"nome": "Cama", "stack": 1, "peso": 4.0, "uso": true,
 		"desc": "Use dentro de uma casa ou do seu abrigo para montá-la. Quando morrer, você pode renascer nela."},
 }
@@ -61,6 +63,7 @@ const CONTEM := {
 }
 
 static var _cache: Dictionary = {}
+static var bancada_ate: int = 0         ## ms (Time) até quando o jogador está numa bancada de comunidade (EstruturaNo)
 
 
 static func existe(id: String) -> bool:
@@ -106,6 +109,8 @@ static func custo_receita(id: String, origem: String = "") -> Array:
 		var qtd: int = c[1]
 		if (origem == "mecanico" and c[0] == "sucata") or (origem == "mestre_obras" and id in ["totem", "cama"]):
 			qtd = Origens.desconto(qtd)
+		if Time.get_ticks_msec() < bancada_ate and c[0] in ["madeira", "pedra", "sucata", "pano"]:
+			qtd = Origens.desconto(qtd)            # bancada da comunidade: 25% a menos
 		out.append([c[0], qtd])
 	return out
 

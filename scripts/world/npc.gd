@@ -373,7 +373,7 @@ func _e_o_alvo() -> bool:
 	if dormindo or morto or fora:
 		return false
 	var d := _dist_jogador()
-	if d > ALCANCE_FALA:
+	if d > ALCANCE_FALA * (2.4 if tarefa == "portao" else 1.0):     # o guarda conversa pela grade do portão
 		return false
 	for o in get_tree().get_nodes_in_group("npc"):
 		if o != self and not o.dormindo and o._dist_jogador() < d:

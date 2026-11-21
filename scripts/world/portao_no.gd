@@ -77,7 +77,13 @@ func texto_interacao() -> String:
 	if not _e_o_alvo():
 		return ""
 	if comunidade != "":
-		return "" if aberto else "Portão de %s: fechado até de manhã" % Comunidades.nome(comunidade)
+		if aberto:
+			return ""
+		var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
+		var de_dia: bool = ciclo != null and Comunidades.portao_aberto(comunidade, float(ciclo.minutos))
+		if de_dia:
+			return "Portão de %s: fechado para você (fale com o guarda)" % Comunidades.nome(comunidade)
+		return "E — chamar o guarda (%s, fechado até de manhã)" % Comunidades.nome(comunidade)
 	return "E — %s portão" % ("fechar" if aberto else "abrir")
 
 
@@ -103,7 +109,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if j == null or j.dirigindo != null:
 		return
 	if comunidade != "":
-		return                                   # o portão da comunidade é dos guardas
+		var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
+		if aberto or (ciclo != null and Comunidades.portao_aberto(comunidade, float(ciclo.minutos))):
+			return                               # de dia, quem decide é o guarda (conversa)
+		get_viewport().set_input_as_handled()
+		j.aviso(VidaComunidade.pedir_para_entrar(comunidade))   # de noite: com reputação alta, o guarda abre
+		return
 	get_viewport().set_input_as_handled()
 	if aberto and _vao_ocupado():
 		j.aviso("Saia da passagem antes de fechar o portão.")

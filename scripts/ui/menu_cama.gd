@@ -4,6 +4,7 @@ extends CanvasLayer
 ## O jogo NÃO pausa: o mundo segue enquanto você escolhe. ESC, E, clicar fora ou se afastar da cama fecha.
 
 var cama: Node2D = null
+var hospede := false                   ## cama de hóspede da comunidade: sem "Recolher"
 
 
 func _ready() -> void:
@@ -35,7 +36,7 @@ func _ready() -> void:
 	painel.add_child(col)
 	var j := get_tree().get_first_node_in_group("jogador")
 	var titulo := Label.new()
-	titulo.text = "Cama"
+	titulo.text = "Cama de hóspede" if hospede else "Cama"
 	titulo.add_theme_font_size_override("font_size", 20)
 	col.add_child(titulo)
 	var estado := Label.new()
@@ -46,8 +47,9 @@ func _ready() -> void:
 	b1.pressed.connect(func(): _fechar(); j.descansar_na_cama(cama))
 	var b2 := _botao(col, "Deitar e dormir (6–7 h)", "O tempo passa e você acorda descansado.")
 	b2.pressed.connect(func(): _fechar(); j.dormir_na_cama(cama))
-	var b3 := _botao(col, "Recolher a cama", "Guarda a cama de volta na mochila.")
-	b3.pressed.connect(func(): _fechar(); Respawn.recolher(j, cama))
+	if not hospede:
+		var b3 := _botao(col, "Recolher a cama", "Guarda a cama de volta na mochila.")
+		b3.pressed.connect(func(): _fechar(); Respawn.recolher(j, cama))
 	var b4 := Button.new()
 	b4.text = "Cancelar"
 	b4.flat = true

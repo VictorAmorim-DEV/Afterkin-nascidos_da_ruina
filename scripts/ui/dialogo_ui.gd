@@ -78,14 +78,18 @@ func _ready() -> void:
 		abertura = seguir
 		var lt: Dictionary = {}
 		if npc.comunidade != "":
-			lt = Consequencias.abertura_parente(npc.comunidade, _ctx["npc"], _ctx, seguir)
+			lt = VidaComunidade.abertura_barrado(npc.comunidade, _ctx["npc"], _ctx, seguir)
+			if lt.is_empty():
+				lt = Consequencias.abertura_parente(npc.comunidade, _ctx["npc"], _ctx, seguir)
 			if lt.is_empty():
 				lt = Consequencias.abertura_luto(npc.comunidade, _ctx["npc"], seguir)
 		if not lt.is_empty():
 			(_arvore["nos"] as Dictionary).merge(lt["nos"], true)
 			abertura = str(lt["no"])
 	_ctx["_nos"] = _arvore["nos"]
-	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just"]) else seguir   # "Alguma novidade?" fica na conversa normal
+	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just"]) else seguir
+	if abertura == "_v_barrado":
+		_abertura = "_v_barrado"                 # barrado: nada de novidades, só o portão   # "Alguma novidade?" fica na conversa normal
 	Conversas.vistos["%s/%s" % [_ctx["com"], _ctx["npc"]]] = true
 	_ir(abertura)
 
@@ -125,6 +129,7 @@ func _ir(id: String) -> void:
 			lista.append({"texto": "Alguma novidade por aqui?", "vai": "_novidade"})
 	if npc.comunidade != "" and Reputacao.valor(npc.comunidade) > -40:
 		lista.append_array(Medicina.opcoes(_arvore, _ctx, lista, id == _abertura))
+		lista.append_array(VidaComunidade.opcoes(_arvore, _ctx, id == _abertura or id == "_v_barrado"))
 	if no.has("_ouvir"):
 		var av := Rumores.ouvir(no["_ouvir"])
 		if av != "":
@@ -185,7 +190,7 @@ func _process(_delta: float) -> void:
 	var j: Node2D = _ctx.get("jogador")
 	if j == null or bool(j.get("morto")) or not is_instance_valid(npc) or npc.dormindo:
 		_fechar()
-	elif IsoMath.tela_para_mundo(npc.global_position - j.global_position).length() > LONGE:
+	elif IsoMath.tela_para_mundo(npc.global_position - j.global_position).length() > LONGE * (2.0 if npc.tarefa == "portao" else 1.0):
 		_fechar()                                  # o jogo não pausa: andou para longe, a conversa acaba
 
 

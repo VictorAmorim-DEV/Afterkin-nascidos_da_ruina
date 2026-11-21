@@ -156,6 +156,8 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 				msgs.append_array(no.acao(str(ed["acao"]), ctx))
 		if ed.has("tratar"):
 			Simulacao.tratar(str(ctx["com"]), str(ed["tratar"]))
+		if ed.has("vida"):
+			msgs.append_array(VidaComunidade.efeito(ed, ctx, ctx.get("_nos", {})))
 		if ed.has("investig"):
 			msgs.append_array(Consequencias.responder_parente(ed, ctx, ctx.get("_nos", {})))
 		if ed.has("cobranca"):
