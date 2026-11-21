@@ -85,8 +85,11 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 13 (`d929603`). Log de eventos, exportar o diário e ferramenta de resumo visual (21/11/2026: sem botão; exporta sozinho
     ao morrer e ao fechar o jogo, na pasta do jogo; o resumo é uma página HTML).
   - ⬜ 14. Playtest da 2a.
+  **Rumo (21/11/2026):** depois do playtest, congelar sistemas sociais novos e ir para o marco 3 (ver "Rumo depois do
+  marco 2" em `docs/DECISOES_DESIGN.md`; ideias novas passam pela skill `afterkin-ideia`).
   **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.
   - ⬜ Sprites novos dos NPCs (o Victor traz as folhas; eu recorto e animo).
+  - ⬜ Skill `afterkin-npc` (rascunhar um NPC novo no formato dos JSON de comunidade e diálogo), na etapa 2b.
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.
 - ⬜ Marco 5 — Ninho e Vampiro Ancestral: prédio-ninho, chefe, três desfechos.

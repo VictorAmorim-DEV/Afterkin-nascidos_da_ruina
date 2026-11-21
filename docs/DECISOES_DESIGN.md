@@ -563,3 +563,18 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   tempo com filtros por tipo; inimigos mortos e notícias do mundo. Claro e escuro conforme o sistema.
 - **Para exportar o jogo:** o filtro de arquivos da exportação precisa incluir `data/*.json` e `data/*.html` (o
   modelo do resumo é `data/resumo_partida.html`).
+
+## Rumo depois do marco 2 (decidido em 21/11/2026)
+O marco 2 cresceu para os lados (sociedade simulada) antes de o jogo crescer para o centro (a transformação). O
+Victor aprovou este rumo para recuperar a essência:
+1. **Playtest da 2a agora (etapa 14)**, com uma pergunta central: *o social gera histórias que o jogador quer
+   contar?* O diário exportado responde.
+2. **Congelar sistemas sociais novos** depois do playtest: ajustes sim, sistemas novos não (viram 💭).
+3. **Ir para o marco 3 (infecção)**, o diferencial do jogo, amarrando o que já existe: a comunidade reage ao
+   infectado, a Medicina leva à cura, o medo e a vingança valem para monstros, o lenço da Neide.
+4. **Filtro de toda ideia nova** (skill `afterkin-ideia`): ela alimenta a decisão *"forço mais um prédio ou volto?"*
+   ou a pergunta *"quem eu vou me tornar?"*? Se não alimenta nenhuma, vai para 💭.
+- **Pitch:** *"Um RPG de sobrevivência em que o mundo lembra do que você fez, e quer te transformar no monstro que
+  você jurou combater."*
+- Skills do projeto em `.claude/skills/`: `afterkin-ideia` (filtro de ideias) e `afterkin-playtest` (relatório a
+  partir dos diários). `afterkin-npc` (rascunho de NPC nos JSON) fica para a etapa 2b.
