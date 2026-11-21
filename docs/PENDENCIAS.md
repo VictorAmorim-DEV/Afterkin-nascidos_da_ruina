@@ -62,6 +62,11 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 9b (`d7ab01d`). Rumor no mapa como "?" âmbar com "Rumor: <rótulo>"; ao chegar ao lugar de verdade,
     "Local descoberto: <nome>" e o "?" vira o ícone do que foi achado (morcego no ninho, perigo, suprimentos...).
   - ✅ 10 (`8c28cb6`). Sobreviventes errantes na cidade (pedem ajuda, trocam, roubar/matar, hostis, em combate, encaminhar).
+  - ⬜ 10b. Ecossistema vivo de errantes (pedido de 20/11/2026): população persistente que vive sem o jogador
+    (anda pelo mapa, vasculha, caça, luta, foge, pede ajuda, embosca), abstrata longe e real perto; combate de verdade
+    entre NPCs e monstros (tabela de monstros: zumbi, vampiro, rato e, no futuro, bárbaros, feiticeiras...); índole que
+    muda com a vida; reputação com bandos de saqueadores/Assassinos para ser aceito; expedições das comunidades como
+    grupos que andam. Substitui o "aparece perto do jogador" da etapa 10. Fases A–E, aguardando confirmação.
   - ⬜ 11. Medicina: mestre, cadeia gerada pela necessidade, habilidades.
   - ⬜ 12. Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa.
   - ⬜ 13. Log de eventos em user://, exportar o diário e ferramenta de resumo visual.
