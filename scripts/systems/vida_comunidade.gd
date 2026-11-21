@@ -234,6 +234,7 @@ static func efeito(e: Dictionary, ctx: Dictionary, nos: Dictionary) -> PackedStr
 			nos["_v_entrega"] = {"fala": "Obrigad%s. Vou mandar avisar que chegou." % ("a" if Consequencias.feminino(com, npc) else "o") \
 				if origem != com else "Era disso mesmo que a gente precisava. Obrigado."}
 			msgs.append("Recado cumprido (+%d de reputação %s)." % [rep, Comunidades.em_nome(origem)])
+			DiarioPartida.evento("recado", "Cumpriu um recado %s (%s)." % [Comunidades.de(origem), texto_atual()])
 			atual = {}
 		"enfermaria":
 			for it in e.get("itens", []):
@@ -431,6 +432,7 @@ static func _concluir(j: Node) -> void:
 				extra = " Ganhou 1 comida pela ajuda."
 		"conserto":
 			Simulacao.registrar_noticia(com, "Alguém de fora ajudou a consertar o muro %s." % Comunidades.de(com))
+	DiarioPartida.evento("trabalho", "Terminou um trabalho %s: %s (+%d de reputação)." % [Comunidades.em_nome(com), str(atual["texto"]), ganho])
 	j.aviso("Trabalho terminado (%s).%s%s" % [str(atual["texto"]), " +%d de reputação." % ganho if ganho > 0 else " Já trabalhou bastante por hoje: sem reputação extra.", extra])
 	atual = {}
 

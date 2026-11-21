@@ -547,3 +547,19 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 - **Portão com reputação −20 ou menos:** fecha quando você chega perto; o guarda conversa pela grade ("Daí mesmo...")
   e oferece uma **tarefa de redenção** (buscar o que falta, +8) ou aceita **um presente por dia** (valor 10, +4).
   Abaixo de −40 ninguém conversa; com assassinato conhecido vale a expulsão da 11b.
+
+### Etapa 13 — diário da partida (respostas de 21/11/2026)
+- **Respostas do Victor:** **sem botão**; exporta sozinho, em segundo plano, **quando o jogador morre e quando fecha
+  o jogo**, na **pasta do jogo**; o resumo visual é uma **página HTML**. Sistema em `DiarioPartida`.
+- **Onde:** `diarios/partida_<data>/` ao lado do executável (no editor, na pasta do projeto; `diarios/` fica fora do
+  Git). Arquivos: `diario.txt` (texto), `eventos.json` (dados crus) e `resumo.html` (página única, com o mapa da ilha
+  embutido; abre em qualquer navegador, sem internet). Também salva a cada 5 min, para não perder tudo se o jogo travar.
+- **O que registra:** início (origem, gênero, lugar), mortes (causa e lugar), renascimentos, trocas, cada mudança de
+  reputação, crimes (com quantos viram), inimigos mortos por tipo, doenças e curas, habilidades, trabalhos e
+  recados, rumores, sono, chegada a cada lugar, a rota (um ponto a cada 20 s reais), o tempo real em cada lugar e as
+  notícias do mundo. O diário continua no save (carregar a partida segue o mesmo diário).
+- **Resumo HTML:** números da partida; mapa com a rota (clara no começo, escura no fim), mortes (✖) e eventos (passe
+  o mouse; roda aproxima, arrastar move); tempo em cada lugar; reputação por comunidade ao longo do tempo; linha do
+  tempo com filtros por tipo; inimigos mortos e notícias do mundo. Claro e escuro conforme o sistema.
+- **Para exportar o jogo:** o filtro de arquivos da exportação precisa incluir `data/*.json` e `data/*.html` (o
+  modelo do resumo é `data/resumo_partida.html`).

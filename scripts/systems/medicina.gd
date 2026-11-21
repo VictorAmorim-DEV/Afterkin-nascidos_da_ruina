@@ -293,6 +293,7 @@ static func efeito(acao: String, ctx: Dictionary) -> PackedStringArray:
 			_aula = hab
 			Reputacao.mudar(str(ctx["com"]), REP_POR_PASSO)
 			msgs.append("Habilidade aprendida: %s. %s" % [NOMES[hab], DESCRICOES[hab]])
+			DiarioPartida.evento("habilidade", "Aprendeu %s com %s." % [NOMES[hab], str(mestre().get("nome", "o mestre"))])
 			if completa():
 				msgs.append("Especialização completa: Medicina.")
 				Simulacao.registrar_noticia(str(ctx["com"]), "%s terminou de ensinar Medicina a alguém de fora." % str(mestre().get("nome", "O médico")))

@@ -27,6 +27,7 @@ func _process(delta: float) -> void:
 	if _t_ouvir <= 0.0:
 		_conversa_ouvida()
 	_t = 0.5
+	DiarioPartida.passo(0.5)                   # rota, tempo por lugar e salvamento automático do diário
 	Reputacao.passo()                          # boatos que chegaram à hora de correr
 	Simulacao.passo()                          # turnos do ecossistema das comunidades (longe e perto)
 	var agora_h := Reputacao.agora_h()

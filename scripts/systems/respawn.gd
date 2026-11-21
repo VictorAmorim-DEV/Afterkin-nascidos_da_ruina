@@ -132,6 +132,7 @@ static func renascer_na_cama(arvore: SceneTree, i: int) -> String:
 	var p: Vector2 = camas[i]["p"] + Vector2(0.0, 0.9 * IsoMath.METRO)
 	Inicio.zona_segura = Rect2()
 	_levar(arvore, p)
+	DiarioPartida.evento("renascer", "Renasceu na própria cama, %s." % str(camas[i]["nome"]))
 	return "Você acorda na sua cama, %s." % str(camas[i]["nome"])
 
 
@@ -144,6 +145,7 @@ static func renascer_no_lugar(arvore: SceneTree, id: String) -> String:
 		return ""
 	Inicio.zona_segura = a["zona"]
 	_levar(arvore, a["p"])
+	DiarioPartida.evento("renascer", "Renasceu %s." % str(a["onde"]))
 	return "Você acorda %s." % str(a["onde"])
 
 

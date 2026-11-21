@@ -155,6 +155,10 @@ static func trocar(npc: Npc, j: Node, oferta: Dictionary, pedido: Dictionary) ->
 		est[item] = int(est[item]) - int(pedido[item])
 		Simulacao.ajustar(npc.comunidade, str(item), -int(pedido[item]))
 	inv.adicionar_itens(lista)
+	var deu: Array = []
+	for item in oferta:
+		deu.append([str(item), int(oferta[item])])
+	DiarioPartida.evento("troca", "Trocou com %s: deu %s, recebeu %s." % [npc.nome(), Itens.texto_lista(deu), Itens.texto_lista(lista)])
 	return "Troca feita com %s." % npc.nome()
 
 

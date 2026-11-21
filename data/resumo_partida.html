@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resumo da partida</title>
+<!-- Modelo do resumo visual (DiarioPartida, etapa 13). O jogo troca DADOS e MAPA e grava resumo.html na pasta da partida. -->
+<style>
+:root {
+	--surface-0: #f4f3ef; --surface-1: #fcfcfb; --border: #dcdad3;
+	--text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #77756f; --grid: #e7e5df;
+	--series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100; --series-5: #e87ba4; --series-6: #008300;
+	--rota-claro: #86b6ef; --rota-escuro: #104281; --critical: #d03b3b; --ponto: #52514e;
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		--surface-0: #121211; --surface-1: #1a1a19; --border: #383835;
+		--text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86; --grid: #2c2c2a;
+		--series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500; --series-5: #d55181; --series-6: #0ca30c;
+		--rota-claro: #184f95; --rota-escuro: #9ec5f4; --critical: #e66767; --ponto: #c3c2b7;
+	}
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--surface-0); color: var(--text-primary);
+	font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 16px; margin: 0 0 12px; }
+.sub { color: var(--text-secondary); margin: 0 0 20px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.tile, .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; }
+.tile { padding: 14px 16px; }
+.tile .v { font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile .r { color: var(--text-secondary); font-size: 12px; }
+.card { padding: 16px; margin-bottom: 20px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
+.mapa-wrap { position: relative; overflow: hidden; border-radius: 8px; background: var(--surface-0); cursor: grab; touch-action: none; }
+canvas { display: block; width: 100%; }
+.legenda { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; color: var(--text-secondary); font-size: 12px; align-items: center; }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 4px; border-radius: 2px; display: inline-block; }
+.dica { position: fixed; pointer-events: none; background: var(--surface-1); color: var(--text-primary);
+	border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; max-width: 320px;
+	box-shadow: 0 4px 16px rgba(0,0,0,.18); display: none; z-index: 10; }
+.dica b { display: block; margin-bottom: 2px; }
+.dica .m { color: var(--text-secondary); }
+.filtros { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.filtros button { font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
+	background: var(--surface-1); color: var(--text-secondary); cursor: pointer; }
+.filtros button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); border-color: var(--text-primary); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--text-secondary); font-weight: 600; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text-secondary); }
+.lista { max-height: 460px; overflow: auto; }
+.vazio { color: var(--text-muted); }
+svg text { fill: var(--text-secondary); font-size: 11px; }
+.barras .rot { fill: var(--text-primary); }
+.ajuda { color: var(--text-muted); font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<main>
+	<h1>Resumo da partida</h1>
+	<p class="sub" id="sub"></p>
+	<div class="tiles" id="tiles"></div>
+
+	<section class="card">
+		<h2>Mapa: rota e mortes</h2>
+		<div class="mapa-wrap" id="mapaWrap"><canvas id="mapa"></canvas></div>
+		<div class="legenda" id="legMapa"></div>
+		<div class="ajuda">Roda do mouse aproxima, arrastar move, duplo clique enquadra a rota. Passe o mouse nos pontos.</div>
+	</section>
+
+	<div class="grid2">
+		<section class="card">
+			<h2>Tempo em cada lugar (tempo real)</h2>
+			<div id="tempos"></div>
+		</section>
+		<section class="card">
+			<h2>Reputação ao longo do tempo</h2>
+			<div id="rep"></div>
+			<div class="legenda" id="legRep"></div>
+		</section>
+	</div>
+
+	<section class="card">
+		<h2>Linha do tempo</h2>
+		<div class="filtros" id="filtros"></div>
+		<div class="lista"><table><thead><tr><th>Quando</th><th>Tipo</th><th>O que aconteceu</th></tr></thead><tbody id="linhas"></tbody></table></div>
+	</section>
+
+	<div class="grid2">
+		<section class="card">
+			<h2>Inimigos que você matou</h2>
+			<div id="abates"></div>
+		</section>
+		<section class="card">
+			<h2>Notícias do mundo</h2>
+			<div class="lista" id="noticias"></div>
+		</section>
+	</div>
+</main>
+<div class="dica" id="dica"></div>
+<script>
+const D = /*DADOS*/null;
+const MAPA = /*MAPA*/"";
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const TIPOS = { inicio: "Início", morte: "Morte", renascer: "Renascer", troca: "Troca", reputacao: "Reputação", crime: "Crime",
+	doenca: "Doença", cura: "Cura", habilidade: "Habilidade", trabalho: "Trabalho", recado: "Recado", rumor: "Rumor",
+	sono: "Sono", lugar: "Lugar", carregou: "Carregou", abate: "Abate" };
+const dur = s => { const m = Math.round(s / 60); return m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min` : `${m} min`; };
+const dica = $("dica");
+function mostrar(ev, html) { dica.innerHTML = html; dica.style.display = "block";
+	const x = Math.min(ev.clientX + 14, innerWidth - dica.offsetWidth - 8), y = Math.min(ev.clientY + 14, innerHeight - dica.offsetHeight - 8);
+	dica.style.left = x + "px"; dica.style.top = y + "px"; }
+function esconder() { dica.style.display = "none"; }
+
+if (!D) { document.querySelector("main").innerHTML = "<p>Sem dados.</p>"; }
+else {
+	const origens = { policial: "Policial", mecanico: "Mecânico", enfermeiro: "Enfermeiro(a)", mestre_obras: "Mestre de Obras" };
+	const motivo = { morte: "ao morrer", fechou: "ao fechar o jogo", automatico: "salvamento automático" }[D.motivo] || D.motivo;
+	$("sub").textContent = `${origens[D.info.origem] || "Sobrevivente"} · ${D.info.genero === "f" ? "mulher" : "homem"} · começou em ${D.info.local || "?"} · exportado em ${D.exportado.replace("T", " ")} (${motivo})`;
+	const mortes = D.eventos.filter(e => e.tipo === "morte");
+	const trocas = D.eventos.filter(e => e.tipo === "troca").length;
+	const abatidos = Object.values(D.abates).reduce((a, b) => a + b, 0);
+	const tiles = [[dur(D.real_s), "tempo real jogado"], [`Dia ${D.dia}`, `no jogo, ${D.hora}`], [mortes.length, "mortes"],
+		[trocas, "trocas"], [abatidos, "inimigos mortos"], [D.mortos.length, "moradores mortos"]];
+	$("tiles").innerHTML = tiles.map(t => `<div class="tile"><div class="v">${esc(t[0])}</div><div class="r">${esc(t[1])}</div></div>`).join("");
+
+	// ───── mapa ─────
+	const cv = $("mapa"), wrap = $("mapaWrap"), ctx = cv.getContext("2d");
+	const img = new Image(); let imgOk = false;
+	const MW = D.w * D.px, MH = D.h * D.px;              // mundo inteiro, em u
+	let vista = { x: 0, y: 0, z: 1 };                       // canto (u) e zoom (px de tela por u × base)
+	const pontosEv = D.eventos.filter(e => e.tipo !== "reputacao" && e.tipo !== "lugar");
+	let base = 1;
+	function tamanho() { const w = wrap.clientWidth; cv.width = w * devicePixelRatio; cv.height = Math.round(w * MH / MW) * devicePixelRatio;
+		cv.style.height = Math.round(w * MH / MW) + "px"; base = cv.width / MW; }
+	function enquadrar() {
+		const pts = D.rota.map(p => [p[0], p[1]]).concat(D.eventos.map(e => e.p));
+		if (!pts.length) { vista = { x: 0, y: 0, z: 1 }; return; }
+		let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+		for (const [x, y] of pts) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+		const marg = 6000; x0 -= marg; y0 -= marg; x1 += marg; y1 += marg;
+		const z = Math.min(MW / (x1 - x0), MH / (y1 - y0), 40);
+		vista = { z, x: (x0 + x1) / 2 - MW / z / 2, y: (y0 + y1) / 2 - MH / z / 2 };
+	}
+	const tela = (x, y) => [(x - vista.x) * base * vista.z, (y - vista.y) * base * vista.z];
+	function mistura(a, b, t) { const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+		const c = [16, 8, 0].map(s => Math.round(((pa >> s) & 255) * (1 - t) + ((pb >> s) & 255) * t));
+		return `rgb(${c[0]},${c[1]},${c[2]})`; }
+	function desenhar() {
+		const W = cv.width, H = cv.height, dp = devicePixelRatio;
+		ctx.fillStyle = css("--surface-0"); ctx.fillRect(0, 0, W, H);
+		if (imgOk) { const [ix, iy] = tela(0, 0); ctx.imageSmoothingEnabled = vista.z < 6; ctx.drawImage(img, ix, iy, MW * base * vista.z, MH * base * vista.z); }
+		const r = D.rota, h0 = r.length ? r[0][2] : 0, h1 = r.length ? r[r.length - 1][2] : 1;
+		ctx.lineWidth = 2 * dp; ctx.lineCap = "round"; ctx.lineJoin = "round";
+		const claro = css("--rota-claro"), escuro = css("--rota-escuro");
+		for (let i = 1; i < r.length; i++) {
+			if (Math.hypot(r[i][0] - r[i - 1][0], r[i][1] - r[i - 1][1]) > 20000) continue;   // teleporte/renascimento
+			const t = h1 > h0 ? (r[i][2] - h0) / (h1 - h0) : 1;
+			ctx.strokeStyle = mistura(claro, escuro, t);
+			const [ax, ay] = tela(r[i - 1][0], r[i - 1][1]), [bx, by] = tela(r[i][0], r[i][1]);
+			ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+		}
+		const sup = css("--surface-1");
+		for (const e of pontosEv) {
+			if (e.tipo === "morte") continue;
+			const [x, y] = tela(e.p[0], e.p[1]);
+			ctx.beginPath(); ctx.arc(x, y, 4 * dp, 0, 7); ctx.fillStyle = css("--ponto"); ctx.fill();
+			ctx.lineWidth = 2 * dp; ctx.strokeStyle = sup; ctx.stroke();
+		}
+		for (const e of mortes) {                              // mortes por cima: ✖ com anel da superfície
+			const [x, y] = tela(e.p[0], e.p[1]), s = 6 * dp;
+			ctx.lineCap = "round";
+			ctx.strokeStyle = sup; ctx.lineWidth = 6 * dp;
+			ctx.beginPath(); ctx.moveTo(x - s, y - s); ctx.lineTo(x + s, y + s); ctx.moveTo(x + s, y - s); ctx.lineTo(x - s, y + s); ctx.stroke();
+			ctx.strokeStyle = css("--critical"); ctx.lineWidth = 2.5 * dp;
+			ctx.beginPath(); ctx.moveTo(x - s, y - s); ctx.lineTo(x + s, y + s); ctx.moveTo(x + s, y - s); ctx.lineTo(x - s, y + s); ctx.stroke();
+		}
+	}
+	$("legMapa").innerHTML = `<span><i class="sw" style="background:linear-gradient(90deg,var(--rota-claro),var(--rota-escuro))"></i>rota (clara no começo, escura no fim)</span>
+		<span><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 2L12 12M12 2L2 12" stroke="var(--critical)" stroke-width="2.5" stroke-linecap="round"/></svg>morte (${mortes.length})</span>
+		<span><svg width="12" height="12"><circle cx="6" cy="6" r="4" fill="var(--ponto)"/></svg>outros eventos</span>`;
+	let arrasto = null;
+	cv.addEventListener("wheel", ev => { ev.preventDefault(); const rc = cv.getBoundingClientRect();
+		const mx = (ev.clientX - rc.left) * devicePixelRatio, my = (ev.clientY - rc.top) * devicePixelRatio;
+		const wx = vista.x + mx / (base * vista.z), wy = vista.y + my / (base * vista.z);
+		vista.z = Math.max(1, Math.min(80, vista.z * (ev.deltaY < 0 ? 1.25 : 0.8)));
+		vista.x = wx - mx / (base * vista.z); vista.y = wy - my / (base * vista.z); desenhar(); }, { passive: false });
+	cv.addEventListener("pointerdown", ev => { arrasto = [ev.clientX, ev.clientY, vista.x, vista.y]; cv.setPointerCapture(ev.pointerId); });
+	cv.addEventListener("pointerup", () => { arrasto = null; });
+	cv.addEventListener("dblclick", () => { enquadrar(); desenhar(); });
+	cv.addEventListener("pointermove", ev => {
+		if (arrasto) { const k = devicePixelRatio / (base * vista.z);
+			vista.x = arrasto[2] - (ev.clientX - arrasto[0]) * k; vista.y = arrasto[3] - (ev.clientY - arrasto[1]) * k; desenhar(); esconder(); return; }
+		const rc = cv.getBoundingClientRect(), mx = (ev.clientX - rc.left) * devicePixelRatio, my = (ev.clientY - rc.top) * devicePixelRatio;
+		let melhor = null, dmin = 14 * devicePixelRatio;
+		for (const e of pontosEv) { const [x, y] = tela(e.p[0], e.p[1]); const d = Math.hypot(x - mx, y - my); if (d < dmin) { dmin = d; melhor = e; } }
+		if (melhor) mostrar(ev, `<b>${esc(TIPOS[melhor.tipo] || melhor.tipo)}</b>${esc(melhor.texto)}<div class="m">Dia ${melhor.dia}, ${melhor.hora}</div>`);
+		else esconder();
+	});
+	cv.addEventListener("pointerleave", esconder);
+	addEventListener("resize", () => { tamanho(); desenhar(); });
+	tamanho(); enquadrar(); desenhar();
+	if (MAPA) { img.onload = () => { imgOk = true; desenhar(); }; img.src = MAPA; }
+
+	// ───── tempo por lugar (barras horizontais, uma série) ─────
+	const tl = Object.entries(D.tempos).sort((a, b) => b[1] - a[1]).slice(0, 12);
+	if (!tl.length) $("tempos").innerHTML = '<p class="vazio">Sem dados ainda.</p>';
+	else {
+		const lw = 220, w = 560, bh = 18, gap = 8, h = tl.length * (bh + gap), max = tl[0][1];
+		let s = `<svg class="barras" viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Tempo em cada lugar">`;
+		tl.forEach(([lugar, seg], i) => { const y = i * (bh + gap), bw = Math.max(2, (w - lw - 90) * seg / max);
+			s += `<g data-i="${i}"><text class="rot" x="${lw - 8}" y="${y + bh * 0.72}" text-anchor="end">${esc(lugar.length > 34 ? lugar.slice(0, 33) + "…" : lugar)}</text>
+			<rect x="${lw}" y="${y}" width="${bw}" height="${bh}" rx="4" fill="var(--series-1)"/>
+			<text x="${lw + bw + 6}" y="${y + bh * 0.72}">${dur(seg)}</text>
+			<rect x="0" y="${y - gap / 2}" width="${w}" height="${bh + gap}" fill="transparent"/></g>`; });
+		$("tempos").innerHTML = s + "</svg>";
+		$("tempos").querySelectorAll("g").forEach(g => { const [l, sg] = tl[+g.dataset.i];
+			g.addEventListener("pointermove", ev => mostrar(ev, `<b>${esc(l)}</b>${dur(sg)} de tempo real`)); g.addEventListener("pointerleave", esconder); });
+	}
+
+	// ───── reputação (linhas por comunidade) ─────
+	const series = {};
+	for (const e of D.eventos) if (e.tipo === "reputacao" && e.com) (series[e.com] = series[e.com] || []).push([e.h, e.valor]);
+	const nomes = Object.keys(D.reputacao);
+	const cores = ["--series-1", "--series-2", "--series-3", "--series-4", "--series-5", "--series-6"];
+	const comCor = {}; nomes.forEach((n, i) => comCor[n] = cores[Math.min(i, cores.length - 1)]);
+	const hs = D.eventos.map(e => e.h); const hmin = hs.length ? Math.min(...hs) : 0, hmax = Math.max(...hs, hmin + 1);
+	const algum = Object.keys(series).length > 0;
+	if (!algum) $("rep").innerHTML = '<p class="vazio">A reputação ainda não mudou.</p>';
+	else {
+		const w = 520, h = 240, l = 34, r = 10, t = 10, b = 26;
+		const X = v => l + (w - l - r) * (v - hmin) / Math.max(0.01, hmax - hmin), Y = v => t + (h - t - b) * (100 - v) / 200;
+		let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Reputação por comunidade">`;
+		for (const v of [-100, -50, 0, 50, 100]) s += `<line x1="${l}" x2="${w - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid)" stroke-width="${v === 0 ? 1.5 : 1}"/><text x="${l - 6}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+		const d0 = Math.floor(hmin / 24), d1 = Math.ceil(hmax / 24);
+		for (let d = d0; d <= d1; d++) { const x = X(d * 24); if (x >= l && x <= w - r) s += `<text x="${x}" y="${h - 8}" text-anchor="middle">dia ${d}</text>`; }
+		for (const n of nomes) {
+			const pts = [[hmin, 0]].concat(series[n] || []); pts.push([hmax, D.reputacao[n]]);
+			let dd = ""; let ult = 0;
+			pts.forEach(([hh, v], i) => { dd += (i ? `L${X(hh)},${Y(ult)}L` : "M") + `${X(hh)},${Y(v)}`; ult = v; });
+			s += `<path d="${dd}" fill="none" stroke="var(${comCor[n]})" stroke-width="2" stroke-linejoin="round"/>`;
+			s += `<text x="${w - r}" y="${Y(D.reputacao[n]) - 6}" text-anchor="end">${esc(n)} ${D.reputacao[n]}</text>`;
+		}
+		s += `<line id="mira" x1="0" x2="0" y1="${t}" y2="${h - b}" stroke="var(--text-muted)" stroke-dasharray="3 3" visibility="hidden"/>`;
+		s += `<rect id="zonaRep" x="${l}" y="${t}" width="${w - l - r}" height="${h - t - b}" fill="transparent"/></svg>`;
+		$("rep").innerHTML = s;
+		const svg = $("rep").querySelector("svg"), mira = svg.querySelector("#mira");
+		svg.querySelector("#zonaRep").addEventListener("pointermove", ev => {
+			const rc = svg.getBoundingClientRect(), x = (ev.clientX - rc.left) * w / rc.width;
+			const hh = hmin + (x - l) / (w - l - r) * (hmax - hmin);
+			mira.setAttribute("x1", x); mira.setAttribute("x2", x); mira.setAttribute("visibility", "visible");
+			const linhas = nomes.map(n => { let v = 0; for (const [ph, pv] of (series[n] || [])) if (ph <= hh) v = pv;
+				if (hh >= hmax) v = D.reputacao[n]; return `<div><i class="sw" style="background:var(${comCor[n]})"></i> ${esc(n)}: ${v}</div>`; });
+			mostrar(ev, `<b>Dia ${Math.floor(hh / 24)}, ${String(Math.floor(hh % 24)).padStart(2, "0")}h</b>${linhas.join("")}`);
+		});
+		svg.querySelector("#zonaRep").addEventListener("pointerleave", () => { mira.setAttribute("visibility", "hidden"); esconder(); });
+	}
+	$("legRep").innerHTML = nomes.map(n => `<span><i class="sw" style="background:var(${comCor[n]})"></i>${esc(n)}: ${D.reputacao[n]}</span>`).join("")
+		+ `<span>Humana geral: ${D.humana}</span>`;
+
+	// ───── linha do tempo com filtros ─────
+	const tiposPresentes = [...new Set(D.eventos.map(e => e.tipo))];
+	let filtro = new Set(tiposPresentes.filter(t => t !== "reputacao" && t !== "lugar"));
+	function linhas() {
+		const evs = D.eventos.filter(e => filtro.has(e.tipo));
+		$("linhas").innerHTML = evs.length ? evs.map(e => `<tr><td class="n">Dia ${e.dia}, ${e.hora}</td><td>${esc(TIPOS[e.tipo] || e.tipo)}</td><td>${esc(e.texto)}</td></tr>`).join("")
+			: '<tr><td colspan="3" class="vazio">Nenhum evento com esses filtros.</td></tr>';
+	}
+	$("filtros").innerHTML = tiposPresentes.map(t => `<button type="button" data-t="${t}" aria-pressed="${filtro.has(t)}">${esc(TIPOS[t] || t)} (${D.eventos.filter(e => e.tipo === t).length})</button>`).join("");
+	$("filtros").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+		const t = b.dataset.t; filtro.has(t) ? filtro.delete(t) : filtro.add(t); b.setAttribute("aria-pressed", filtro.has(t)); linhas(); }));
+	linhas();
+
+	// ───── abates e notícias ─────
+	const ab = Object.entries(D.abates).sort((a, b) => b[1] - a[1]);
+	$("abates").innerHTML = ab.length ? `<table><tbody>${ab.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="n">${v}</td></tr>`).join("")}</tbody></table>`
+		+ (D.mortos.length ? `<p class="ajuda">Moradores mortos: ${esc(D.mortos.join(", "))}</p>` : "") : '<p class="vazio">Nenhum.</p>';
+	$("noticias").innerHTML = D.noticias.length ? `<table><tbody>${D.noticias.slice().reverse().map(n => `<tr><td class="n">Dia ${n.dia}, ${String(n.hora).padStart(2, "0")}h</td><td>${esc(n.texto)}</td></tr>`).join("")}</tbody></table>`
+		: '<p class="vazio">Nenhuma notícia.</p>';
+}
+</script>
+</body>
+</html>

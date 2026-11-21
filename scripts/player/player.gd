@@ -79,6 +79,7 @@ var golpe_t: float = 0.0                 ## tempo restante da animação de golp
 var passos: Dictionary = {}               ## progresso dos PrimeirosPassos (contagem por evento, "_ativo", "noite")
 var local_inicio: String = ""            ## onde estava quando tudo começou (Inicio)
 var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
+var _ultimo_dano: String = ""            ## quem bateu por último (para a causa da morte no DiarioPartida)
 var genero: String = "m"                 ## "m" ou "f": as falas dos NPCs se ajustam (Conversas.texto)
 var _tiro_t: float = 0.0                 ## tempo restante do estampido do último tiro (barulho)
 var morto: bool = false
@@ -1035,6 +1036,7 @@ func definir_origem(o: String) -> void:
 func receber_dano(n: float, quem: String = "") -> void:
 	if morto or Dev.invencivel:
 		return
+	_ultimo_dano = quem
 	if raca == "zombie" and quem == "rat":
 		return                                   # zumbi não sente a mordida do rato (V13)
 	vida = maxf(0.0, vida - n)
@@ -1048,6 +1050,12 @@ func _morrer() -> void:
 	if dirigindo != null and dirigindo.has_method("sair"):
 		dirigindo.sair()
 	morto = true
+	var causa := "de fome" if fome <= 0.0 else ("de sede" if sede <= 0.0 else "")
+	if causa == "":
+		causa = {"zombie": "atacado por um zumbi", "rat": "atacado por um rato gigante", "vampire": "atacado por um vampiro",
+			"humano": "atacado por uma pessoa"}.get(_ultimo_dano, "de %s" % str(doenca.get("tipo", "ferimentos")).to_lower())
+	DiarioPartida.evento("morte", "Morreu %s, %s." % [causa, Respawn.nome_do_lugar(IsoMath.tela_para_mundo(global_position))])
+	DiarioPartida.exportar("morte")
 	world_vel = Vector2.ZERO
 	velocity = Vector2.ZERO
 	Respawn.largar_mochila(self)
@@ -1128,6 +1136,7 @@ func dormir_na_cama(cama: Node2D) -> void:
 		return
 	descansando = null
 	dormindo = true
+	DiarioPartida.evento("sono", "Dormiu %s." % Respawn.nome_do_lugar(IsoMath.tela_para_mundo(cama.global_position)))
 	postura = Postura.DEITADO
 	world_vel = Vector2.ZERO
 	global_position = cama.global_position

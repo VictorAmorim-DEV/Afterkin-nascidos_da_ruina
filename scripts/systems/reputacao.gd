@@ -42,6 +42,9 @@ static func valor(com: String) -> int:
 
 static func mudar(com: String, n: int) -> void:
 	rep[com] = clampi(valor(com) + n, -100, 100)
+	if n != 0 and Comunidades.ids().has(com):
+		DiarioPartida.evento("reputacao", "Reputação %s: %+d (agora %d)." % [Comunidades.em_nome(com), n, valor(com)],
+			{"com": Comunidades.nome(com), "valor": valor(com)})
 
 
 static func vivo(com: String, npc: String) -> bool:
@@ -106,6 +109,12 @@ static func registrar(ev: String, p: Vector2, vitima: Node = null, alvo: String 
 			"hora": agora_h() + randf_range(ATRASO_H.x, ATRASO_H.y),
 			"testemunha": "%s/%s" % [com, str(t.dados.get("id", ""))], "origem": com, "alvo": alvo})
 	Consequencias.testemunhado(ev, alvo, viram)
+	if ev != "defesa":
+		var quem_sofreu := ""
+		if alvo != "" and not por_com.is_empty():
+			quem_sofreu = " (%s)" % Consequencias.nome_npc(str(por_com.keys()[0]), alvo)
+		DiarioPartida.evento("crime", "%s%s — %s." % [{"furto": "Furto", "agressao": "Agressão", "assassinato": "Assassinato",
+			"ameaca": "Ameaça"}.get(ev, ev), quem_sofreu, ("%d pessoa(s) viram" % viram.size()) if not viram.is_empty() else "ninguém viu"])
 	if not viram.is_empty():
 		var nomes: PackedStringArray = []
 		for npc in viram.slice(0, 2):

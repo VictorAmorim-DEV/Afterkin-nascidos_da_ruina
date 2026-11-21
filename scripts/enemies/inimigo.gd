@@ -250,6 +250,8 @@ func _morrer() -> void:
 	sprite.frame = 0
 	sprite.flip_h = _flip_dorme
 	var j := get_tree().get_first_node_in_group("jogador")
+	if _golpe_jogador:
+		DiarioPartida.abate(str(NOMES.get(raca, raca)))
 	if j != null and _golpe_jogador:
 		if j.inventario.adicionar_itens([["comida", 1]]):
 			j.aviso("Inimigo derrotado. +1 comida.")

@@ -52,6 +52,7 @@ static func conhecer(id: String) -> String:
 		var local := str(Comunidades.dados(str(reg["ref"])).get("local", ""))
 		if local.begins_with("Acampamento") and not Descobertas.acampamentos.has(local):
 			Descobertas.acampamentos.append(local)
+	DiarioPartida.evento("rumor", "Anotou um rumor: %s." % titulo(id))
 	return "Rumor anotado: %s" % titulo(id)
 
 

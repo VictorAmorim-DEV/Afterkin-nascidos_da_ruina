@@ -10,6 +10,9 @@ mono_crash.*.json
 /android/
 *.tmp
 
+# --- Diários das partidas (DiarioPartida, etapa 13) ---
+diarios/
+
 # --- Backups e arquivos pesados (ficam só no seu PC) ---
 Backups_Historico/
 concept_art/
