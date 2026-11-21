@@ -151,6 +151,8 @@ static func nome_com_artigo(a: Dictionary) -> String:
 static func passo() -> void:
 	iniciar()
 	var h := Reputacao.agora_h()
+	if _ultimo_h < 0.0:
+		_ultimo_h = h                              # relógio ainda não começou: não simular horas que não passaram
 	var horas := 0
 	while h - _ultimo_h >= 1.0 and horas < 24:
 		_ultimo_h += 1.0

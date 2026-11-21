@@ -24,11 +24,15 @@ func _process(delta: float) -> void:
 		return
 	var pj := IsoMath.tela_para_mundo((j.dirigindo if j.dirigindo != null else j).global_position)
 	for id in _corpos.keys():
-		var e: Errante = _corpos[id]
-		if not is_instance_valid(e):
+		var bruto: Variant = _corpos[id]
+		# o corpo de quem morreu se apaga sozinho (tween de 20 s): conferir ANTES de pôr numa variável tipada,
+		# senão o Godot acusa "invalid previously freed instance"
+		if not is_instance_valid(bruto):
 			_corpos.erase(id)
 			continue
+		var e: Errante = bruto
 		if e.morto:
+			_corpos.erase(id)                       # morto não volta ao abstrato; o corpo some sozinho
 			continue
 		if not bool(e.agente["vivo"]) or e._mundo().distance_to(pj) > LONGE or Comunidades.em(e._mundo()) != "":
 			e.devolver()
