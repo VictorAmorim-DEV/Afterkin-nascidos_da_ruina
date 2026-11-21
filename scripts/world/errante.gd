@@ -363,7 +363,10 @@ func acao(a: String, ctx: Dictionary) -> PackedStringArray:
 		"ajudar":
 			j.inventario.remover(partes[1], 1)
 			msgs.append("Você deu 1 %s a %s." % [Itens.nome(partes[1]).to_lower(), nome()])
-			agente["vida"] = minf(100.0, float(agente["vida"]) + 35.0)
+			var medico := partes[1] == "bandagem" and Medicina.tem("tratar_ferimentos")   # curativo de quem sabe
+			agente["vida"] = minf(100.0, float(agente["vida"]) + (70.0 if medico else 35.0))
+			if medico:
+				msgs.append("Você limpou e enfaixou direito: %s vai ficar bem." % nome())
 			vida = float(agente["vida"]) * 0.45
 			agente["opiniao"] = int(agente["opiniao"]) + 30
 			agente["indole"] = {"hostil": "oportunista", "oportunista": "desconfiado", "desconfiado": "pacifico"}.get(agente["indole"], agente["indole"])

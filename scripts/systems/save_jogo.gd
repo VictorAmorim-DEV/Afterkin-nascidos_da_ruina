@@ -60,6 +60,7 @@ static func salvar(arvore: SceneTree) -> String:
 		"simulacao": Simulacao.dados_para_salvar(),
 		"rumores": Rumores.dados_para_salvar(),
 		"errantes": Errantes.dados_para_salvar(),
+		"medicina": Medicina.dados_para_salvar(),
 	}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f == null:
@@ -125,6 +126,7 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 	Simulacao.restaurar(pendente.get("simulacao", {}))
 	Rumores.restaurar(pendente.get("rumores", {}))
 	Errantes.restaurar(pendente.get("errantes", {}))
+	Medicina.restaurar(pendente.get("medicina", {}))
 	Conversas.restaurar(pendente.get("conversas", {}))
 	if j != null and bool(j.passos.get("_ativo", false)):
 		arvore.call_group("primeiros_passos", "iniciar", j)

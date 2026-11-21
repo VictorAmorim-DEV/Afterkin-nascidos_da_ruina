@@ -256,6 +256,8 @@ func _montar_receitas() -> void:
 	for c in _receitas.get_children():
 		c.queue_free()
 	for r in Itens.RECEITAS:
+		if not Itens.receita_disponivel(r):
+			continue
 		var custo := Itens.custo_receita(r.id, _jogador.origem)
 		var linha := HBoxContainer.new()
 		var txt := Label.new()

@@ -67,7 +67,9 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     entre NPCs e monstros (tabela de monstros: zumbi, vampiro, rato e, no futuro, bárbaros, feiticeiras...); índole que
     muda com a vida; reputação com bandos de saqueadores/Assassinos para ser aceito; expedições das comunidades como
     grupos que andam. Substitui o "aparece perto do jogador" da etapa 10. Fases A–E (confirmado).
-  - ⬜ 11. Medicina: mestre, cadeia gerada pela necessidade, habilidades.
+  - 🔄 11. Medicina: mestre, cadeia gerada pela necessidade, habilidades (pedido de 21/11/2026: as quatro habilidades,
+    Diagnóstico, Tratar ferimentos, Preparar remédios e Cirurgia de campo, uma por passo; o Enfermeiro(a) pula o primeiro;
+    depois de aprender, as comunidades sem médico pedem ajuda ao jogador).
   - ⬜ 12. Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa.
   - ⬜ 13. Log de eventos em user://, exportar o diário e ferramenta de resumo visual.
   - ⬜ 14. Playtest da 2a.

@@ -372,9 +372,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	if conversando:
 		return
+	var arv := {}
 	if Conversas.arvore(comunidade, str(dados.get("id", ""))).is_empty():
-		j.aviso("%s: “%s”" % [nome(), fala()])     # figurante (ou NPC sem conversa escrita): fala curta
-		return
+		var ctx := {"com": comunidade, "npc": str(dados.get("id", "")), "jogador": j}
+		var teste := {"nos": {}}
+		if Medicina.opcoes(teste, ctx, [], true).is_empty():
+			j.aviso("%s: “%s”" % [nome(), fala()])     # figurante (ou NPC sem conversa escrita): fala curta
+			return
+		arv = {"inicio": [{"no": "oi"}], "nos": {"oi": {"fala": fala()}}}   # ferido sem conversa escrita: dá para tratar
 	var ui := DialogoUI.new()
 	ui.npc = self
+	ui.arvore_pronta = arv
 	get_tree().current_scene.add_child(ui)

@@ -645,21 +645,6 @@
 							"flag": "guga_pediu_medico",
 							"sem_flag": "heitor_sabe_guga"
 						}
-					},
-					{
-						"texto": "O senhor ensinaria Medicina?",
-						"vai": "ensinar",
-						"se": {
-							"rep_min": 15
-						}
-					}
-				]
-			},
-			"ensinar": {
-				"fala": "Ensinaria. Mas não é coisa de uma tarde. Primeiro me mostre que você volta da cidade inteiro, e com o que eu pedir.",
-				"efeitos": [
-					{
-						"flag": "pediu_aprender_medicina"
 					}
 				]
 			},

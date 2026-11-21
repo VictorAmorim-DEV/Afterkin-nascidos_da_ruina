@@ -171,14 +171,16 @@ static func registrar_noticia(id: String, texto: String) -> void:
 	_registrar(id, texto)
 
 
-## O jogador tratou um ferido (antibiótico + instruções do médico): passa a melhorar.
-static func tratar(id: String, npc: String) -> bool:
+## O jogador tratou um ferido (antibiótico + instruções do médico, ou a Medicina dele): passa a melhorar.
+## 'reducao' é quanto a gravidade cai na hora (o kit cirúrgico tira da beira da morte).
+static func tratar(id: String, npc: String, reducao: float = 0.15) -> bool:
 	for fr in estado(id).get("feridos", []):
 		var fd: Dictionary = fr
 		if str(fd["quem"]) == npc:
 			fd["tratado"] = true
-			fd["grav"] = maxf(0.05, float(fd["grav"]) - 0.15)
+			fd["grav"] = maxf(0.05, float(fd["grav"]) - reducao)
 			_registrar(id, "Alguém de fora tratou %s, %s." % [fd["nome"], Comunidades.de(id)])
+			Medicina.tratou(id, npc)
 			return true
 	return false
 
@@ -204,10 +206,16 @@ static func ausente(id: String, npc: String) -> bool:
 static func _decidir(id: String, h: float) -> void:
 	var c: Dictionary = com[id]
 	var grave := 0.0
+	var mais_grave: Dictionary = {}
 	for fr in c["feridos"]:
 		if str((fr as Dictionary)["hosp"]) == "" and not bool((fr as Dictionary)["tratado"]):
-			grave = maxf(grave, float((fr as Dictionary)["grav"]))
+			if float((fr as Dictionary)["grav"]) > grave:
+				grave = float((fr as Dictionary)["grav"])
+				mais_grave = fr
 	var tem_med: bool = (c["hab"] as Array).has("medicina")
+	# 0) o jogador sabe Medicina: quem não tem médico manda pedir ajuda (sem deixar de decidir o resto)
+	if grave > 0.0 and not tem_med:
+		Medicina.pedir_ajuda(id, mais_grave)
 	# 1) ferido e ninguém que saiba tratar: levar a quem sabe (o orgulho só cede com o recado ou no desespero)
 	if grave > 0.0 and not tem_med:
 		var destino := _quem_tem("medicina", id)

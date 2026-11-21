@@ -18,7 +18,14 @@ const DB := {
 	"agua_suja": {"nome": "Água suja", "stack": 4, "peso": 0.6, "uso": true,
 		"desc": "Mata a sede, mas pode causar disenteria. Ferva numa fogueira para ficar limpa."},
 	"agua_limpa": {"nome": "Água limpa", "stack": 4, "peso": 0.6, "uso": true, "desc": "Mata a sede sem risco."},
-	"bandagem": {"nome": "Bandagem", "stack": 8, "peso": 0.05, "uso": true, "desc": "Recupera 15 de vida."},
+	"bandagem": {"nome": "Bandagem", "stack": 8, "peso": 0.05, "uso": true,
+		"desc": "Recupera 15 de vida (35 com a habilidade Tratar ferimentos)."},
+	"manual_medico": {"nome": "Manual de pronto-socorro", "stack": 2, "peso": 0.4,
+		"desc": "Livro de primeiros socorros, com as páginas manchadas. Um médico daria muito por ele."},
+	"soro": {"nome": "Soro caseiro", "stack": 4, "peso": 0.6, "uso": true,
+		"desc": "Água limpa com sal e açúcar. Mata a sede e encurta a disenteria."},
+	"kit_cirurgico": {"nome": "Kit cirúrgico", "stack": 2, "peso": 0.5, "uso": true,
+		"desc": "Agulha, linha, lâmina e pano fervido. Com a Cirurgia de campo, salva quem está à beira da morte."},
 	"pistola": {"nome": "Pistola", "stack": 1, "peso": 0.7, "ferramenta": true,
 		"desc": "Equipada, atira com o botão esquerdo (alcance 12 m). O estampido acorda e atrai tudo por perto."},
 	"municao": {"nome": "Munição", "stack": 30, "peso": 0.012, "desc": "Bala de pistola. Rara."},
@@ -38,6 +45,11 @@ const RECEITAS := [
 	{"id": "picareta", "desc": "Necessária para pedras grandes.", "custo": [["madeira", 4], ["pedra", 4]]},
 	{"id": "fogueira", "desc": "Ferve água suja. Faz luz e barulho.", "custo": [["madeira", 5], ["pedra", 3]]},
 	{"id": "cama", "desc": "Monte num lugar coberto: vira ponto de renascimento.", "custo": [["madeira", 6], ["pano", 3]]},
+	# Medicina (etapa 11): só aparecem para quem tem a habilidade "hab"; a água limpa devolve a garrafa
+	{"id": "bandagem", "desc": "Pano fervido em tiras.", "custo": [["pano", 2], ["agua_limpa", 1]], "hab": "preparar_remedios"},
+	{"id": "soro", "desc": "Contra a disenteria e a sede.", "custo": [["agua_limpa", 1], ["comida", 1]], "hab": "preparar_remedios"},
+	{"id": "kit_cirurgico", "desc": "Para a Cirurgia de campo.", "custo": [["sucata", 2], ["pano", 2], ["bandagem", 1]],
+		"hab": "preparar_remedios"},
 ]
 
 ## Nome do recipiente que o jogador vasculha (V13: CONTEM).
@@ -72,6 +84,11 @@ static func stack_max(id: String) -> int:
 ## Peso de uma unidade, em kg.
 static func peso(id: String) -> float:
 	return float((DB[id] as Dictionary).get("peso", 0.5))
+
+
+## A receita aparece para o jogador? As de Medicina pedem a habilidade.
+static func receita_disponivel(r: Dictionary) -> bool:
+	return not r.has("hab") or Medicina.tem(str(r["hab"]))
 
 
 ## Custo da receita. Não depende de nível nem de raça (docs/DECISOES_DESIGN.md, Q4 e Q28); os descontos vêm da
@@ -113,16 +130,18 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 				["agua_limpa", 1 if rng.randf() < 0.1 else 0], ["garrafa", 1 if rng.randf() < 0.25 else 0]]
 		"armario_med":
 			l = [["antibiotico", rng.randi_range(1, 2) if rng.randf() < 0.4 else 0],
-				["bandagem", rng.randi_range(1, 2) if rng.randf() < 0.5 else 0]]
+				["bandagem", rng.randi_range(1, 2) if rng.randf() < 0.5 else 0],
+				["manual_medico", 1 if rng.randf() < 0.08 else 0]]
 		"prateleira":
 			l = [["comida", rng.randi_range(0, 2)], ["sucata", rng.randi_range(0, 1)]]
 		"arquivo":
-			l = [["sucata", rng.randi_range(0, 2)]]
+			l = [["sucata", rng.randi_range(0, 2)], ["manual_medico", 1 if rng.randf() < 0.03 else 0]]
 		"caixa":
 			l = [["madeira", rng.randi_range(1, 3)], ["sucata", rng.randi_range(0, 2)],
 				["garrafa", 1 if rng.randf() < 0.2 else 0]]
 		"mesa_esc":
-			l = [["sucata", rng.randi_range(0, 1)], ["antibiotico", 1 if rng.randf() < 0.04 else 0]]
+			l = [["sucata", rng.randi_range(0, 1)], ["antibiotico", 1 if rng.randf() < 0.04 else 0],
+				["manual_medico", 1 if rng.randf() < 0.03 else 0]]
 		"scrap":
 			l = [["sucata", rng.randi_range(1, 3)], ["garrafa", 1 if rng.randf() < 0.15 else 0]]
 		"esgoto":

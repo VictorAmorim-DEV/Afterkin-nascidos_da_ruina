@@ -456,3 +456,32 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 - **Boato do errante (Q40, "a testemunha escapa"):** ajudar (+5) ou roubar (−8) chega à comunidade mais perto 8–16 h
   depois; matar sem testemunha, ninguém sabe. Nas conversas, o NPC cobra: "Passou um andarilho aqui falando bem de
   você" / "...dizendo que você assalta gente na estrada".
+
+### Etapa 11 — Medicina (pedido de 21/11/2026; valores provisórios até o playtest)
+- **Respostas do Victor:** as quatro habilidades, **uma por passo da cadeia**; o **Enfermeiro(a) pula o primeiro**
+  (já diagnostica); depois de aprender, **as comunidades sem médico pedem ajuda** ao jogador.
+- **Mestre:** o NPC com papel `mestre_medicina` (Dr. Heitor). Morto, a cadeia para (Q44). Sistema em `Medicina`.
+- **Ordem das habilidades:** **Diagnóstico** (estágio e prazo das doenças; gravidade dos feridos) → **Tratar
+  ferimentos** (bandagem +35 de vida em vez de +15; trata feridos com bandagem ou antibiótico; o curativo num errante
+  vale o dobro) → **Preparar remédios** (receitas: bandagem = 2 panos + água limpa; soro caseiro = água limpa +
+  comida, mata a sede e corta pela metade o que falta da disenteria; kit cirúrgico = 2 sucatas + 2 panos + bandagem;
+  a água limpa devolve a garrafa) → **Cirurgia de campo** (com o kit: num ferido grave, a gravidade cai 50%; em si
+  mesmo, abaixo de 50% de vida, 1 h de cirurgia devolve a vida a 80%).
+- **Cadeia (Q48):** cada passo pede uma tarefa escolhida pela necessidade do momento, sem repetir o tipo: tratar o
+  ferido mais grave sem tratamento de outra comunidade (o mestre dá as instruções: basta antibiótico) > remédios da
+  vila (2 antibióticos se a reserva está abaixo de 3, senão 1) > comida (6, se a vila tem menos de 2,5 dias) >
+  manual de pronto-socorro (item novo: armário de remédios 8%, arquivo e gaveta de escritório 3%) > 3 águas limpas >
+  4 panos. O que se entrega vai para as reservas da vila. Cada lição leva **2 h de jogo** (tela escura) e dá +5 de
+  reputação.
+- **Reputação para começar cada lição (Q52):** 15, 20, 30 e 40 na comunidade do mestre (o Enfermeiro(a): 15, 20,
+  30); com reputação negativa ele recebe o que você trouxe, mas não ensina.
+- **Conversa:** as opções da Medicina entram sozinhas na conversa do mestre ("O senhor ensinaria Medicina?", "Trouxe
+  o que o senhor pediu", "O que era mesmo...?") e na de qualquer ferido ("Deixa eu cuidar desse ferimento", com
+  gravidade se tiver Diagnóstico; "Deixa eu operar isso" com o kit). Tratar: +6 de reputação. Se o ferido morre,
+  sara ou é levado ao médico antes, o mestre troca a tarefa.
+- **HUD:** "MEDICINA 2/4: traga 3 água limpa ao mestre" embaixo da saúde.
+- **Depois da cadeia:** a cada turno da simulação, uma comunidade sem médico com ferido sem tratamento (e reputação
+  ≥ 0) **manda procurar quem sabe Medicina** (uma vez por ferido): vai para o diário e daí para as novidades, o mural
+  e as conversas. Atender o pedido: +10 de reputação além do tratamento. Ensinar NPCs fica para depois.
+- **Modo dev (F1):** linha da Medicina no painel e botões "Cumprir a tarefa", "Próxima habilidade", "Esquecer" e
+  "Ferir alguém".

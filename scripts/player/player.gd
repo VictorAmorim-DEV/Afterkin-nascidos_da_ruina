@@ -897,14 +897,106 @@ func _rastro_tiro(desloc_mundo: Vector2) -> void:
 	t.tween_callback(l.queue_free)
 
 
-## Bandagem: +15 de vida.
+## Bandagem: +15 de vida (+35 com a habilidade Tratar ferimentos da Medicina).
 func usar_bandagem() -> void:
 	if vida >= vida_max:
 		aviso("Você não está ferido.")
 		return
 	inventario.remover("bandagem", 1)
-	vida = minf(vida_max, vida + 15.0)
-	aviso("Você fez um curativo (+15 de vida).")
+	var cura := Medicina.BANDAGEM_MEDICO if Medicina.tem("tratar_ferimentos") else 15.0
+	vida = minf(vida_max, vida + cura)
+	aviso("Você fez um curativo (+%d de vida)." % int(cura))
+
+
+## Soro caseiro (Medicina, Preparar remédios): mata a sede e, com disenteria, corta pela metade o que falta dela.
+func beber_soro() -> void:
+	if raca == "vampire":
+		aviso("A água não mata mais a sua sede.")
+		return
+	var disenteria: bool = doenca.get("tipo", "") == "Disenteria"
+	if not disenteria and sede >= 98.0:
+		aviso("Você não está com sede.")
+		return
+	inventario.remover("soro", 1)
+	sede = minf(100.0, sede + 50.0)
+	if inventario.adicionar_parcial("garrafa", 1) > 0:
+		largar_item("garrafa", 1)
+	if disenteria:
+		doenca.horas = maxf(0.05, float(doenca.horas) * 0.5)
+		aviso("O soro repõe o que a disenteria levou. Ela vai passar mais cedo.")
+	else:
+		aviso("Você bebeu o soro caseiro.")
+
+
+## Kit cirúrgico em si mesmo (Medicina, Cirurgia de campo): à beira da morte, uma hora de cirurgia devolve a vida
+## a 80%. Com perigo por perto não dá.
+func usar_kit_cirurgico() -> void:
+	if not Medicina.tem("cirurgia"):
+		aviso("Você não sabe usar isto. Só quem aprendeu Cirurgia de campo.")
+		return
+	if vida > vida_max * 0.5:
+		aviso("Não é caso de cirurgia. Use uma bandagem.")
+		return
+	if _perigo_perto():
+		aviso("Impossível operar com perigo por perto.")
+		return
+	inventario.remover("kit_cirurgico", 1)
+	vida = maxf(vida, vida_max * 0.8)
+	passar_tempo(1.0, "Você se costurou sozinho. Levou uma hora.")
+
+
+## O tempo passa com a tela escura (lição do mestre, cirurgia): relógio, fome, sede, cansaço e doença andam
+## no ritmo de quem está acordado.
+func passar_tempo(horas: float, texto_fim: String) -> void:
+	if dormindo:
+		return
+	world_vel = Vector2.ZERO
+	var arvore := get_tree()
+	var capa := CanvasLayer.new()
+	capa.layer = 40
+	capa.process_mode = Node.PROCESS_MODE_ALWAYS
+	var preto := ColorRect.new()
+	preto.color = Color(0, 0, 0, 0)
+	preto.set_anchors_preset(Control.PRESET_FULL_RECT)
+	preto.mouse_filter = Control.MOUSE_FILTER_STOP
+	capa.add_child(preto)
+	var texto := Label.new()
+	texto.set_anchors_preset(Control.PRESET_FULL_RECT)
+	texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	texto.add_theme_font_size_override("font_size", 22)
+	texto.modulate = Color(1, 1, 1, 0)
+	texto.text = texto_fim
+	capa.add_child(texto)
+	arvore.current_scene.add_child(capa)
+	arvore.paused = true
+	var t := capa.create_tween()
+	t.tween_property(preto, "color:a", 1.0, 0.8)
+	await t.finished
+	var ciclo := arvore.get_first_node_in_group("ciclo_dia_noite")
+	if ciclo != null:
+		ciclo.minutos += horas * 60.0
+		while ciclo.minutos >= 1440.0:
+			ciclo.minutos -= 1440.0
+			ciclo.dia += 1
+	descanso = maxf(0.0, descanso - horas * cansaco_por_hora)
+	fome = maxf(0.0, fome - horas * fome_por_hora * sintoma(2))
+	if raca != "vampire":
+		sede = maxf(0.0, sede - horas * sede_por_hora * sintoma(4))
+	if incubacao_h >= 0.0:
+		incubacao_h = maxf(0.05, incubacao_h - horas)
+	if not doenca.is_empty():
+		doenca.horas = maxf(0.05, float(doenca.horas) - horas)
+		doenca.estagio = _estagio_doenca(float(doenca.get("total", 48.0)))
+	var t2 := capa.create_tween()
+	t2.tween_property(texto, "modulate:a", 1.0, 0.4)
+	t2.tween_interval(1.2)
+	t2.tween_property(preto, "color:a", 0.0, 0.8)
+	t2.parallel().tween_property(texto, "modulate:a", 0.0, 0.6)
+	await t2.finished
+	capa.queue_free()
+	arvore.paused = false
+	aviso(ciclo.texto_relogio() if ciclo != null else "")
 
 
 ## Bilhete do começo da partida: um rumor genérico (os rumores de verdade vêm com os NPCs, no marco 2) que aponta
@@ -1310,7 +1402,7 @@ func texto_doenca() -> String:
 	if doenca.is_empty():
 		return "Saudável"
 	var txt: String = doenca.tipo
-	if origem == "enfermeiro":                 # diagnóstico: só a Enfermeiro(a) sabe o estágio e o prazo
+	if Medicina.tem("diagnostico"):            # diagnóstico: a Enfermeiro(a) ou quem aprendeu com o mestre
 		txt += " · estágio %d · %dh restantes" % [int(doenca.estagio), maxi(0, ceili(doenca.horas))]
 	var sintomas: PackedStringArray = []
 	if sintoma(0) < 1.0:

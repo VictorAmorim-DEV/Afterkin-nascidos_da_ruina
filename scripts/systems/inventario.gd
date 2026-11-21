@@ -197,6 +197,10 @@ func usar(i: int) -> void:
 			jogador.acender_fogueira()
 		"bandagem":
 			jogador.usar_bandagem()
+		"soro":
+			jogador.beber_soro()
+		"kit_cirurgico":
+			jogador.usar_kit_cirurgico()
 		"cama":
 			Respawn.colocar_cama(jogador, i)
 		"radio":
@@ -207,6 +211,10 @@ func fabricar(id: String) -> void:
 	if id == "totem" and (jogador.territorio.tem_totem() or contar("totem") > 0):
 		aviso.emit("Você já possui um totem (ativo ou no inventário).")
 		return
+	for r in Itens.RECEITAS:
+		if r.id == id and not Itens.receita_disponivel(r):
+			aviso.emit("Você ainda não sabe fazer isso.")
+			return
 	var custo := Itens.custo_receita(id, jogador.origem)
 	for c in custo:
 		if contar(c[0]) < c[1]:
@@ -221,6 +229,9 @@ func fabricar(id: String) -> void:
 	for c in custo:
 		remover(c[0], c[1])
 	empilhar(slots, id, 1, {"tier": 0} if id == "totem" else {})   # melhorar o totem fica para o marco 6
+	for c in custo:
+		if c[0] == "agua_limpa" and adicionar_parcial("garrafa", int(c[1])) > 0:   # a garrafa volta vazia
+			jogador.largar_item("garrafa", 1)
 	mudou.emit()
 	aviso.emit("%s fabricado e guardado no inventário. Equipe manualmente." % Itens.nome(id))
 

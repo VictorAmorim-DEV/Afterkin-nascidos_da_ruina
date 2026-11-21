@@ -19,6 +19,7 @@ extends RefCounted
 ## Condição "ferido": "sem_tratamento", "tratado" ou "nao" (o próprio NPC, na Simulacao).
 ## Efeito {"tratar": "<npc>"}: o jogador tratou o ferido (Simulacao.tratar).
 ## Condição "tem_arma": machado, picareta ou pistola na mão. Efeito {"acao": "..."}: o próprio NPC trata (Errante.acao).
+## Efeitos da Medicina (etapa 11): {"med": "aceitar" | "entregar" | "aula"} (cadeia do mestre) e {"med_tratar": item}.
 
 const PASTA := "res://data/dialogos"
 const RUMORES := "res://data/rumores.json"
@@ -150,6 +151,10 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 				msgs.append_array(no.acao(str(ed["acao"]), ctx))
 		if ed.has("tratar"):
 			Simulacao.tratar(str(ctx["com"]), str(ed["tratar"]))
+		if ed.has("med"):
+			msgs.append_array(Medicina.efeito(str(ed["med"]), ctx))
+		if ed.has("med_tratar"):
+			msgs.append_array(Medicina.tratar_com(str(ed["med_tratar"]), ctx))
 		if ed.has("escambo"):
 			ctx["abrir_escambo"] = true            # a DialogoUI fecha a conversa e abre a TelaEscambo
 	return msgs

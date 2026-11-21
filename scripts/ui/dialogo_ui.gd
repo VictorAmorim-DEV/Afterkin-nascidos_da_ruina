@@ -136,6 +136,8 @@ func _ir(id: String) -> void:
 			_arvore["nos"]["_novidade"] = {"fala": "Ficou sabendo? %s" % str(n["texto"]), "_ouvir": n,
 				"opcoes": [{"texto": "E o que mais?", "vai": _abertura}]}
 			lista.append({"texto": "Alguma novidade por aqui?", "vai": "_novidade"})
+	if npc.comunidade != "" and Reputacao.valor(npc.comunidade) > -40:
+		lista.append_array(Medicina.opcoes(_arvore, _ctx, lista, id == _abertura))
 	if no.has("_ouvir"):
 		var av := Rumores.ouvir(no["_ouvir"])
 		if av != "":

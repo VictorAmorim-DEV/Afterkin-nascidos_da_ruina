@@ -129,6 +129,41 @@ func _ready() -> void:
 		_aviso("Boatos espalhados.")))
 	col.add_child(lr)
 
+	_titulo(col, "Medicina (etapa 11)")
+	var lm := HBoxContainer.new()
+	lm.add_child(_botao("Cumprir a tarefa", func():
+		if Medicina.tarefa.is_empty():
+			_aviso("Nenhuma tarefa de Medicina em andamento.")
+		elif str(Medicina.tarefa["tipo"]) == "ferido":
+			Medicina.tarefa["feito"] = true
+			_aviso("Tarefa marcada como cumprida: volte ao mestre.")
+		else:
+			_j().inventario.adicionar_parcial(str(Medicina.tarefa["item"]), int(Medicina.tarefa["qtd"]))
+			_aviso("Itens da tarefa na mochila: volte ao mestre.")))
+	lm.add_child(_botao("Próxima habilidade", func():
+		if Medicina.completa():
+			_aviso("Já sabe tudo.")
+			return
+		var h: String = Medicina.HABILIDADES[Medicina.passo()]
+		Medicina.habilidades.append(h)
+		Medicina.tarefa = {}
+		_aviso("Habilidade: %s." % Medicina.NOMES[h])))
+	lm.add_child(_botao("Esquecer", func():
+		Medicina.zerar()
+		_aviso("Medicina zerada.")))
+	col.add_child(lm)
+	lm.add_child(_botao("Ferir alguém", func():
+		Simulacao._iniciar()
+		for id in Simulacao.com:
+			for n in Comunidades.dados(str(id)).get("npcs", []):
+				var nid := str((n as Dictionary)["id"])
+				if str(id) != "vila_dos_pescadores" and Reputacao.vivo(str(id), nid) and Simulacao.ferido(str(id), nid).is_empty():
+					(Simulacao.com[id]["feridos"] as Array).append({"quem": nid, "nome": str((n as Dictionary)["nome"]),
+						"grav": 0.65, "tratado": false, "hosp": ""})
+					_aviso("%s ferido (%s)." % [(n as Dictionary)["nome"], Comunidades.nome(str(id))])
+					return
+		_aviso("Ninguém para ferir.")))
+
 
 func _process(delta: float) -> void:
 	if not _raiz.visible:
@@ -162,6 +197,9 @@ func _process(delta: float) -> void:
 		perto = vivos_e.filter(func(a): return (a["p"] as Vector2).distance_to(pj) < 300.0 * IsoMath.METRO).size()
 	linhas.append("Errantes vivos: %d (saqueadores %d, a menos de 300 m: %d) · reputação com os saqueadores: %d" % [
 		vivos_e.size(), bando, perto, Reputacao.valor("saqueadores")])
+	linhas.append("Medicina: passo %d/4 · %s · tarefa: %s · pedidos: %s" % [Medicina.passo(),
+		", ".join(Medicina.habilidades) if not Medicina.habilidades.is_empty() else "nenhuma",
+		Medicina.texto_tarefa() if not Medicina.tarefa.is_empty() else "—", ", ".join(Medicina.pedidos.keys())])
 	for e in Simulacao.diario.slice(maxi(0, Simulacao.diario.size() - 5)):
 		linhas.append("  D%d %02dh: %s" % [int(e["dia"]), int(e["hora"]), e["texto"]])
 	_rep.text = "\n".join(linhas)
