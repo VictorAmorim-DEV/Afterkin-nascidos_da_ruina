@@ -84,7 +84,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     depois da troca de sprites e assets que o Victor vai trazer.
   - ✅ 13 (`d929603`). Log de eventos, exportar o diário e ferramenta de resumo visual (21/11/2026: sem botão; exporta sozinho
     ao morrer e ao fechar o jogo, na pasta do jogo; o resumo é uma página HTML).
-  - ⬜ 14. Playtest da 2a.
+  - 🔄 14. Playtest da 2a (roteiro em `docs/PLAYTEST_MARCO2A.md`).
   **Rumo (21/11/2026):** depois do playtest, congelar sistemas sociais novos e ir para o marco 3 (ver "Rumo depois do
   marco 2" em `docs/DECISOES_DESIGN.md`; ideias novas passam pela skill `afterkin-ideia`).
   **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.
