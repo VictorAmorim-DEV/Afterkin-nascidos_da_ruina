@@ -82,7 +82,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     tudo em tempo real; abaixo de −20 só se fala pelo portão).
   - ⬜ 12b. Cama de hóspede dentro de uma barraca/casa acessível (hoje fica ao lado da fogueira, sem lógica). Fazer
     depois da troca de sprites e assets que o Victor vai trazer.
-  - ✅ 13 (HASH). Log de eventos, exportar o diário e ferramenta de resumo visual (21/11/2026: sem botão; exporta sozinho
+  - ✅ 13 (`d929603`). Log de eventos, exportar o diário e ferramenta de resumo visual (21/11/2026: sem botão; exporta sozinho
     ao morrer e ao fechar o jogo, na pasta do jogo; o resumo é uma página HTML).
   - ⬜ 14. Playtest da 2a.
   **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.
