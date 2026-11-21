@@ -83,10 +83,12 @@ static func vale(se: Dictionary, ctx: Dictionary) -> bool:
 				elif o != str(v): return false
 			"genero":
 				if (str(j.genero) if j != null else "m") != str(v): return false
-			"flag":
-				if not flags.has(str(v)): return false
-			"sem_flag":
-				if flags.has(str(v)): return false
+			"flag":                                   # um nome ou uma lista (todas precisam existir)
+				for f in (v as Array if v is Array else [v]):
+					if not flags.has(str(f)): return false
+			"sem_flag":                               # um nome ou uma lista (nenhuma pode existir)
+				for f in (v as Array if v is Array else [v]):
+					if flags.has(str(f)): return false
 			"rumor":
 				if not rumores.has(str(v)): return false
 			"sem_rumor":
@@ -131,7 +133,7 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 	for e in efeitos:
 		var ed: Dictionary = e
 		if ed.has("rep"):
-			Reputacao.mudar(str(ed.get("com", ctx["com"])), int(ed["rep"]))
+			Reputacao.mudar(str(ed.get("com", ctx["com"])), int(ed["rep"]), str(ed.get("motivo", "pela conversa")))
 		if ed.has("flag"):
 			flags[str(ed["flag"])] = true
 		if ed.has("tira_flag"):

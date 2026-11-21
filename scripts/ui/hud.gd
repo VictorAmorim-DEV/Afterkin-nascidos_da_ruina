@@ -21,6 +21,9 @@ var _saude_texto := Label.new()
 var _sol_tela := TextureRect.new()
 var _toast := Label.new()
 var _toast_tween: Tween
+var _rep := Label.new()             ## aviso de reputação (etapa 14b): "Vila dos Pescadores +3 — trabalho… · 29, conhecido"
+var _rep_tween: Tween
+var _rep_ultima := {"com": "", "soma": 0, "t": -100.0}   ## junta mudanças seguidas da mesma comunidade
 var _t_dica := 0.0                ## a dica de interação é recalculada 10× por segundo, não a cada quadro
 
 @onready var relogio: Label = $Painel/Relogio
@@ -222,9 +225,40 @@ func _montar_toast() -> void:
 	_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_toast.modulate.a = 0.0
 	add_child(_toast)
+	_rep.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_rep.offset_left = -320
+	_rep.offset_right = 320
+	_rep.offset_top = 100
+	_rep.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_rep.add_theme_font_size_override("font_size", 14)
+	_rep.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+	_rep.add_theme_constant_override("outline_size", 4)
+	_rep.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rep.modulate.a = 0.0
+	add_child(_rep)
 
 
 ## Mensagem passageira no topo da tela (V13: toast/log).
+## Reputacao.mudar avisa aqui. Mudanças da mesma comunidade em menos de 4 s se somam numa linha só.
+func reputacao_mudou(com: String, n: int, valor: int, nivel: String, motivo: String) -> void:
+	var agora := Time.get_ticks_msec() / 1000.0
+	if str(_rep_ultima["com"]) == com and agora - float(_rep_ultima["t"]) < 4.0:
+		_rep_ultima["soma"] = int(_rep_ultima["soma"]) + n
+	else:
+		_rep_ultima["soma"] = n
+	_rep_ultima["com"] = com
+	_rep_ultima["t"] = agora
+	var soma: int = _rep_ultima["soma"]
+	_rep.text = "%s %+d%s  ·  agora %d (%s)" % [com, soma, " — " + motivo if motivo != "" else "", valor, nivel]
+	_rep.add_theme_color_override("font_color", Color(0.62, 0.86, 0.55) if soma >= 0 else Color(0.95, 0.5, 0.42))
+	_rep.modulate.a = 1.0
+	if _rep_tween != null:
+		_rep_tween.kill()
+	_rep_tween = create_tween()
+	_rep_tween.tween_interval(4.5)
+	_rep_tween.tween_property(_rep, "modulate:a", 0.0, 0.8)
+
+
 func aviso(texto: String) -> void:
 	_toast.text = texto
 	_toast.modulate.a = 1.0

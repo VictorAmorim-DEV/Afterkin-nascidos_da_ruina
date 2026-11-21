@@ -578,3 +578,22 @@ Victor aprovou este rumo para recuperar a essência:
   você jurou combater."*
 - Skills do projeto em `.claude/skills/`: `afterkin-ideia` (filtro de ideias) e `afterkin-playtest` (relatório a
   partir dos diários). `afterkin-npc` (rascunho de NPC nos JSON) fica para a etapa 2b.
+
+## Ajustes do playtest da etapa 2a (21/11/2026; relatório em `docs/PLAYTEST_MARCO2.md`)
+
+- **Diálogo que emenda:** quando a conversa volta ao começo (depois de uma reação, de um elogio ou de outro
+  assunto), o NPC não repete a saudação: diz "Mais alguma coisa?" ou algo parecido (o nó pode trocar com `volta`).
+  Falas sem resposta ganham "Outra coisa..." para a conversa seguir. As condições `flag`/`sem_flag` aceitam lista.
+- **Retorno dos trabalhos:** quem deu a vigia, a ajuda no forte ou o conserto comenta quando você volta (até 3 dias),
+  com uma pergunta e duas respostas. O aviso de fim de trabalho diz com quem falar.
+- **Reputação visível:** cada mudança aparece numa linha própria do HUD, com o motivo, o valor e o nível
+  (odiado ≤ −40, barrado ≤ −20, malvisto < 0, desconhecido < 15, conhecido < 30, bem-vindo < 50, respeitado < 75,
+  de casa). O mapa (M) lista as comunidades com o valor, o nível e o que a próxima faixa abre.
+- **Menos rumores:** novidade é notícia, não pista: não gera aviso, não entra no diário como rumor e não aparece na
+  lista de rumores do mapa. Ataques e assaltos de errantes desconhecidos são miudeza (só no mural e no diário do
+  mundo). Espontaneamente sai no máximo uma novidade a cada 3 h de jogo (`Rumores.NOVIDADE_H`); quem pergunta
+  "Alguma novidade?" ou lê o mural ouve mesmo assim.
+- **Nomes únicos dos errantes:** nenhum nome se repete na partida, nem de mortos; quando a lista acaba, o nome volta
+  com apelido ("Rita do Cais").
+- **Guga e Caio:** a opção "vou falar com o médico" some se o doutor já sabe; "Já falei com o médico" aparece no lugar.
+  O Caio fala do Guga tratado ou curado.

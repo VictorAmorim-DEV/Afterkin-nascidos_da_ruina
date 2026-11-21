@@ -40,11 +40,37 @@ static func valor(com: String) -> int:
 	return int(rep.get(com, 0))
 
 
-static func mudar(com: String, n: int) -> void:
+## Nível de reputação em palavras, para o jogador (HUD e mapa). Os limites batem com os de VidaComunidade
+## (−20 barrado, 15 água e bancada, 30 cama e portão de noite) e com o "ninguém conversa" de −40.
+static func nivel(v: int) -> String:
+	if v <= -40: return "odiado"
+	if v <= -20: return "barrado"
+	if v < 0: return "malvisto"
+	if v < 15: return "desconhecido"
+	if v < 30: return "conhecido"
+	if v < 50: return "bem-vindo"
+	if v < 75: return "respeitado"
+	return "de casa"
+
+
+## O que a próxima faixa de reputação abre, para o mapa ("30: cama e portão à noite"); "" se não há.
+static func proximo(v: int) -> String:
+	for f in [[-19, "o portão volta a abrir"], [0, "voltam a oferecer trabalho"], [15, "água e bancada"],
+			[30, "cama de hóspede e portão à noite"], [40, "todas as lições de Medicina"]]:
+		if v < int(f[0]):
+			return "%d: %s" % [int(f[0]), str(f[1])]
+	return ""
+
+
+## 'motivo' aparece no aviso do HUD ("ajudou na vigia"); vazio = só o número.
+static func mudar(com: String, n: int, motivo: String = "") -> void:
 	rep[com] = clampi(valor(com) + n, -100, 100)
 	if n != 0 and Comunidades.ids().has(com):
-		DiarioPartida.evento("reputacao", "Reputação %s: %+d (agora %d)." % [Comunidades.em_nome(com), n, valor(com)],
-			{"com": Comunidades.nome(com), "valor": valor(com)})
+		DiarioPartida.evento("reputacao", "Reputação %s: %+d (agora %d)%s." % [Comunidades.em_nome(com), n, valor(com),
+			" — " + motivo if motivo != "" else ""], {"com": Comunidades.nome(com), "valor": valor(com)})
+		var arv := Engine.get_main_loop() as SceneTree
+		if arv != null:
+			arv.call_group("hud", "reputacao_mudou", Comunidades.nome(com), n, valor(com), nivel(valor(com)), motivo)
 
 
 static func vivo(com: String, npc: String) -> bool:
@@ -180,7 +206,8 @@ static func passo() -> void:
 		if t != "" and mortos.has(t):
 			continue                           # a testemunha morreu antes de contar
 		var com: String = bd["com"]
-		mudar(com, int(bd["peso"]))
+		var ouviu := "a notícia chegou: você " if str(bd["origem"]) == com and t != "" else "o boato chegou: você "
+		mudar(com, int(bd["peso"]), ouviu + str(EVENTOS.get(str(bd["ev"]), {}).get("boato", "fez algo")))
 		for npc in Comunidades.dados(com).get("npcs", []):
 			var chave := "%s/%s" % [com, str((npc as Dictionary)["id"])]
 			if chave != t and not mortos.has(chave):

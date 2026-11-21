@@ -112,16 +112,35 @@ func _desenhar_legenda() -> void:
 		Color(1, 1, 1, 0.6))
 	_legenda.draw_string(fonte, Vector2(4, y + 32), "Ícones aparecem de perto (zoom)", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
 		Color(1, 1, 1, 0.6))
-	# rumores conhecidos (os mais recentes primeiro)
+	# reputação nas comunidades conhecidas (etapa 14b: o jogador precisa ver quanto tem e o que vem a seguir)
 	y += 62.0
+	var coms: Array = []
+	for id in Comunidades.ids():
+		if Reputacao.rep.has(str(id)) or Conversas.vistos.keys().any(func(k): return str(k).begins_with(str(id) + "/")):
+			coms.append(str(id))
+	if not coms.is_empty():
+		_legenda.draw_string(fonte, Vector2(4, y), "COMUNIDADES", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1.0, 0.85, 0.55))
+		y += 18.0
+		for id in coms:
+			var v := Reputacao.valor(str(id))
+			var cor := Color(0.62, 0.86, 0.55) if v >= 15 else (Color(0.95, 0.5, 0.42) if v < 0 else Color(1, 1, 1, 0.85))
+			_legenda.draw_string(fonte, Vector2(4, y), "%s: %d, %s" % [Comunidades.nome(str(id)), v, Reputacao.nivel(v)],
+				HORIZONTAL_ALIGNMENT_LEFT, 196, 12, cor)
+			y += 15.0
+			var px := Reputacao.proximo(v)
+			if px != "":
+				_legenda.draw_string(fonte, Vector2(12, y), "próximo → " + px, HORIZONTAL_ALIGNMENT_LEFT, 188, 11, Color(1, 1, 1, 0.5))
+				y += 15.0
+		y += 10.0
+	# rumores conhecidos (os mais recentes primeiro)
 	_legenda.draw_string(fonte, Vector2(4, y), "RUMORES", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(0.85, 0.75, 1.0))
 	y += 18.0
-	var ids: Array = Conversas.rumores.keys()
+	var ids: Array = Conversas.rumores.keys().filter(func(k): return not str(k).begins_with("nov_"))   # notícias não são pistas
 	ids.reverse()
 	if ids.is_empty():
 		_legenda.draw_string(fonte, Vector2(4, y), "Nenhum ainda. Converse, ouça, leia.", HORIZONTAL_ALIGNMENT_LEFT, -1, 12,
 			Color(1, 1, 1, 0.5))
-	for rid in ids.slice(0, 10):
+	for rid in ids.slice(0, 8 if not coms.is_empty() else 10):
 		var t := Rumores.titulo(str(rid))
 		if t.length() > 30:
 			t = t.substr(0, 29) + "…"

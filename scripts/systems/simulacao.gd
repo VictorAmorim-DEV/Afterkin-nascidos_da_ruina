@@ -250,8 +250,9 @@ static func receber_sobrevivente(id: String, quem: String, fem: bool = false, pe
 
 
 ## Notícia do mundo lá fora (errantes): vai para o diário com a comunidade mais perto (ou "").
-static func registrar_noticia(id: String, texto: String) -> void:
-	_registrar(id, texto)
+## 'peso' 0 = miudeza (fica no mural e no diário, mas ninguém sai contando); 1 = vale contar.
+static func registrar_noticia(id: String, texto: String, peso: int = 1) -> void:
+	_registrar(id, texto, peso)
 
 
 ## O jogador tratou um ferido (antibiótico + instruções do médico, ou a Medicina dele): passa a melhorar.
@@ -262,6 +263,7 @@ static func tratar(id: String, npc: String, reducao: float = 0.15) -> bool:
 		if str(fd["quem"]) == npc:
 			fd["tratado"] = true
 			fd["pelo_jogador"] = true
+			Conversas.flags["%s_%s_tratado" % [id, npc]] = true   # para os outros falarem do tratamento
 			fd["grav"] = maxf(0.05, float(fd["grav"]) - reducao)
 			_registrar(id, "Alguém de fora tratou %s, %s." % [fd["nome"], Comunidades.de(id)])
 			Medicina.tratou(id, npc)
@@ -496,11 +498,12 @@ static func _Cap(s: String) -> String:
 
 
 
-static func _registrar(id: String, texto: String) -> void:
+## 'peso' (para Rumores.novidade_para): 2 = acontecimento da comunidade, 1 = notícia de fora, 0 = miudeza.
+static func _registrar(id: String, texto: String, peso: int = 2) -> void:
 	var arv := Engine.get_main_loop() as SceneTree
 	var c: Node = arv.get_first_node_in_group("ciclo_dia_noite") if arv != null else null
 	diario.append({"dia": int(c.dia) if c != null else 1, "hora": int(float(c.minutos) / 60.0) if c != null else 0,
-		"com": id, "texto": texto})
+		"com": id, "texto": texto, "peso": peso})
 	if diario.size() > DIARIO_MAX:
 		diario = diario.slice(diario.size() - DIARIO_MAX)
 

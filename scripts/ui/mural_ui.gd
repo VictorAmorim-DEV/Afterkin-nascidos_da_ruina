@@ -77,7 +77,7 @@ func _ler() -> void:
 		if partes.size() == 2 and partes[0] == com:
 			linhas.append("• Em memória de %s." % Simulacao._nome_npc(com, partes[1]))
 	for k in 2:
-		var n := Rumores.novidade_para(com)
+		var n := Rumores.novidade_para(com, true)
 		if n.is_empty() or str(n["com"]) != com:
 			break
 		linhas.append("• %s" % str(n["texto"]))

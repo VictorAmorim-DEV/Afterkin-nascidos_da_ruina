@@ -15,6 +15,10 @@ var _opcoes := VBoxContainer.new()
 var _botoes: Array = []                ## [Button, opção] na ordem das teclas
 var _msgs: PackedStringArray = []
 var _abertura := ""                     ## nó que abriu a conversa (ganha a opção "Alguma novidade?")
+var _ja_abriu := false                  ## o NPC já falou nesta conversa: chegar à abertura não repete a saudação
+
+## Falas para quando a conversa volta ao começo (a saudação já foi dita; o nó pode trocar com "volta").
+const CONTINUAR := ["Mais alguma coisa?", "E o que mais?", "Pode falar.", "Diga.", "Hm. E então?"]
 
 
 func _ready() -> void:
@@ -83,11 +87,13 @@ func _ready() -> void:
 				lt = Consequencias.abertura_parente(npc.comunidade, _ctx["npc"], _ctx, seguir)
 			if lt.is_empty():
 				lt = Consequencias.abertura_luto(npc.comunidade, _ctx["npc"], seguir)
+			if lt.is_empty():
+				lt = VidaComunidade.abertura_retorno(npc.comunidade, _ctx["npc"], seguir)
 		if not lt.is_empty():
 			(_arvore["nos"] as Dictionary).merge(lt["nos"], true)
 			abertura = str(lt["no"])
 	_ctx["_nos"] = _arvore["nos"]
-	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just"]) else seguir
+	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just", "_v_retorno"]) else seguir
 	if abertura == "_v_barrado":
 		_abertura = "_v_barrado"                 # barrado: nada de novidades, só o portão   # "Alguma novidade?" fica na conversa normal
 	Conversas.vistos["%s/%s" % [_ctx["com"], _ctx["npc"]]] = true
@@ -111,6 +117,9 @@ func _ir(id: String) -> void:
 		if Conversas.vale((v as Dictionary).get("se", {}), _ctx):
 			fala_no = str((v as Dictionary)["fala"])
 			break
+	if id == _abertura and _ja_abriu:              # já falou algo (reação, elogio, outro assunto): segue a conversa,
+		fala_no = str(no.get("volta", CONTINUAR[randi() % CONTINUAR.size()]))   # sem cumprimentar de novo
+	_ja_abriu = true
 	_fala.text = Conversas.texto(fala_no, _ctx)
 	for b in _opcoes.get_children():
 		b.queue_free()
@@ -122,7 +131,7 @@ func _ir(id: String) -> void:
 				continue                           # pergunta sobre quem já morreu, como se estivesse vivo
 			lista.append(o)
 	if id == _abertura and not _arvore["nos"].has("_novidade") and Reputacao.valor(npc.comunidade) > -40:
-		var n := Rumores.novidade_para(npc.comunidade)
+		var n := Rumores.novidade_para(npc.comunidade, true)
 		if not n.is_empty():
 			_arvore["nos"]["_novidade"] = {"fala": "Ficou sabendo? %s" % str(n["texto"]), "_ouvir": n,
 				"opcoes": [{"texto": "E o que mais?", "vai": _abertura}]}
@@ -134,6 +143,10 @@ func _ir(id: String) -> void:
 		var av := Rumores.ouvir(no["_ouvir"])
 		if av != "":
 			_msgs.append(av)
+	var folha: bool = (no.get("opcoes", []) as Array).is_empty() and lista.is_empty()
+	var pode_seguir: bool = _arvore["nos"].has(_abertura) and not _abertura in ["some", "_v_barrado"]
+	if folha and pode_seguir and id != _abertura and not bool(no.get("sem_sair", false)) and not bool(no.get("encerra", false)):
+		lista.append({"texto": "Outra coisa...", "vai": _abertura})   # a fala acabou, mas a conversa pode seguir
 	if not bool(no.get("sem_sair", false)):
 		lista.append({"texto": "Até mais.", "vai": "fim"})
 	for i in lista.size():

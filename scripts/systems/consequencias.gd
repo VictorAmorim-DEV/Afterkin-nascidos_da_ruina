@@ -284,7 +284,7 @@ static func responder(e: Dictionary, ctx: Dictionary, nos: Dictionary) -> Packed
 					ok = rep >= 30 or (ev != "agressao" and randf() < 0.4)
 			if ok:
 				_resolver(com, npc, ev, "desculpa")
-				Reputacao.mudar(com, 2)
+				Reputacao.mudar(com, 2, "aceitaram suas desculpas")
 				nos["_c_desc"] = {"fala": "...Tá. Mas não se repete.", "sem_sair": true, "opcoes": [aceita]}
 			else:
 				nos["_c_desc"] = {"fala": "Desculpa? Desculpa não tira roxo." if ev == "agressao" and como == "vitima" \
@@ -295,25 +295,25 @@ static func responder(e: Dictionary, ctx: Dictionary, nos: Dictionary) -> Packed
 			msgs.append("Você deu %s." % Itens.texto_lista([[str(e["item"]), int(e["qtd"])]]))
 			if ev == "assassinato" and como == "viu" and rep < 0:
 				nos["_c_desc"] = {"fala": "(%s pega, mas não olha para você.) Isso não muda nada." % ("Ela" if ela else "Ele")}
-				Reputacao.mudar(com, 2)
+				Reputacao.mudar(com, 2, "pagou uma reparação")
 			else:
 				_resolver(com, npc, ev, "reparacao")
-				Reputacao.mudar(com, 5)
+				Reputacao.mudar(com, 5, "pagou uma reparação")
 				nos["_c_desc"] = {"fala": "(%s pega e guarda.) Tá bom. Fica por isso." % ("Ela" if ela else "Ele"), "sem_sair": true,
 					"opcoes": [aceita]}
 		"mentir":
 			if como == "ouviu" and randf() < 0.6:
 				_resolver(com, npc, ev, "desmentido")
-				Reputacao.mudar(com, 3)
+				Reputacao.mudar(com, 3, "acreditaram na sua versão")
 				nos["_c_mentira"] = {"fala": "Hm. Gente fala demais mesmo. Esquece.", "sem_sair": true, "opcoes": [aceita]}
 			else:
-				Reputacao.mudar(com, -3)
+				Reputacao.mudar(com, -3, "pegaram você mentindo")
 				nos["_c_mentira"] = {"fala": "Eu estava lá. Não me faz de bob%s." % ("a" if ela else "o") if como != "ouviu" \
 					else "Sei. (Não acreditou.)"}
 		"ameacar":
 			_resolver(com, npc, ev, "medo")
 			medo["%s/%s" % [com, npc]] = _dia() + DIAS_MEDO
-			Reputacao.mudar(com, -5)
+			Reputacao.mudar(com, -5, "ameaçou um morador")
 			Reputacao.pendentes.append({"com": com, "ev": "ameaca", "peso": int(Reputacao.EVENTOS["ameaca"]["peso"]),
 				"hora": Reputacao.agora_h() + randf_range(4.0, 8.0), "testemunha": "%s/%s" % [com, npc], "origem": com, "alvo": npc})
 			nos["_c_ameaca"] = {"fala": "(%s recua.) T-tá. Tá bom. Ninguém falou nada." % ("Ela" if ela else "Ele"), "sem_sair": true,
@@ -762,7 +762,7 @@ static func responder_parente(e: Dictionary, ctx: Dictionary, nos: Dictionary) -
 				j.inventario.remover(str(it[0]), int(it[1]))
 			msgs.append("Você deu %s." % Itens.texto_lista(e["itens"]))
 			inv["estado"] = "resolvido"
-			Reputacao.mudar(com, 10)
+			Reputacao.mudar(com, 10, "pagou pela morte")
 			nos["_inv_r"] = {"fala": "(%s pega, sem olhar para você.) Isso fica entre nós. Mas não aparece mais na minha frente." % ("Ela" if ela else "Ele")}
 			Simulacao.registrar_noticia(com, "%s aceitou uma reparação pela morte de %s." % [nome_npc(com, npc), morto])
 		"recusar":

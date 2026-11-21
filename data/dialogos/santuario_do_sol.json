@@ -109,7 +109,21 @@
 				]
 			},
 			"guga2": {
-				"fala": "Pior. A febre não baixa. A Rosa não dorme."
+				"fala": "Pior. A febre não baixa. A Rosa não dorme.",
+				"variantes": [
+					{
+						"se": {
+							"flag": "santuario_do_sol_ferido_curado"
+						},
+						"fala": "De pé, acredita? Manca, reclama, mas de pé. (Ele olha para você.) A gente não esquece isso."
+					},
+					{
+						"se": {
+							"flag": "santuario_do_sol_ferido_tratado"
+						},
+						"fala": "Melhor. A febre baixou desde que você cuidou dele. Eu ainda não sei como te agradecer."
+					}
+				]
 			}
 		}
 	},
@@ -476,7 +490,20 @@
 						"texto": "Eu falo com o médico.",
 						"vai": "promessa",
 						"se": {
-							"sem_flag": "guga_pediu_medico"
+							"sem_flag": [
+								"guga_pediu_medico",
+								"heitor_sabe_guga"
+							],
+							"ferido": "sem_tratamento"
+						}
+					},
+					{
+						"texto": "Já falei com o médico.",
+						"vai": "noticia",
+						"se": {
+							"flag": "heitor_sabe_guga",
+							"sem_flag": "guga_esperanca",
+							"ferido": "sem_tratamento"
 						}
 					}
 				]
@@ -529,7 +556,8 @@
 						"vai": "noticia",
 						"se": {
 							"flag": "heitor_sabe_guga",
-							"sem_flag": "guga_esperanca"
+							"sem_flag": "guga_esperanca",
+							"ferido": "sem_tratamento"
 						}
 					},
 					{

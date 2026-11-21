@@ -291,7 +291,7 @@ static func efeito(acao: String, ctx: Dictionary) -> PackedStringArray:
 			tarefa = {}
 			habilidades.append(hab)
 			_aula = hab
-			Reputacao.mudar(str(ctx["com"]), REP_POR_PASSO)
+			Reputacao.mudar(str(ctx["com"]), REP_POR_PASSO, "aprendeu com o médico")
 			msgs.append("Habilidade aprendida: %s. %s" % [NOMES[hab], DESCRICOES[hab]])
 			DiarioPartida.evento("habilidade", "Aprendeu %s com %s." % [NOMES[hab], str(mestre().get("nome", "o mestre"))])
 			if completa():
@@ -352,7 +352,7 @@ static func tratar_com(item: String, ctx: Dictionary) -> PackedStringArray:
 	var msgs: PackedStringArray = []
 	var reducao := {"kit_cirurgico": 0.5, "antibiotico": 0.2, "bandagem": 0.1}
 	if Simulacao.tratar(com, npc, float(reducao.get(item, 0.15))):
-		Reputacao.mudar(com, 6)
+		Reputacao.mudar(com, 6, "tratou um ferido")
 		msgs.append("Você tratou %s." % Simulacao.ferido(com, npc).get("nome", "o ferido"))
 	return msgs
 
@@ -364,7 +364,7 @@ static func tratou(com: String, npc: String) -> void:
 	var chave := "%s/%s" % [com, npc]
 	if pedidos.has(chave):
 		pedidos.erase(chave)
-		Reputacao.mudar(com, REP_PEDIDO)
+		Reputacao.mudar(com, REP_PEDIDO, "atendeu um pedido de ajuda")
 		var j := _jogador()
 		if j != null:
 			j.aviso("%s agradece: você atendeu o pedido de ajuda (+reputação)." % _Cap(Comunidades.com_artigo(com)))

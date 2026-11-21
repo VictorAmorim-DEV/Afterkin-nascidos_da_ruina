@@ -24,9 +24,14 @@ const VEL_H := 200.0 * IsoMath.METRO
 const PERTO_JOGADOR := 160.0 * IsoMath.METRO       ## mais perto que isso, o GerenteErrantes anda com ele em tempo real
 const INDOLES := {"pacifico": 30, "desconfiado": 30, "oportunista": 25, "hostil": 15}
 const NOMES_M := ["Seu Josué", "Kléber", "Wellington", "Diego", "Juarez", "Mané", "Rogério", "Seu Ari", "Edson", "Baiano",
-	"Fábio", "Seu Nonato", "Rafael", "Tião", "Gilmar", "Cleiton"]
+	"Fábio", "Seu Nonato", "Rafael", "Tião", "Gilmar", "Cleiton", "Seu Zé Pedro", "Marcão", "Valter", "Jailson", "Careca",
+	"Seu Arlindo", "Rodrigo", "Toninho", "Edvaldo", "Paulão", "Severino", "Ivan", "Alemão", "Robson"]
 const NOMES_F := ["Dona Lurdes", "Patrícia", "Rita", "Sandra", "Cida", "Tainá", "Jussara", "Dona Zefa", "Bruna", "Neusa",
-	"Kátia", "Dona Socorro", "Luana", "Marta", "Vânia", "Débora"]
+	"Kátia", "Dona Socorro", "Luana", "Marta", "Vânia", "Débora", "Dona Benedita", "Josi", "Rosângela", "Fabiana", "Irene",
+	"Dona Graça", "Valéria", "Simone", "Jaque", "Eliane", "Dona Ivone", "Raquel", "Teca", "Lúcia"]
+## Quando os nomes acabam, o mesmo nome volta com um apelido (o mundo lembra: um morto nunca "renasce" com o nome dele).
+const APELIDOS := ["do Cais", "da Serra", "do Posto", "da Feira", "do Mangue", "da Estrada", "do Morro", "da Ponte",
+	"do Lago", "da Rodoviária"]
 ## Monstros: força no combate (1 = um zumbi) e se só saem de noite. Bárbaros, feiticeiras e outros entram aqui.
 const MONSTROS := {"zombie": {"por": "por zumbis", "forca": 1.0, "noite": false},
 	"rat": {"por": "por ratos gigantes", "forca": 0.7, "noite": false},
@@ -76,12 +81,28 @@ static func iniciar() -> void:
 				(grupos[gid]["membros"] as Array).append(b["id"])
 
 
+## Nome que ninguém usou nesta partida, vivo ou morto (os agentes nunca saem de 'agentes'). Esgotou a lista: nome
+## com apelido ("Rita do Cais").
+static func _nome_livre(fem: bool) -> String:
+	var usados: Dictionary = {}
+	for id in agentes:
+		usados[str((agentes[id] as Dictionary)["nome"])] = true
+	var livres: Array = (NOMES_F if fem else NOMES_M).filter(func(n): return not usados.has(str(n)))
+	if not livres.is_empty():
+		return str(livres[_rng.randi() % livres.size()])
+	var base: Array = NOMES_F if fem else NOMES_M
+	for _t in 40:
+		var n := "%s %s" % [str(base[_rng.randi() % base.size()]), str(APELIDOS[_rng.randi() % APELIDOS.size()])]
+		if not usados.has(n):
+			return n
+	return "%s %d" % [str(base[_rng.randi() % base.size()]), _seq]
+
+
 ## Cria um agente e o põe na população.
 static func novo(papel: String, p: Vector2, indole: String) -> Dictionary:
 	_seq += 1
 	var fem := _rng.randf() < 0.5
-	var nomes: Array = NOMES_F if fem else NOMES_M
-	var a := {"id": "e%d" % _seq, "nome": str(nomes[_rng.randi() % nomes.size()]), "genero": "f" if fem else "m",
+	var a := {"id": "e%d" % _seq, "nome": _nome_livre(fem), "genero": "f" if fem else "m",
 		"papel": papel, "indole": indole, "grupo": "", "com": "", "p": p, "destino": p, "objetivo": "",
 		"fome": _rng.randf_range(65.0, 100.0), "sede": _rng.randf_range(65.0, 100.0), "vida": 100.0,
 		"municao": _rng.randi_range(0, 3) if papel != "saqueador" else _rng.randi_range(2, 6),
@@ -353,7 +374,8 @@ static func lutar(a: Dictionary, monstro: String, qtd: int) -> String:
 		if float(a["vida"]) <= 0.0:
 			morrer(a, "mort%s %s %s" % [o, por, lugar])
 			return "morreu"
-		Simulacao.registrar_noticia(com, "%s foi atacad%s %s %s e escapou ferid%s." % [a["nome"], o, por, lugar, o])
+		Simulacao.registrar_noticia(com, "%s foi atacad%s %s %s e escapou ferid%s." % [a["nome"], o, por, lugar, o],
+			1 if int(a.get("opiniao", 0)) != 0 else 0)      # só vira conversa se o jogador conhece a pessoa
 		return "ferido"
 	if _rng.randf() < 0.75:
 		a["vida"] = float(a["vida"]) - _rng.randf_range(10.0, 25.0)
@@ -415,7 +437,7 @@ static func _cruzar(a: Dictionary, b: Dictionary) -> void:
 			vitima["ferido"] = true
 			vitima["lembra"].append("assaltado")
 			Simulacao.registrar_noticia(com, "%s foi assaltad%s %s; levaram tudo." % [vitima["nome"],
-				"a" if vitima["genero"] == "f" else "o", lugar])
+				"a" if vitima["genero"] == "f" else "o", lugar], 1 if int(vitima.get("opiniao", 0)) != 0 else 0)
 		return
 	if ha and hb:
 		return                                  # dois lobos se evitam
@@ -444,7 +466,7 @@ static func _chegadas() -> void:
 			if not c.is_empty() and (float(c["comida"]) > 2.0 or enviado) and a["indole"] != "hostil":
 				Simulacao.receber_sobrevivente(com, str(a["nome"]), a["genero"] == "f", enviado)
 				if enviado:
-					Reputacao.mudar(com, 4)        # chegou dizendo que foi você que mandou (Q45)
+					Reputacao.mudar(com, 4, "alguém chegou dizendo que você mandou")        # chegou dizendo que foi você que mandou (Q45)
 				a["vivo"] = false
 				a["entrou"] = com
 			else:

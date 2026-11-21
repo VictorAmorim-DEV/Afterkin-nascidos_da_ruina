@@ -34,6 +34,7 @@ static var ganhos: Dictionary = {}     ## "com/dia" -> reputação ganha com tra
 static var tratado_dia: Dictionary = {}  ## com -> dia em que a enfermaria já cuidou do jogador
 static var presente_dia: Dictionary = {} ## com -> dia em que o guarda já aceitou um presente
 static var abrir_ate: Dictionary = {}  ## com -> segundos (Time) até quando o portão fica aberto para o jogador
+static var retornos: Dictionary = {}   ## "com/npc" -> {tipo, forte, dia}: trabalho terminado que esse NPC ainda vai comentar
 static var _aviso_longe := false
 
 
@@ -43,6 +44,7 @@ static func zerar() -> void:
 	tratado_dia = {}
 	presente_dia = {}
 	abrir_ate = {}
+	retornos = {}
 
 
 static func _dia() -> int:
@@ -176,6 +178,46 @@ static func opcoes(arvore: Dictionary, ctx: Dictionary, abertura: bool) -> Array
 	return out
 
 
+## Quem deu um trabalho comenta quando você volta (etapa 14b): uma pergunta e duas respostas; depois a conversa segue
+## normal. Vale por 3 dias; {} se não há nada a comentar.
+static func abertura_retorno(com: String, npc: String, seguir: String) -> Dictionary:
+	var k := "%s/%s" % [com, npc]
+	if not retornos.has(k):
+		return {}
+	var r: Dictionary = retornos[k]
+	retornos.erase(k)
+	if _dia() - int(r["dia"]) > 3:
+		return {}
+	var o := "Obrigada" if Consequencias.feminino(com, npc) else "Obrigado"
+	var pergunta := ""
+	var resp: Array = []                         # [texto do jogador, fala do NPC]
+	match str(r["tipo"]):
+		"vigia":
+			pergunta = "E a vigia? Viu alguma coisa na estrada?"
+			resp = [["Tudo quieto.", "Melhor assim. Turno quieto é turno bom. %s por segurar o portão." % o],
+				["Vi uns vultos lá longe, perto das árvores.", "(Franze a testa.) Vou avisar o pessoal da noite. Bom ter mais um par de olhos aqui."]]
+		"conserto":
+			pergunta = "Passei no muro agora há pouco. Ficou firme."
+			resp = [["Deu trabalho, mas segura.", "Segura, sim. Uma noite a menos de medo. %s, de verdade." % o],
+				["Precisando, é só chamar.", "Vou lembrar disso. Aqui ninguém esquece quem ajudou."]]
+		_:
+			match str(r["forte"]):
+				"caca":
+					pergunta = "Conferi os laços que você armou. Dois já pegaram coisa."
+				"agricultura":
+					pergunta = "Vi o canteiro. Capinou direitinho, hein? Tem gente aqui que não faz metade."
+				_:
+					pergunta = "(Confere os nós da rede.) Ficou boa. Melhor que muita que eu vejo por aí."
+			resp = [["Aprendi olhando vocês.", "Pois aprendeu bem. Volta quando quiser: mão boa nunca sobra."],
+				["Cansa mais do que parece.", "(Ri.) Cansa. Mas a comida de amanhã saiu dessas mãos. %s." % o]]
+	var nos := {"_v_retorno": {"fala": pergunta, "opcoes": []}}
+	for i in resp.size():
+		var id := "_v_retorno%d" % i
+		nos[id] = {"fala": str(resp[i][1]), "opcoes": [{"texto": "Outra coisa...", "vai": seguir}]}
+		(nos["_v_retorno"]["opcoes"] as Array).append({"texto": str(resp[i][0]), "vai": id})
+	return {"no": "_v_retorno", "nos": nos}
+
+
 static func _forte(com: String) -> String:
 	var f := str(Comunidades.dados(com).get("forte", "pesca")).to_lower()
 	if f.begins_with("ca"):
@@ -220,9 +262,9 @@ static func efeito(e: Dictionary, ctx: Dictionary, nos: Dictionary) -> PackedStr
 				j.inventario.remover(str(atual["item"]), int(atual["qtd"]))
 			var origem := str(atual["com"])
 			var rep := int(atual.get("rep", 5))
-			Reputacao.mudar(origem, rep)
+			Reputacao.mudar(origem, rep, "cumpriu um recado")
 			if origem != com:
-				Reputacao.mudar(com, 3)
+				Reputacao.mudar(com, 3, "trouxe uma encomenda")
 				var co := Simulacao.estado(origem)
 				var cd := Simulacao.estado(com)
 				if not co.is_empty() and not cd.is_empty():
@@ -264,8 +306,10 @@ static func efeito(e: Dictionary, ctx: Dictionary, nos: Dictionary) -> PackedStr
 			for it in e["itens"]:
 				j.inventario.remover(str(it[0]), int(it[1]))
 			presente_dia[com] = _dia()
-			Reputacao.mudar(com, 4)
+			Reputacao.mudar(com, 4, "deu um presente à comunidade")
 			msgs.append("Você deu %s." % Itens.texto_lista(e["itens"]))
+	if not atual.is_empty() and not atual.has("npc"):
+		atual["npc"] = npc                         # quem deu o trabalho comenta quando você voltar
 	return msgs
 
 
@@ -420,7 +464,7 @@ static func _concluir(j: Node) -> void:
 	var chave := "%s/%d" % [com, _dia()]
 	var ganho := mini(int(atual["rep"]), maxi(0, TETO_DIA - int(ganhos.get(chave, 0))))
 	ganhos[chave] = int(ganhos.get(chave, 0)) + ganho
-	Reputacao.mudar(com, ganho)
+	Reputacao.mudar(com, ganho, "trabalho: " + str(atual["texto"]))
 	var extra := ""
 	match str(atual["tipo"]):
 		"forte":
@@ -432,8 +476,13 @@ static func _concluir(j: Node) -> void:
 				extra = " Ganhou 1 comida pela ajuda."
 		"conserto":
 			Simulacao.registrar_noticia(com, "Alguém de fora ajudou a consertar o muro %s." % Comunidades.de(com))
+	if str(atual.get("npc", "")) != "" and str(atual["tipo"]) in ["vigia", "forte", "conserto"]:
+		retornos["%s/%s" % [com, str(atual["npc"])]] = {"tipo": str(atual["tipo"]), "forte": _forte(com), "dia": _dia()}
 	DiarioPartida.evento("trabalho", "Terminou um trabalho %s: %s (+%d de reputação)." % [Comunidades.em_nome(com), str(atual["texto"]), ganho])
-	j.aviso("Trabalho terminado (%s).%s%s" % [str(atual["texto"]), " +%d de reputação." % ganho if ganho > 0 else " Já trabalhou bastante por hoje: sem reputação extra.", extra])
+	var volta := ""
+	if retornos.has("%s/%s" % [com, str(atual.get("npc", ""))]):
+		volta = " Passe para falar com %s." % Consequencias.nome_npc(com, str(atual["npc"]))
+	j.aviso("Trabalho terminado (%s).%s%s%s" % [str(atual["texto"]), "" if ganho > 0 else " Já trabalhou bastante por hoje: sem reputação extra.", extra, volta])
 	atual = {}
 
 
@@ -444,7 +493,8 @@ static func dados_para_salvar() -> Dictionary:
 	if a.has("ponto"):
 		var p: Vector2 = a["ponto"]
 		a["ponto"] = [p.x, p.y]
-	return {"atual": a, "ganhos": ganhos.duplicate(), "tratado": tratado_dia.duplicate(), "presente": presente_dia.duplicate()}
+	return {"atual": a, "ganhos": ganhos.duplicate(), "tratado": tratado_dia.duplicate(), "presente": presente_dia.duplicate(),
+		"retornos": retornos.duplicate(true)}
 
 
 static func restaurar(d: Dictionary) -> void:
@@ -465,3 +515,6 @@ static func restaurar(d: Dictionary) -> void:
 		tratado_dia[str(k)] = int(d["tratado"][k])
 	for k in (d.get("presente", {}) as Dictionary):
 		presente_dia[str(k)] = int(d["presente"][k])
+	for k in (d.get("retornos", {}) as Dictionary):
+		var r: Dictionary = d["retornos"][k]
+		retornos[str(k)] = {"tipo": str(r.get("tipo", "")), "forte": str(r.get("forte", "pesca")), "dia": int(r.get("dia", 0))}

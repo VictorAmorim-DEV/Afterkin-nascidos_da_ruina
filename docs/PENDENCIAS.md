@@ -85,14 +85,9 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 13 (`d929603`). Log de eventos, exportar o diário e ferramenta de resumo visual (21/11/2026: sem botão; exporta sozinho
     ao morrer e ao fechar o jogo, na pasta do jogo; o resumo é uma página HTML).
   - ✅ 14. Playtest da 2a (roteiro em `docs/PLAYTEST_MARCO2A.md`; relatório em `docs/PLAYTEST_MARCO2.md`).
-  - 🔄 14b. Ajustes do playtest (21/11/2026), antes do marco 3:
-    - ⬜ Diálogo que emenda: a reação do NPC (elogio, agradecimento) vira a abertura, sem recomeçar a conversa.
-    - ⬜ Retorno dos trabalhos: o NPC que deu o trabalho comenta quando você volta ("Como foi a vigília?").
-    - ⬜ Guga: não oferecer "vou falar com o doutor" se a missão já está ativa ou cumprida.
-    - ⬜ Reputação visível: aviso a cada mudança, com o motivo, e o valor e o nível no mapa (M).
-    - ⬜ Menos rumores do mundo (metade), repetidos juntados, prioridade para gente conhecida; corrigir o "..".
-    - ⬜ Nomes únicos dos errantes (mortos não voltam com o mesmo nome).
-    - ⬜ Diário: o trabalho das redes não foi gravado como trabalho.
+  - ✅ 14b (HASH). Ajustes do playtest (21/11/2026): diálogo que emenda, retorno dos trabalhos, falas do Guga e do
+    Caio, reputação visível (HUD e mapa), menos rumores (novidade não é pista; intervalo de 3 h), nomes únicos dos
+    errantes. O diário grava o trabalho do forte (testado); as redes do playtest provavelmente não chegaram ao fim.
   **Rumo (21/11/2026):** depois do playtest, congelar sistemas sociais novos e ir para o marco 3 (ver "Rumo depois do
   marco 2" em `docs/DECISOES_DESIGN.md`; ideias novas passam pela skill `afterkin-ideia`).
   **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.

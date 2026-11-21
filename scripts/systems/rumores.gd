@@ -17,11 +17,14 @@ static var novidades: Dictionary = {}       ## id -> {titulo, texto, com, dia}
 static var descobertos: Dictionary = {}     ## id -> true (lugar do rumor já achado)
 static var _reais: Dictionary = {}          ## cache: id -> Vector2 (ponto de verdade)
 static var _regioes: Dictionary = {}        ## cache: id -> {centro, raio}
+static var _ultima_h := -999.0              ## hora de jogo da última novidade ouvida (intervalo entre as espontâneas)
+const NOVIDADE_H := 3.0
 
 
 static func zerar() -> void:
 	novidades = {}
 	descobertos = {}
+	_ultima_h = -999.0
 	_regioes = {}
 	_reais = {}
 
@@ -175,15 +178,22 @@ static func no_mapa() -> Array:
 
 ## Novidade que um NPC da comunidade 'com' pode contar e o jogador ainda não ouviu: as da própria comunidade nos
 ## últimos 3 dias, e as das outras com mais de meio dia (o tempo de a notícia viajar). {} se nada.
-static func novidade_para(com: String) -> Dictionary:
+## Etapa 14b (playtest: "rumores frequentes demais"): miudezas de errantes desconhecidos (peso 0) não viram
+## conversa, e espontaneamente (conversa ouvida, mural) sai no máximo uma a cada NOVIDADE_H horas de jogo; quem
+## pergunta "Alguma novidade?" ('pedida') ouve mesmo assim.
+static func novidade_para(com: String, pedida: bool = false) -> Dictionary:
 	var arv := Engine.get_main_loop() as SceneTree
 	var c: Node = arv.get_first_node_in_group("ciclo_dia_noite") if arv != null else null
 	var agora_h := float(c.dia) * 24.0 + float(c.minutos) / 60.0 if c != null else 0.0
+	if not pedida and agora_h - _ultima_h < NOVIDADE_H:
+		return {}
 	for i in range(Simulacao.diario.size() - 1, -1, -1):
 		var e: Dictionary = Simulacao.diario[i]
 		var h := float(e["dia"]) * 24.0 + float(e["hora"])
 		if agora_h - h > 72.0:
 			break
+		if int(e.get("peso", 2)) < 1:
+			continue
 		if str(e["com"]) != com and agora_h - h < 12.0:
 			continue
 		var id := "nov_%d_%d_%d" % [int(e["dia"]), int(e["hora"]), absi(hash(str(e["texto"]))) % 100000]
@@ -193,9 +203,15 @@ static func novidade_para(com: String) -> Dictionary:
 
 
 ## O jogador ouviu a novidade 'n' (de novidade_para).
+## Novidade é notícia, não pista: fica guardada (não se repete), mas sem aviso na tela nem entrada no diário — o
+## balão do NPC já mostrou. Devolve "" (mantido para quem chama).
 static func ouvir(n: Dictionary) -> String:
 	novidades[str(n["id"])] = {"titulo": str(n["texto"]), "texto": str(n["texto"]), "com": str(n["com"]), "dia": int(n["dia"])}
-	return conhecer(str(n["id"]))
+	Conversas.rumores[str(n["id"])] = true
+	var arv := Engine.get_main_loop() as SceneTree
+	var c: Node = arv.get_first_node_in_group("ciclo_dia_noite") if arv != null else null
+	_ultima_h = float(c.dia) * 24.0 + float(c.minutos) / 60.0 if c != null else 0.0
+	return ""
 
 
 # ───────────────────────────── rádio ─────────────────────────────
