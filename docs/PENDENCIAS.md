@@ -91,6 +91,11 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ⬜ Sprites novos dos NPCs (o Victor traz as folhas; eu recorto e animo).
   - ⬜ Skill `afterkin-npc` (rascunhar um NPC novo no formato dos JSON de comunidade e diálogo), na etapa 2b.
 - ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
+- ⬜ Depois do marco 3: teste curto de 3D (2–3 dias, num ramo separado) para decidir entre 3D completo, 3D gravado em
+  sprite ou 2D. Montar um personagem completo (corpo base MPFB2 ou pacote modular, uma troca de roupa, uma armadura,
+  uma arma na mão, uma capa com SpringBone, um ataque com animação Mixamo/Quaternius) e uma criatura gerada no Tripo
+  ou Meshy. Referências: folhas de personagem que o Victor vai gerar (frente/lado/costas, pose em T ou A, fundo liso,
+  1024 px+, peças de roupa e armas separadas; eu ajudo no prompt). Pede conta no Tripo ou no Meshy.
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.
 - ⬜ Marco 5 — Ninho e Vampiro Ancestral: prédio-ninho, chefe, três desfechos.
 - ⬜ Marco 6 — Base e cercos: construção do §60, Engenharia, cercos noturnos.
