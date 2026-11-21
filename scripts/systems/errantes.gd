@@ -83,7 +83,7 @@ static func novo(papel: String, p: Vector2, indole: String) -> Dictionary:
 	var nomes: Array = NOMES_F if fem else NOMES_M
 	var a := {"id": "e%d" % _seq, "nome": str(nomes[_rng.randi() % nomes.size()]), "genero": "f" if fem else "m",
 		"papel": papel, "indole": indole, "grupo": "", "com": "", "p": p, "destino": p, "objetivo": "",
-		"fome": _rng.randf_range(50.0, 100.0), "sede": _rng.randf_range(50.0, 100.0), "vida": 100.0,
+		"fome": _rng.randf_range(65.0, 100.0), "sede": _rng.randf_range(65.0, 100.0), "vida": 100.0,
 		"municao": _rng.randi_range(0, 3) if papel != "saqueador" else _rng.randi_range(2, 6),
 		"itens": {}, "opiniao": 0, "real": false, "ferido": false, "lembra": [], "vivo": true}
 	if papel == "andarilho":
@@ -179,7 +179,7 @@ static func _hora() -> void:
 # ───────────────────────────── vida de cada um ─────────────────────────────
 
 static func _necessidades(a: Dictionary) -> void:
-	a["fome"] = maxf(0.0, float(a["fome"]) - 2.2)
+	a["fome"] = maxf(0.0, float(a["fome"]) - 1.8)
 	a["sede"] = maxf(0.0, float(a["sede"]) - 3.5)
 	var z := MundoGen.zona(a["p"])
 	if z != "urbano" and float(a["sede"]) < 60.0 and _rng.randf() < 0.45:
@@ -196,8 +196,13 @@ static func _necessidades(a: Dictionary) -> void:
 	if float(a["sede"]) < 40.0 and int((a["itens"] as Dictionary).get("agua_limpa", 0)) > 0:
 		a["itens"]["agua_limpa"] = int(a["itens"]["agua_limpa"]) - 1
 		a["sede"] = minf(100.0, float(a["sede"]) + 50.0)
+	# quem sobreviveu três semanas sabe se virar: no desespero sempre acha o que mastigar ou beber (pouco)
+	if float(a["fome"]) < 15.0 and _rng.randf() < 0.3:
+		a["fome"] = minf(100.0, float(a["fome"]) + 20.0)
+	if float(a["sede"]) < 15.0 and _rng.randf() < 0.35:
+		a["sede"] = minf(100.0, float(a["sede"]) + 25.0)
 	if float(a["fome"]) <= 0.0 or float(a["sede"]) <= 0.0:
-		a["vida"] = float(a["vida"]) - 3.0
+		a["vida"] = float(a["vida"]) - 2.0
 	elif float(a["vida"]) < 100.0:
 		a["vida"] = minf(100.0, float(a["vida"]) + (1.0 if bool(a["ferido"]) else 3.0))
 	if float(a["vida"]) >= 70.0:
@@ -341,7 +346,7 @@ static func lutar(a: Dictionary, monstro: String, qtd: int) -> String:
 			return "morreu"
 		Simulacao.registrar_noticia(com, "%s foi atacad%s %s %s e escapou ferid%s." % [a["nome"], o, por, lugar, o])
 		return "ferido"
-	if _rng.randf() < 0.7:
+	if _rng.randf() < 0.75:
 		a["vida"] = float(a["vida"]) - _rng.randf_range(10.0, 25.0)
 		a["p"] = (a["p"] as Vector2) + _desvio(150.0)
 		return "fugiu"
@@ -394,7 +399,7 @@ static func _cruzar(a: Dictionary, b: Dictionary) -> void:
 		for k in it.keys():
 			agressor["itens"][k] = int((agressor["itens"] as Dictionary).get(k, 0)) + int(it[k])
 		vitima["itens"] = {}
-		if _rng.randf() < 0.25:
+		if _rng.randf() < 0.15:                      # o assaltante quer a mochila, não o corpo
 			morrer(vitima, "mort%s numa emboscada %s" % [_o(vitima), lugar])
 		else:
 			vitima["vida"] = float(vitima["vida"]) - 25.0

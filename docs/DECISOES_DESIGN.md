@@ -413,8 +413,8 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   morrem de vez. Cada um: nome, gênero, papel (andarilho, catador, caçador, saqueador, expedição), **índole**
   (pacífico, desconfiado, oportunista, hostil), fome, sede, vida, munição, o que carrega, objetivo, posição e a
   **opinião sobre o jogador**.
-- **Longe do jogador (a cada hora de jogo):** necessidades (fome −2,2/h, sede −3,5/h; água em rio/poça, comida achada na
-  cidade ou caçando), objetivo (vasculhar a cidade mais perto, água, caçar, abrigo numa comunidade quando ferido, trocar,
+- **Longe do jogador (a cada hora de jogo):** necessidades (fome −1,8/h, sede −3,5/h; água em rio/poça, comida achada na
+  cidade ou caçando; no desespero sempre acha um pouco — quem sobreviveu três semanas sabe se virar), objetivo (vasculhar a cidade mais perto, água, caçar, abrigo numa comunidade quando ferido, trocar,
   vagar; os bandos emboscam perto da toca ou saem para saquear com fome; quem anda em grupo segue o líder), anda
   **~200 m por hora de jogo** (a mesma velocidade de um corpo), e os encontros são sorteados: **monstros** pelo perigo
   da zona (cidade 3,5%/h, mato 2%/h, ×1,8 de noite; vence, se fere, foge ou morre conforme a força do grupo, a vida, a
@@ -434,8 +434,12 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
 - **Expedições das comunidades são agentes:** saem, andam até a cidade mais perto, vasculham ~4 h e voltam com o que
   acharam; correm os mesmos riscos (ferido, morte). A comunidade espera (até 60 h) e recebe o que veio.
 - Diário: "Marta, uma andarilha, foi morta pelos da noite perto do Mirante do Vale", "Rafael chegou no Santuário do Sol
-  pedindo abrigo e foi aceito", "Rosa voltou da cidade com 2 sucata". Em 5 dias de teste sem o jogador, de ~40 que
-  passaram pelo mapa, ~16 morreram (fome, emboscadas, monstros): calibrar no playtest.
+  pedindo abrigo e foi aceito", "Rosa voltou da cidade com 2 sucata".
+- **Mortalidade (ajuste do Victor, 20/11/2026):** a meta é **10–15% dos errantes em 5 dias de jogo** (~2–3% por dia), com
+  a morte vindo do perigo (monstros, sobretudo à noite, e emboscadas) e a fome como causa rara — senão ninguém dura o
+  bastante para virar relação e cada morte deixa de pesar. Medido com 4 sementes: **13%**, só monstros e emboscadas.
+  Valores: vitória contra monstros = força/(força+monstros) + 15%; perdeu: 60% se fere, senão 75% foge; emboscada mata
+  15% das vezes.
 
 ### Etapa 10 — sobreviventes errantes (valores provisórios; a forma de aparecer foi substituída pela 10b)
 - Aparecem nas **ruas das cidades** (zona urbana, longe das comunidades), a 25–40 m do jogador, com 20% de chance a cada
