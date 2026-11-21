@@ -77,7 +77,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
       citavam um morto como vivo somem ou mudam.
     - ✅ Consequências da morte: luto, quem assume o papel (aprendiz de médico com nível que evolui), parentes que
       investigam e se vingam (atacar, emboscar, contratar saqueadores, cobrar justiça) e comunidade que expulsa o assassino.
-  - ✅ 12 (HASH). Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa
+  - ✅ 12 (`b6e3b8b`). Vida na comunidade: dormir, usar a estrutura, trabalhar por reputação; portão fechado com reputação baixa
     (respostas de 21/11/2026: dormir só com reputação alta; trabalhos de vigia, pesca/caça/roça, recados e consertos;
     tudo em tempo real; abaixo de −20 só se fala pelo portão).
   - ⬜ 13. Log de eventos em user://, exportar o diário e ferramenta de resumo visual.
