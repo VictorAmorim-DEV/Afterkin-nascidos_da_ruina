@@ -76,6 +76,10 @@ static func mestre() -> Dictionary:
 			var nd: Dictionary = n
 			if str(nd.get("papel", "")) == "mestre_medicina" and Reputacao.vivo(str(id), str(nd["id"])):
 				return {"com": str(id), "npc": str(nd["id"]), "nome": str(nd["nome"])}
+	for id in Comunidades.ids():                   # o aprendiz que assumiu e já sabe bastante também ensina
+		var m: Dictionary = Simulacao.estado(str(id)).get("medico", {})
+		if not m.is_empty() and str(m.get("npc", "")) != "" and float(m["nivel"]) >= 0.85 and Reputacao.vivo(str(id), str(m["npc"])):
+			return {"com": str(id), "npc": str(m["npc"]), "nome": Consequencias.nome_npc(str(id), str(m["npc"]))}
 	return {}
 
 

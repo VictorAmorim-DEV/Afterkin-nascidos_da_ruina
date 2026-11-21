@@ -65,6 +65,8 @@ func _ler() -> void:
 				linhas.append("• Procura-se quem saiba tratar ferida.")
 	for r in Comunidades.dados(com).get("mural", []):
 		var rd: Dictionary = r
+		if Consequencias.cita_morto(str(rd["texto"])):
+			continue
 		linhas.append("• %s" % Conversas.texto(str(rd["texto"]), {"com": com, "npc": "", "jogador": j}))
 		if rd.has("rumor"):
 			var a := Rumores.conhecer(str(rd["rumor"]))

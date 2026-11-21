@@ -130,6 +130,14 @@
 					{
 						"rumor": "namorada_jaja"
 					}
+				],
+				"variantes": [
+					{
+						"se": {
+							"morto": "pescador"
+						},
+						"fala": "O Jajá vivia falando em ir buscar a namorada no centro. Agora a mãe dele não dorme por outro motivo."
+					}
 				]
 			},
 			"trocas": {
@@ -270,7 +278,15 @@
 				]
 			},
 			"liberado": {
-				"fala": "Liberado. O portão abre às seis e fecha às seis. Depois disso, nem a Dona Iracema me faz abrir."
+				"fala": "Liberado. O portão abre às seis e fecha às seis. Depois disso, nem a Dona Iracema me faz abrir.",
+				"variantes": [
+					{
+						"se": {
+							"morto": "lider"
+						},
+						"fala": "Liberado. O portão abre às seis e fecha às seis. A Dona Iracema deixou essa regra, e eu vou cumprir."
+					}
+				]
 			},
 			"tenso": {
 				"fala": "Aqui é da minha conta, sim. Ou responde, ou dá meia-volta.",
@@ -616,6 +632,14 @@
 					{
 						"texto": "Então o que eu faço pelo Guga?",
 						"vai": "saidas"
+					}
+				],
+				"variantes": [
+					{
+						"se": {
+							"morto": "lider"
+						},
+						"fala": "(Ele mostra as mãos, tremendo.) Já não costuro nem um botão. A Dona Iracema sabia, que Deus a tenha. Agora você também sabe."
 					}
 				]
 			},

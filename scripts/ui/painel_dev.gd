@@ -197,6 +197,10 @@ func _process(delta: float) -> void:
 		perto = vivos_e.filter(func(a): return (a["p"] as Vector2).distance_to(pj) < 300.0 * IsoMath.METRO).size()
 	linhas.append("Errantes vivos: %d (saqueadores %d, a menos de 300 m: %d) · reputação com os saqueadores: %d" % [
 		vivos_e.size(), bando, perto, Reputacao.valor("saqueadores")])
+	linhas.append("Mortos: %s" % (", ".join(Reputacao.mortos.keys()) if not Reputacao.mortos.is_empty() else "ninguém"))
+	for k in Consequencias.investigacoes:
+		var inv: Dictionary = Consequencias.investigacoes[k]
+		linhas.append("  %s: %s %s (morto: %s, pistas %.1f)" % [k, inv["estado"], inv["modo"], inv["morto"], float(inv["pistas"])])
 	linhas.append("Medicina: passo %d/4 · %s · tarefa: %s · pedidos: %s" % [Medicina.passo(),
 		", ".join(Medicina.habilidades) if not Medicina.habilidades.is_empty() else "nenhuma",
 		Medicina.texto_tarefa() if not Medicina.tarefa.is_empty() else "—", ", ".join(Medicina.pedidos.keys())])

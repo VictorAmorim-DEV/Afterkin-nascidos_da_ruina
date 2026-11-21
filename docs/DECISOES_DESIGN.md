@@ -485,3 +485,43 @@ Se o marco 1 não for divertido, nada depois salva o jogo.
   e as conversas. Atender o pedido: +10 de reputação além do tratamento. Ensinar NPCs fica para depois.
 - **Modo dev (F1):** linha da Medicina no painel e botões "Cumprir a tarefa", "Próxima habilidade", "Esquecer" e
   "Ferir alguém".
+
+### Etapa 11b — consequências pessoais (retorno do teste de 21/11/2026; valores provisórios)
+- **Respostas do Victor:** a vítima se recusa a falar, desculpas com reparação, mentir/se justificar e ameaçar; na
+  morte, parentes investigam e se vingam, luto e falas que mudam, alguém assume o papel e a comunidade reage ao
+  assassino (**muda a Q52**: agora há hostilidade ativa contra quem matou gente da comunidade); vingança por ataque,
+  emboscada, saqueadores contratados ou cobrança de justiça. *"Se o médico morre e tem aprendiz, o aprendiz assume
+  com a experiência que tem, menor, e vai evoluindo com o tempo e as ações."* Sistema em `Consequencias`.
+- **Memória:** cada lembrança guarda o **alvo** e se o NPC foi **vítima**, **viu** ou **ouviu**.
+- **Cobrança:** vítima de agressão (ou furto/ameaça) e quem viu um assassinato **não conversam** até você se redimir;
+  quem viu uma agressão cobra toda vez, mas deixa mudar de assunto; quem só ouviu pergunta uma vez. Falam do alvo
+  pelo nome ou pelo parentesco ("Você bateu no meu filho. Eu vi."). Respostas: **desculpa** (aceita conforme a
+  gravidade e a reputação), **desculpa com reparação** (o item mais barato da mochila que chegue ao valor: agressão
+  12 para a vítima, 6 para quem viu; assassinato visto 45), **mentir** (só cola com quem ouviu, 60%; com quem viu,
+  −3 de reputação) e **ameaçar** (o NPC fica com medo por 3 dias e fala de cabeça baixa, −5 de reputação e, 4–8 h
+  depois, o boato "anda ameaçando os moradores", −6).
+- **Morte de NPC com nome** (pelo jogador, de ferimento ou na cidade): diário ("A Vila enterrou Dona Iracema"),
+  mural "em memória", abertura de luto uma vez por NPC (parente, quem assumiu ou morador) e conversas ouvidas de luto.
+  Falas, opções, conversas ouvidas e recados do mural que **citam um morto como vivo** somem; as falas importantes
+  ganham versão alternativa (`"variantes"` no nó, condição `"morto"`/`"vivo"`).
+- **Quem assume:** a liderança passa ao guarda do dia (senão o próximo da lista; o campo `"sucessor"` no NPC manda);
+  o turno de portão do guarda morto passa a outro guarda ou morador; o título na conversa muda ("líder"). Morto o
+  Caio, o orgulho do Santuário deixa de segurar o pedido de ajuda.
+- **Médico e aprendiz:** o médico tem **nível** (1 = formado) e, com 5% por turno, começa a ensinar um morador
+  (catador, pescador...), que sobe ~0,12 por dia até 0,6. Morto o médico, o aprendiz assume com o nível que tem
+  (mínimo 0,25), cura no ritmo do nível e melhora 0,03 a cada ferido tratado; com 0,85 ou mais passa a ensinar o
+  jogador. Sem aprendiz, a Medicina some da comunidade.
+- **Parentes investigam** (quem não viu): perguntam ao jogador uma vez por dia ("Não vi nada", "Vi um bando de
+  saqueadores" — 60% de acreditar —, "Fui eu"); acham pistas (8% por turno; com pistas suficientes, 60% de acertar,
+  senão culpam o bando); descobrem pelo boato com o nome do morto; desistem em 10 dias. Se a testemunha morre antes
+  de contar, ninguém fica sabendo.
+- **Vingança** (sorteada pelo papel; quem confessou tende à justiça): **atacar** quando te vê; **emboscar** (sai da
+  comunidade como agente dos errantes atrás do seu rastro por 3 dias; voltando, passa a atacar quando te vê);
+  **contratar** um bando de saqueadores (caçam você por 5 dias); **justiça** (conta às outras comunidades — meio
+  boato de assassinato em cada — e cobra uma reparação de valor 60; recusar ou não pagar em 5 dias leva a outro
+  modo). Pagar encerra a vingança (+10 de reputação).
+- **Comunidade reage ao assassino:** com o assassinato conhecido e reputação ≤ −30, o portão fecha quando você chega
+  perto e, dentro dos muros, o guarda avisa ("Sai agora, ou vai sair carregado") e ataca 8 s depois. Moradores
+  hostis não fogem quando apanham (só muito feridos); o guarda às vezes atira.
+- **Morto não volta:** um morador que consta como morto e aparece no mundo some na hora (o caso da Dona Iracema não
+  se reproduziu). O modo dev (F1) lista os mortos e as investigações.

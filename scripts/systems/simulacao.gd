@@ -36,10 +36,15 @@ static func _iniciar() -> void:
 		var d := Comunidades.dados(str(id))
 		var s: Dictionary = d.get("simulacao", {})
 		var hab: Array = []
+		var medico: Dictionary = {}
 		for n in d.get("npcs", []):
+			if not Reputacao.vivo(str(id), str((n as Dictionary)["id"])):
+				continue
 			for h in (n as Dictionary).get("habilidades", []):
 				if not hab.has(h):
 					hab.append(h)
+				if str(h) == "medicina":
+					medico = {"npc": str((n as Dictionary)["id"]), "nivel": 1.0}
 		var rel: Dictionary = {}
 		var tipos := {"aliada": 40, "neutra": 0, "rival": -40}
 		var rd: Dictionary = d.get("relacoes", {})
@@ -52,7 +57,8 @@ static func _iniciar() -> void:
 				"tratado": false, "hosp": ""})
 		com[str(id)] = {"comida": float(s.get("comida", 5.0)), "remedio": int(s.get("remedio", 0)),
 			"municao": int(s.get("municao", 0)), "pop": int(s.get("pop", 10)),
-			"producao": float(s.get("producao", 1.0)), "feridos": feridos, "hab": hab, "rel": rel, "acao": {}}
+			"producao": float(s.get("producao", 1.0)), "feridos": feridos, "hab": hab, "rel": rel, "acao": {},
+			"medico": medico, "aprendiz": {}}
 	_ultimo_h = Reputacao.agora_h()
 
 
@@ -90,6 +96,7 @@ static func passo() -> void:
 		turnos += 1
 		for id in com:
 			_turno(str(id), _ultimo_h)
+		Consequencias.turno(_ultimo_h)
 
 
 static func _turno(id: String, h: float) -> void:
@@ -100,6 +107,7 @@ static func _turno(id: String, h: float) -> void:
 	if float(c["comida"]) <= 0.0 and randf() < 0.1:
 		_registrar(id, "A fome aperta %s: as porções foram cortadas pela metade." % Comunidades.em_nome(id))
 	_cuidar_feridos(id, f)
+	_ensinar(id, f)
 	# ação em andamento
 	var a: Dictionary = c["acao"]
 	if not a.is_empty():
@@ -124,11 +132,15 @@ static func _cuidar_feridos(id: String, f: float) -> void:
 		var fd: Dictionary = fr
 		var onde: String = fd["hosp"] if str(fd["hosp"]) != "" else id
 		var medico: bool = (com[onde]["hab"] as Array).has("medicina")
+		var nivel := nivel_medico(onde)
 		if bool(fd["tratado"]) or (medico and int(com[onde]["remedio"]) > 0):
 			if not bool(fd["tratado"]) and medico:
 				com[onde]["remedio"] = int(com[onde]["remedio"]) - 1     # o tratamento gasta um remédio
 				fd["tratado"] = true
-			fd["grav"] = float(fd["grav"]) - 0.25 * f
+				_praticar(onde)
+			# quem tratou com as próprias mãos (jogador) cura no ritmo cheio; o médico, no ritmo da experiência dele
+			var ritmo := 0.25 * (nivel if medico and not bool(fd.get("pelo_jogador", false)) else 1.0)
+			fd["grav"] = float(fd["grav"]) - ritmo * f
 		else:
 			fd["grav"] = float(fd["grav"]) + 0.08 * f
 		if float(fd["grav"]) >= 1.0:
@@ -148,9 +160,80 @@ static func _cuidar_feridos(id: String, f: float) -> void:
 static func _morreu(id: String, fd: Dictionary, como: String) -> void:
 	var c: Dictionary = com[id]
 	c["pop"] = maxi(0, int(c["pop"]) - 1)
+	_registrar(id, "%s, %s, %s." % [fd["nome"], Comunidades.de(id), como])
 	if str(fd.get("quem", "")) != "":
 		Reputacao.npc_morreu(id, str(fd["quem"]))
-	_registrar(id, "%s, %s, %s." % [fd["nome"], Comunidades.de(id), como])
+		Consequencias.morte(id, str(fd["quem"]), "ferimento")
+
+
+# ───────────────────────────── médico e aprendiz ─────────────────────────────
+
+const PAPEIS_APRENDIZ := ["catadora", "catador", "pescadora", "pescador", "cacador", "comerciante"]
+
+
+## Experiência de quem cuida dos feridos da comunidade (1 = médico formado; o aprendiz começa bem abaixo).
+static func nivel_medico(id: String) -> float:
+	var m: Dictionary = estado(id).get("medico", {})
+	return float(m.get("nivel", 0.0)) if not m.is_empty() else 0.0
+
+
+## O médico ensina um aprendiz da comunidade (Q44: quem aprende fica no lugar dele quando ele morrer).
+static func _ensinar(id: String, f: float) -> void:
+	var c: Dictionary = com[id]
+	var m: Dictionary = c.get("medico", {})
+	if m.is_empty() or str(m.get("npc", "")) == "" or float(m["nivel"]) < 0.9:
+		return
+	var ap: Dictionary = c.get("aprendiz", {})
+	if ap.is_empty():
+		if randf() < 0.05:
+			var quem := _escolher_quem(id, PAPEIS_APRENDIZ)
+			if quem != "":
+				c["aprendiz"] = {"npc": quem, "nivel": 0.1}
+				_registrar(id, "%s começou a ensinar %s a cuidar de feridas." % [_nome_npc(id, str(m["npc"])), _nome_npc(id, quem)])
+		return
+	if not Reputacao.vivo(id, str(ap["npc"])):
+		c["aprendiz"] = {}
+		return
+	ap["nivel"] = minf(0.6, float(ap["nivel"]) + 0.12 * f)     # ~0,12 por dia de estudo, até 0,6 com o mestre vivo
+
+
+## Quem cuida dos feridos aprende com a prática (o aprendiz que assumiu vai melhorando).
+static func _praticar(id: String) -> void:
+	var m: Dictionary = estado(id).get("medico", {})
+	if not m.is_empty():
+		m["nivel"] = minf(1.0, float(m["nivel"]) + 0.03)
+
+
+## O médico morreu: o aprendiz assume com a experiência que tem; sem aprendiz, a Medicina some dali (Q44).
+## Devolve o id de quem assumiu ("" se ninguém).
+static func perdeu_medico(id: String, npc: String) -> String:
+	var c := estado(id)
+	if c.is_empty():
+		return ""
+	var m: Dictionary = c.get("medico", {})
+	if m.is_empty() or str(m.get("npc", "")) != npc:
+		return ""
+	var ap: Dictionary = c.get("aprendiz", {})
+	if not ap.is_empty() and Reputacao.vivo(id, str(ap["npc"])):
+		c["medico"] = {"npc": str(ap["npc"]), "nivel": maxf(0.25, float(ap["nivel"]))}
+		c["aprendiz"] = {}
+		return str(ap["npc"])
+	c["medico"] = {}
+	(c["hab"] as Array).erase("medicina")
+	return ""
+
+
+## Tira um NPC que morreu das listas da simulação (feridos, ação em andamento, aprendiz).
+static func esquecer_npc(id: String, npc: String) -> void:
+	var c := estado(id)
+	if c.is_empty():
+		return
+	c["feridos"] = (c["feridos"] as Array).filter(func(x): return str((x as Dictionary)["quem"]) != npc)
+	var a: Dictionary = c.get("acao", {})
+	if not a.is_empty() and (a.get("quem", []) as Array).has(npc):
+		(a["quem"] as Array).erase(npc)
+	if str((c.get("aprendiz", {}) as Dictionary).get("npc", "")) == npc:
+		c["aprendiz"] = {}
 
 
 ## Um sobrevivente encaminhado pelo jogador chegou: a comunidade cresce e registra no diário.
@@ -178,6 +261,7 @@ static func tratar(id: String, npc: String, reducao: float = 0.15) -> bool:
 		var fd: Dictionary = fr
 		if str(fd["quem"]) == npc:
 			fd["tratado"] = true
+			fd["pelo_jogador"] = true
 			fd["grav"] = maxf(0.05, float(fd["grav"]) - reducao)
 			_registrar(id, "Alguém de fora tratou %s, %s." % [fd["nome"], Comunidades.de(id)])
 			Medicina.tratou(id, npc)
@@ -219,7 +303,7 @@ static func _decidir(id: String, h: float) -> void:
 	# 1) ferido e ninguém que saiba tratar: levar a quem sabe (o orgulho só cede com o recado ou no desespero)
 	if grave > 0.0 and not tem_med:
 		var destino := _quem_tem("medicina", id)
-		var orgulho_cedeu: bool = Conversas.flags.has("caio_aceita_ajuda") or id != "santuario_do_sol" \
+		var orgulho_cedeu: bool = Conversas.flags.has("caio_aceita_ajuda") or id != "santuario_do_sol" 			or not Reputacao.vivo(id, "lider") \
 			or (grave > 0.75 and randf() < 0.08)
 		if destino != "" and orgulho_cedeu and int(c["rel"].get(destino, 0)) > -30:
 			_levar_ferido(id, destino, h)
@@ -318,6 +402,9 @@ static func _concluir(id: String, a: Dictionary) -> void:
 		"aprender":
 			if not (c["hab"] as Array).has(str(a["hab"])):
 				(c["hab"] as Array).append(str(a["hab"]))
+			if str(a["hab"]) == "medicina" and (c.get("medico", {}) as Dictionary).is_empty():
+				c["medico"] = {"npc": str((a.get("quem", []) as Array).front()) if not (a.get("quem", []) as Array).is_empty() else "",
+					"nivel": 0.45}
 			_registrar(id, "%s agora tem alguém que sabe %s." % [_Cap(Comunidades.com_artigo(id)), "Medicina" if a["hab"] == "medicina" else a["hab"]])
 
 
@@ -433,6 +520,13 @@ static func restaurar(d: Dictionary) -> void:
 			c[k] = int(c.get(k, 0))
 		for k in ["comida", "producao"]:
 			c[k] = float(c.get(k, 0.0))
+		if not c.has("medico"):                    # saves de antes da etapa 11b
+			c["medico"] = {}
+			c["aprendiz"] = {}
+			if (c.get("hab", []) as Array).has("medicina"):
+				for n in Comunidades.dados(str(id)).get("npcs", []):
+					if ((n as Dictionary).get("habilidades", []) as Array).has("medicina"):
+						c["medico"] = {"npc": str((n as Dictionary)["id"]), "nivel": 1.0}
 		var rel: Dictionary = {}
 		for o in (c.get("rel", {}) as Dictionary):
 			rel[str(o)] = int(c["rel"][o])

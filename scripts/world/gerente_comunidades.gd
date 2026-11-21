@@ -45,7 +45,8 @@ func _process(delta: float) -> void:
 		for p in get_tree().get_nodes_in_group("portao"):
 			var pt := p as PortaoNo
 			if pt != null and pt.comunidade != "":
-				pt.definir_aberto(Comunidades.portao_aberto(pt.comunidade, float(ciclo.minutos)))
+				pt.definir_aberto(Comunidades.portao_aberto(pt.comunidade, float(ciclo.minutos)) \
+					and not Consequencias.portao_fechado_para(pt.comunidade, pj))
 
 
 static func _dist_rect(p: Vector2, r: Rect2) -> float:
@@ -117,6 +118,13 @@ func _conversa_ouvida() -> void:
 
 
 func _falar_par(id: String, na: Npc, nb: Npc, j: Node) -> bool:
+	var lt := Consequencias.conversa_luto(id)
+	if not lt.is_empty():
+		na.falar(str(lt[0]), 4.5)
+		get_tree().create_timer(2.4).timeout.connect(func():
+			if is_instance_valid(nb):
+				nb.falar(str(lt[1]), 4.0))
+		return true
 	var n := Rumores.novidade_para(id)
 	if not n.is_empty():
 		na.falar("Ficou sabendo? %s" % str(n["texto"]), 5.0)
@@ -133,6 +141,8 @@ func _falar_par(id: String, na: Npc, nb: Npc, j: Node) -> bool:
 		if Conversas.flags.has(chave):
 			continue
 		var cv: Dictionary = lista[i]
+		if Consequencias.cita_morto(str(cv["a"]) + " " + str(cv["b"])):
+			continue                               # fala de quem já morreu como se estivesse vivo
 		Conversas.flags[chave] = true
 		na.falar(str(cv["a"]), 4.5)
 		get_tree().create_timer(2.4).timeout.connect(func():

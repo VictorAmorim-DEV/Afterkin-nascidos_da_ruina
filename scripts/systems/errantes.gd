@@ -225,6 +225,13 @@ static func _objetivo(a: Dictionary) -> void:
 	if str(a["papel"]) == "expedicao":
 		_objetivo_expedicao(a)
 		return
+	if str(a["papel"]) == "vingador":
+		_objetivo_vingador(a)
+		return
+	if str(a["papel"]) == "saqueador" and contratado(str(a["grupo"])) and _rng.randf() < 0.6:
+		a["objetivo"] = "cacar_jogador"           # o bando foi pago para caçar o jogador
+		a["destino"] = _rastro_jogador(a["p"])
+		return
 	if str(a["grupo"]) != "" and not _lider(a):
 		var l := _lider_de(a)
 		if not l.is_empty():
@@ -459,8 +466,9 @@ static func morrer(a: Dictionary, como: String) -> void:
 		quem = "do bando de saqueadores"
 	Simulacao.registrar_noticia(_comunidade_mais_perto(a["p"]), "%s, %s, foi %s." % [a["nome"], quem, como] \
 		if str(a["papel"]) != "expedicao" else "%s não voltou da cidade: foi %s." % [a["nome"], como])
-	if str(a["papel"]) == "expedicao" and str(a.get("npc", "")) != "":
+	if str(a["papel"]) in ["expedicao", "vingador"] and str(a.get("npc", "")) != "":
 		Reputacao.npc_morreu(str(a["com"]), str(a["npc"]))
+		Consequencias.morte(str(a["com"]), str(a["npc"]), "jogador" if bool(a.get("morto_por_jogador", false)) else "cidade")
 
 
 # ───────────────────────────── expedições das comunidades ─────────────────────────────
@@ -484,6 +492,68 @@ static func expedicao(com: String, alvo: String, npc: String, nome: String, fem:
 	a["destino"] = _cidade_mais_perto(a["p"])
 	a["saiu_h"] = Reputacao.agora_h()
 	return a["id"]
+
+
+# ───────────────────────────── vingança (Consequencias, etapa 11b) ─────────────────────────────
+
+## Um parente sai da comunidade atrás do jogador (vingança "emboscar"). Volta em 3 dias se não achar. Devolve o id.
+static func vingador(com: String, npc: String, nome: String, fem: bool, frase: String) -> String:
+	iniciar()
+	var g := Comunidades.geo(com)
+	var a := novo("vingador", (g["centro"] as Vector2) if not g.is_empty() else _ponto_estrada(), "hostil")
+	a["com"] = com
+	a["npc"] = npc
+	a["nome"] = nome
+	a["genero"] = "f" if fem else "m"
+	a["municao"] = _rng.randi_range(2, 4)
+	a["opiniao"] = -100
+	a["frase"] = frase
+	a["ate_h"] = Reputacao.agora_h() + 72.0
+	a["objetivo"] = "cacar_jogador"
+	a["destino"] = _rastro_jogador(a["p"])
+	return a["id"]
+
+
+static func _objetivo_vingador(a: Dictionary) -> void:
+	if Reputacao.agora_h() > float(a.get("ate_h", 0.0)):
+		if str(a["objetivo"]) == "voltar":
+			a["vivo"] = false
+			a["voltou"] = true                     # a Consequencias lê e o põe de volta em casa
+			return
+		a["objetivo"] = "voltar"
+		a["destino"] = Comunidades.geo(str(a["com"]))["centro"]
+		return
+	a["objetivo"] = "cacar_jogador"
+	a["destino"] = _rastro_jogador(a["p"])
+
+
+## Onde procurar o jogador: perto de onde ele está, com um erro que diminui quanto mais perto o caçador já está.
+static func _rastro_jogador(p: Vector2) -> Vector2:
+	var arv := Engine.get_main_loop() as SceneTree
+	var j: Node2D = arv.get_first_node_in_group("jogador") if arv != null else null
+	if j == null:
+		return p + _desvio(400.0)
+	var pj := IsoMath.tela_para_mundo(j.global_position)
+	var erro := clampf(p.distance_to(pj) * 0.15, 5.0 * IsoMath.METRO, 300.0 * IsoMath.METRO)
+	return pj + _desvio(erro / IsoMath.METRO)
+
+
+## Uma comunidade paga um bando de saqueadores para caçar o jogador até 'ate_h'. Devolve o id do bando ("" se não há).
+static func contratar(_com: String, ate_h: float) -> String:
+	iniciar()
+	for gid in grupos:
+		var g: Dictionary = grupos[gid]
+		if str(g.get("faccao", "")) != "saqueadores":
+			continue
+		var vivos_b := (g["membros"] as Array).filter(func(id): return agentes.has(id) and bool(agentes[id]["vivo"]))
+		if vivos_b.size() >= 2:
+			g["contrato_ate"] = ate_h
+			return str(gid)
+	return ""
+
+
+static func contratado(gid: String) -> bool:
+	return gid != "" and float((grupos.get(gid, {}) as Dictionary).get("contrato_ate", -1.0)) > Reputacao.agora_h()
 
 
 static func _objetivo_expedicao(a: Dictionary) -> void:

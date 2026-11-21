@@ -16,14 +16,15 @@ const EVENTOS := {
 	"agressao": {"peso": -15, "viu": "viu você atacar gente daqui", "boato": "atacou gente da comunidade"},
 	"assassinato": {"peso": -45, "viu": "viu você matar gente daqui", "boato": "matou gente da comunidade"},
 	"defesa": {"peso": 4, "viu": "viu você enfrentar um monstro perto do muro", "boato": "defendeu a comunidade"},
+	"ameaca": {"peso": -6, "viu": "viu você ameaçar gente daqui", "boato": "anda ameaçando os moradores"},
 }
 const ATRASO_H := Vector2(1.0, 2.0)            ## horas de jogo até a testemunha contar
 const ALIADA := {"aliada": [12.0, 0.5], "neutra": [24.0, 0.25]}   ## [atraso em h, fração do peso]
 
 static var rep: Dictionary = {}                ## comunidade -> int (-100 a 100)
 static var humana: float = 0.0                 ## reputação humana geral
-static var memorias: Dictionary = {}           ## "comunidade/npc" -> [{ev, como ("viu"/"ouviu"), dia, cobrado}]
-static var pendentes: Array = []               ## [{com, ev, peso, hora, testemunha, origem}]
+static var memorias: Dictionary = {}           ## "comunidade/npc" -> [{ev, como ("vitima"/"viu"/"ouviu"), dia, alvo, cobrado, resolvido}]
+static var pendentes: Array = []               ## [{com, ev, peso, hora, testemunha, origem, alvo}]
 static var mortos: Dictionary = {}             ## "comunidade/npc" -> true
 
 
@@ -51,10 +52,11 @@ static func memoria(com: String, npc: String) -> Array:
 	return memorias.get("%s/%s" % [com, npc], [])
 
 
-static func _lembrar(chave: String, ev: String, como: String) -> void:
+## 'alvo': id do NPC que sofreu (agressão, assassinato, ameaça) na mesma comunidade; "" se não houver.
+static func _lembrar(chave: String, ev: String, como: String, alvo: String = "") -> void:
 	if not memorias.has(chave):
 		memorias[chave] = []
-	(memorias[chave] as Array).append({"ev": ev, "como": como, "dia": _dia(), "cobrado": false})
+	(memorias[chave] as Array).append({"ev": ev, "como": como, "dia": _dia(), "alvo": alvo, "cobrado": false, "resolvido": ""})
 
 
 static func _ciclo() -> Node:
@@ -75,8 +77,9 @@ static func agora_h() -> float:
 
 # ───────────────────────────── testemunhas ─────────────────────────────
 
-## O jogador fez 'ev' no ponto 'p' (mundo). Devolve quantos viram. 'vitima' (Npc) também vê, se sobreviver.
-static func registrar(ev: String, p: Vector2, vitima: Node = null) -> int:
+## O jogador fez 'ev' no ponto 'p' (mundo). Devolve quantos viram. 'vitima' (Npc) também vê, se sobreviver, e
+## lembra como vítima. 'alvo' é o id de quem sofreu quando a vítima não pode lembrar (morreu).
+static func registrar(ev: String, p: Vector2, vitima: Node = null, alvo: String = "") -> int:
 	var arv := Engine.get_main_loop() as SceneTree
 	var j := arv.get_first_node_in_group("jogador") as Node2D
 	if j == null or not EVENTOS.has(ev):
@@ -89,17 +92,20 @@ static func registrar(ev: String, p: Vector2, vitima: Node = null) -> int:
 		if npc == vitima or _viu(npc, j, p):
 			viram.append(npc)
 	viram.append_array(_dono_acordado(ev, p, viram))
+	if vitima != null and alvo == "":
+		alvo = str((vitima as Npc).dados.get("id", ""))
 	var por_com: Dictionary = {}
 	for npc in viram:
 		var chave := "%s/%s" % [npc.comunidade, str(npc.dados.get("id", ""))]
-		_lembrar(chave, ev, "viu")
+		_lembrar(chave, ev, "vitima" if npc == vitima else "viu", alvo)
 		if not por_com.has(npc.comunidade):
 			por_com[npc.comunidade] = npc
 	for com in por_com:
 		var t: Npc = por_com[com]
 		pendentes.append({"com": com, "ev": ev, "peso": int(EVENTOS[ev]["peso"]),
 			"hora": agora_h() + randf_range(ATRASO_H.x, ATRASO_H.y),
-			"testemunha": "%s/%s" % [com, str(t.dados.get("id", ""))], "origem": com})
+			"testemunha": "%s/%s" % [com, str(t.dados.get("id", ""))], "origem": com, "alvo": alvo})
+	Consequencias.testemunhado(ev, alvo, viram)
 	if not viram.is_empty():
 		var nomes: PackedStringArray = []
 		for npc in viram.slice(0, 2):
@@ -169,7 +175,8 @@ static func passo() -> void:
 		for npc in Comunidades.dados(com).get("npcs", []):
 			var chave := "%s/%s" % [com, str((npc as Dictionary)["id"])]
 			if chave != t and not mortos.has(chave):
-				_lembrar(chave, str(bd["ev"]), "ouviu")
+				_lembrar(chave, str(bd["ev"]), "ouviu", str(bd.get("alvo", "")) if str(bd["origem"]) == com else "")
+		Consequencias.boato_correu(com, bd)
 		if str(bd["origem"]) == com:           # primeira vez que o boato corre: segue para as outras comunidades
 			humana = clampf(humana + float(bd["peso"]) * 0.5, -100.0, 100.0)
 			if int(bd["peso"]) < 0:
@@ -182,7 +189,7 @@ static func passo() -> void:
 					var peso := roundi(float(bd["peso"]) * float(par[1]))
 					if peso != 0:
 						novos.append({"com": str(outra), "ev": bd["ev"], "peso": peso, "hora": h + float(par[0]),
-							"testemunha": "", "origem": com})
+							"testemunha": "", "origem": com, "alvo": bd.get("alvo", "")})
 	pendentes = restam + novos
 
 

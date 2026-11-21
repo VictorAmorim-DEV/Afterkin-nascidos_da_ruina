@@ -18,6 +18,7 @@ extends RefCounted
 ## Condição "lembra": o NPC lembra de um evento (furto, agressao, assassinato, defesa) que viu ou ouviu.
 ## Condição "ferido": "sem_tratamento", "tratado" ou "nao" (o próprio NPC, na Simulacao).
 ## Efeito {"tratar": "<npc>"}: o jogador tratou o ferido (Simulacao.tratar).
+## Condições "vivo"/"morto": "<npc>" da mesma comunidade. Nó com "variantes": [{"se", "fala"}] troca a fala.
 ## Condição "tem_arma": machado, picareta ou pistola na mão. Efeito {"acao": "..."}: o próprio NPC trata (Errante.acao).
 ## Efeitos da Medicina (etapa 11): {"med": "aceitar" | "entregar" | "aula"} (cadeia do mestre) e {"med_tratar": item}.
 
@@ -98,6 +99,10 @@ static func vale(se: Dictionary, ctx: Dictionary) -> bool:
 					if str((m as Dictionary)["ev"]) == str(v):
 						achou = true
 				if not achou: return false
+			"vivo":
+				if not Reputacao.vivo(com, str(v)): return false
+			"morto":
+				if Reputacao.vivo(com, str(v)): return false
 			"tem_arma":
 				var eq: String = j.inventario.id_equipado() if j != null else ""
 				if (eq in ["machado", "picareta", "pistola"]) != bool(v): return false
@@ -151,6 +156,10 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 				msgs.append_array(no.acao(str(ed["acao"]), ctx))
 		if ed.has("tratar"):
 			Simulacao.tratar(str(ctx["com"]), str(ed["tratar"]))
+		if ed.has("investig"):
+			msgs.append_array(Consequencias.responder_parente(ed, ctx, ctx.get("_nos", {})))
+		if ed.has("cobranca"):
+			msgs.append_array(Consequencias.responder(ed, ctx, ctx.get("_nos", {})))
 		if ed.has("med"):
 			msgs.append_array(Medicina.efeito(str(ed["med"]), ctx))
 		if ed.has("med_tratar"):

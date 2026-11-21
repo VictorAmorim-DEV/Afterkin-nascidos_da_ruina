@@ -25,6 +25,9 @@ var vida: float = 40.0
 var _fuga_t := 0.0                            ## segundos fugindo do jogador depois de apanhar
 var _t_agressao := -99.0                      ## quando foi a última agressão registrada (s, para não repetir a cada golpe)
 var fora := false                             ## saiu em expedição ou viagem (Simulacao): some até voltar
+var furioso := false                          ## ataca o jogador (Consequencias: vingança, guarda expulsando o assassino)
+var _t_golpe := 0.0
+var _t_grito_n := 0.0
 
 var _alvo := Vector2.INF                      ## mundo
 var _passo := 0.0
@@ -77,7 +80,8 @@ func _tarefa_agora() -> String:
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
 	var fase: int = int(ciclo.fase()) if ciclo != null else 2
 	var rotina: Dictionary = dados.get("rotina", {})
-	return str(rotina.get(Comunidades.CHAVES_FASE[fase], "praca"))
+	var chave: String = Comunidades.CHAVES_FASE[fase]
+	return Consequencias.rotina(comunidade, str(dados.get("id", "")), chave, str(rotina.get(chave, "praca")))
 
 
 ## Ponto (mundo) da tarefa na geometria da comunidade.
@@ -109,7 +113,7 @@ func posicionar() -> void:
 
 ## Saiu ou voltou de uma expedição/viagem da Simulacao: some ou reaparece em casa.
 func _conferir_fora() -> void:
-	var f := Simulacao.ausente(comunidade, str(dados.get("id", "")))
+	var f := Simulacao.ausente(comunidade, str(dados.get("id", ""))) or Consequencias.ausente(comunidade, str(dados.get("id", "")))
 	if f == fora:
 		return
 	fora = f
@@ -139,6 +143,11 @@ func _physics_process(delta: float) -> void:
 	if _t_pensar <= 0.0:
 		_t_pensar = 1.0
 		_conferir_fora()
+		if not Reputacao.vivo(comunidade, str(dados.get("id", ""))) and not morto and comunidade != "":
+			queue_free()                      # consta como morto: não pode estar andando por aí
+			return
+		var jh := get_tree().get_first_node_in_group("jogador") as Node2D
+		furioso = comunidade != "" and not morto and Consequencias.hostil(comunidade, str(dados.get("id", "")), jh, self)
 		var t := _tarefa_agora()
 		if t != tarefa:
 			tarefa = t
@@ -147,6 +156,12 @@ func _physics_process(delta: float) -> void:
 				_dormir(false)                # acordou: sai de casa
 	if dormindo or morto or fora:
 		return
+	if furioso and vida >= 12.0:
+		var j := get_tree().get_first_node_in_group("jogador") as Node2D
+		if j != null and not j.morto and j.dirigindo == null and _dist_jogador() < 16.0 * M:
+			conversando = false
+			_atacar(delta, j)
+			return
 	if _fuga_t > 0.0:
 		_fugir(delta)
 		return
@@ -183,6 +198,34 @@ func _physics_process(delta: float) -> void:
 	_passo += VEL * delta * 0.09
 	_olhar = dir
 	_animar(true)
+
+
+## Partindo para cima do jogador: corre até ele e golpeia; guarda às vezes atira.
+func _atacar(delta: float, j: Node2D) -> void:
+	_t_golpe -= delta
+	_t_grito_n -= delta
+	if _t_grito_n <= 0.0:
+		_t_grito_n = 8.0
+		falar(Consequencias.grito(comunidade, str(dados.get("id", ""))), 2.5)
+	var d := _dist_jogador()
+	var guarda := str(dados.get("papel", "")).begins_with("guarda")
+	if guarda and d < 9.0 * M and d > 2.0 * M and randf() < 0.008:
+		j.receber_dano(14.0, "humano")
+		falar("*BANG*", 0.8)
+		return
+	if d > 1.1 * M:
+		var dir := IsoMath.tela_para_mundo(j.global_position - global_position).normalized()
+		velocity = IsoMath.mundo_para_tela(dir * VEL * 1.9)
+		move_and_slide()
+		_passo += VEL * 1.9 * delta * 0.09
+		_olhar = dir
+		_animar(true)
+	elif _t_golpe <= 0.0:
+		_t_golpe = 1.2
+		velocity = Vector2.ZERO
+		j.receber_dano(8.0, "humano")
+		_olhar = IsoMath.tela_para_mundo(j.global_position - global_position).normalized()
+		_animar(false)
 
 
 ## Correndo para longe do jogador (atacado).
@@ -223,7 +266,7 @@ func receber_dano(n: float, por_jogador: bool = true) -> void:
 	if vida <= 0.0:
 		_morrer()
 		return
-	_fuga_t = 6.0
+	_fuga_t = 6.0 if not furioso or vida < 12.0 else 0.0     # quem quer briga não foge (só muito ferido)
 	var agora := Time.get_ticks_msec() / 1000.0
 	if por_jogador and comunidade != "" and agora - _t_agressao > 20.0:
 		_t_agressao = agora
@@ -239,12 +282,15 @@ func _morrer() -> void:
 	_sprite.animation = &"caido" if _sprite.sprite_frames.has_animation(&"caido") else _sprite.animation
 	_sprite.frame = 0
 	var id := str(dados.get("id", ""))
-	if not id.begins_with("figurante") and comunidade != "":
+	var com_nome := not id.begins_with("figurante") and comunidade != ""
+	if com_nome:
 		Reputacao.npc_morreu(comunidade, id)
-	Reputacao.registrar("assassinato", _mundo())
+	Reputacao.registrar("assassinato", _mundo(), null, id if com_nome else "")
+	if com_nome:
+		Consequencias.morte(comunidade, id, "jogador")
 	var j := get_tree().get_first_node_in_group("jogador")
 	if j != null:
-		j.aviso("%s está morto." % nome())
+		j.aviso("%s está %s." % [nome(), "morta" if str(dados.get("genero", "m")) == "f" else "morto"])
 	var t := create_tween()
 	t.tween_interval(20.0)
 	t.tween_property(self, "modulate:a", 0.0, 2.0)
@@ -340,7 +386,7 @@ func prioridade_interacao() -> int:
 
 
 func texto_interacao() -> String:
-	return "E — falar com %s" % nome() if _e_o_alvo() and not conversando else ""
+	return "E — falar com %s" % nome() if _e_o_alvo() and not conversando and not furioso else ""
 
 
 ## Fala curta pelo papel e pela hora (provisório até o diálogo em árvore, etapa 5).

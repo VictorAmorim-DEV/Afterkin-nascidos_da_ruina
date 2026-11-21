@@ -24,7 +24,7 @@ static func de_agente(a: Dictionary) -> Errante:
 	var e := Errante.new()
 	e.agente = a
 	var titulos := {"andarilho": "andarilho", "catador": "catador", "cacador": "caçador", "saqueador": "saqueador",
-		"expedicao": "de uma comunidade"}
+		"expedicao": "de uma comunidade", "vingador": "de uma comunidade"}
 	var t: String = titulos.get(str(a["papel"]), "sobrevivente")
 	if str(a["genero"]) == "f" and t in ["andarilho", "catador", "caçador", "saqueador"]:
 		t = {"andarilho": "andarilha", "catador": "catadora", "caçador": "caçadora", "saqueador": "saqueadora"}[t]
@@ -49,8 +49,11 @@ func _ready() -> void:
 func hostil() -> bool:
 	if morto:
 		return false
+	if str(agente.get("papel", "")) == "vingador":
+		return true
 	if str(agente.get("papel", "")) == "saqueador":
-		return Reputacao.valor("saqueadores") < REP_BANDO or int(agente["opiniao"]) < -20
+		return Reputacao.valor("saqueadores") < REP_BANDO or int(agente["opiniao"]) < -20 \
+			or Errantes.contratado(str(agente.get("grupo", "")))
 	return (str(agente.get("indole", "")) == "hostil" and int(agente["opiniao"]) <= 0) or int(agente["opiniao"]) < -40
 
 
@@ -200,7 +203,7 @@ func _lutar_com_monstros(delta: float) -> bool:
 func _atacar_jogador(delta: float, j: Node2D) -> void:
 	if _t_balao <= 0.0:
 		_t_balao = 9.0
-		falar(["Passa a mochila!", "Perdeu, perdeu!", "Isso aqui é nosso!"].pick_random(), 2.5)
+		falar(str(agente["frase"]) if agente.has("frase") else ["Passa a mochila!", "Perdeu, perdeu!", "Isso aqui é nosso!"].pick_random(), 2.5)
 	var d := _dist_jogador()
 	if int(agente["municao"]) > 0 and d < 8.0 * IsoMath.METRO and d > 2.0 * IsoMath.METRO and randf() < 0.01:
 		agente["municao"] = int(agente["municao"]) - 1
@@ -253,6 +256,7 @@ func _morrer_por(por_jogador: bool) -> void:
 	_sprite.frame = 0
 	var era_hostil := str(agente.get("papel", "")) == "saqueador" or str(agente.get("indole", "")) == "hostil"
 	devolver()
+	agente["morto_por_jogador"] = por_jogador
 	var lugar := Respawn.nome_do_lugar(_mundo())
 	Errantes.morrer(agente, "mort%s %s" % ["a" if agente["genero"] == "f" else "o", lugar])
 	var j := get_tree().get_first_node_in_group("jogador")

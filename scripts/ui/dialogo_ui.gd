@@ -58,56 +58,36 @@ func _ready() -> void:
 	_ctx["no"] = npc
 	npc.conversando = true
 	var abertura := "fim"
-	var cobranca := _cobranca()
-	if Reputacao.valor(npc.comunidade) <= -40:
+	_arvore = _arvore.duplicate(true)            # o cache de Conversas não pode ser mexido
+	if not _arvore.has("nos"):
+		_arvore["nos"] = {}
+	var seguir := "fim"
+	for e in _arvore.get("inicio", []):
+		if Conversas.vale((e as Dictionary).get("se", {}), _ctx):
+			seguir = str((e as Dictionary)["no"])
+			break
+	var odiado: bool = npc.comunidade != "" and Reputacao.valor(npc.comunidade) <= -40
+	var cob: Dictionary = Consequencias.cobranca(npc.comunidade, _ctx["npc"], _ctx, seguir) if npc.comunidade != "" and not odiado else {}
+	if odiado:
 		_arvore = {"nos": {"some": {"fala": "Some daqui. Ninguém aqui tem nada pra falar com você."}}}
 		abertura = "some"
-	elif cobranca != "":
-		_arvore = _arvore.duplicate(true)
-		if not _arvore.has("nos"):
-			_arvore["nos"] = {}
-		var seguir := "fim"
-		for e in _arvore.get("inicio", []):
-			if Conversas.vale((e as Dictionary).get("se", {}), _ctx):
-				seguir = str((e as Dictionary)["no"])
-				break
-		_arvore["nos"]["_cobranca"] = {"fala": cobranca, "sem_sair": true, "opcoes": [
-			{"texto": "...", "vai": seguir}, {"texto": "Não foi bem assim.", "vai": seguir}]}
-		_arvore["inicio"] = [{"no": "_cobranca"}]
-	for e in _arvore.get("inicio", []):
-		var ed: Dictionary = e
-		if Conversas.vale(ed.get("se", {}), _ctx):
-			abertura = str(ed["no"])
-			break
-	_arvore = _arvore.duplicate(true)            # o cache de Conversas não pode ser mexido
-	_abertura = abertura
+	elif not cob.is_empty():
+		(_arvore["nos"] as Dictionary).merge(cob["nos"], true)
+		abertura = str(cob["no"])
+	else:
+		abertura = seguir
+		var lt: Dictionary = {}
+		if npc.comunidade != "":
+			lt = Consequencias.abertura_parente(npc.comunidade, _ctx["npc"], _ctx, seguir)
+			if lt.is_empty():
+				lt = Consequencias.abertura_luto(npc.comunidade, _ctx["npc"], seguir)
+		if not lt.is_empty():
+			(_arvore["nos"] as Dictionary).merge(lt["nos"], true)
+			abertura = str(lt["no"])
+	_ctx["_nos"] = _arvore["nos"]
+	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just"]) else seguir   # "Alguma novidade?" fica na conversa normal
 	Conversas.vistos["%s/%s" % [_ctx["com"], _ctx["npc"]]] = true
 	_ir(abertura)
-
-
-## O que o NPC tem a cobrar do jogador (a lembrança mais grave ainda não cobrada); "" se nada.
-const COBRANCAS := {
-	"assassinato": {"viu": "Eu vi o que você fez. Não chega perto de mim.", "ouviu": "Dizem que você matou gente daqui. Fala logo o que quer."},
-	"agressao": {"viu": "Você levantou a mão pra gente daqui. Eu vi.", "ouviu": "Me contaram que você atacou um dos nossos."},
-	"furto": {"viu": "Eu vi você mexendo no que não é seu.", "ouviu": "Andam dizendo que você pega o que não é seu."},
-	"roubo_errante": {"viu": "Eu vi você assaltando aquela gente.", "ouviu": "Passou um andarilho aqui dizendo que você assalta gente na estrada."},
-	"ajuda_errante": {"viu": "Eu vi você ajudando aquela gente.", "ouviu": "Passou um andarilho aqui falando bem de você. Disse que você salvou a pele dele."},
-	"defesa": {"viu": "Eu vi você enfrentar aquela coisa perto do muro. Obrigado.", "ouviu": "Soube que você enfrentou um monstro perto do muro. A gente agradece."},
-}
-const GRAVIDADE := ["assassinato", "agressao", "roubo_errante", "furto", "ajuda_errante", "defesa"]
-
-
-func _cobranca() -> String:
-	var mem: Array = Reputacao.memoria(npc.comunidade, _ctx["npc"])
-	for ev in GRAVIDADE:
-		for m in mem:
-			var md: Dictionary = m
-			if str(md["ev"]) == ev and not bool(md.get("cobrado", false)):
-				for m2 in mem:
-					if str((m2 as Dictionary)["ev"]) == ev:
-						(m2 as Dictionary)["cobrado"] = true      # cobra uma vez cada tipo
-				return str((COBRANCAS[ev] as Dictionary)[str(md["como"])])
-	return ""
 
 
 func _ir(id: String) -> void:
@@ -119,16 +99,23 @@ func _ir(id: String) -> void:
 	_msgs.append_array(Conversas.aplicar(no.get("efeitos", []), _ctx))
 	if _abrir_escambo():
 		return
-	var titulo: String = str(npc.dados.get("titulo", npc.dados.get("papel", "morador")))
+	var titulo: String = Consequencias.titulo(npc.comunidade, _ctx["npc"], str(npc.dados.get("titulo", npc.dados.get("papel", "morador"))))
 	_nome.text = "%s — %s, %s" % [npc.nome(), titulo, Comunidades.nome(npc.comunidade)] if npc.comunidade != "" \
 		else "%s — %s" % [npc.nome(), titulo]
-	_fala.text = Conversas.texto(str(no.get("fala", "...")), _ctx)
+	var fala_no := str(no.get("fala", "..."))
+	for v in no.get("variantes", []):            # fala alternativa por condição (ex.: quando alguém citado morreu)
+		if Conversas.vale((v as Dictionary).get("se", {}), _ctx):
+			fala_no = str((v as Dictionary)["fala"])
+			break
+	_fala.text = Conversas.texto(fala_no, _ctx)
 	for b in _opcoes.get_children():
 		b.queue_free()
 	_botoes.clear()
 	var lista: Array = []
 	for o in no.get("opcoes", []):
 		if Conversas.vale((o as Dictionary).get("se", {}), _ctx):
+			if not bool((o as Dictionary).get("luto", false)) and Consequencias.cita_morto(str((o as Dictionary)["texto"])):
+				continue                           # pergunta sobre quem já morreu, como se estivesse vivo
 			lista.append(o)
 	if id == _abertura and not _arvore["nos"].has("_novidade") and Reputacao.valor(npc.comunidade) > -40:
 		var n := Rumores.novidade_para(npc.comunidade)
