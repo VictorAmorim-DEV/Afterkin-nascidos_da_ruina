@@ -17,6 +17,7 @@ const EVENTOS := {
 	"assassinato": {"peso": -45, "viu": "viu você matar gente daqui", "boato": "matou gente da comunidade"},
 	"defesa": {"peso": 4, "viu": "viu você enfrentar um monstro perto do muro", "boato": "defendeu a comunidade"},
 	"ameaca": {"peso": -6, "viu": "viu você ameaçar gente daqui", "boato": "anda ameaçando os moradores"},
+	"rapto": {"peso": -20, "viu": "viu você arrastar uma pessoa desacordada", "boato": "arrasta gente desacordada para o escuro"},
 	"sangue": {"peso": -25, "viu": "viu você beber o sangue de uma pessoa", "boato": "bebe o sangue de gente, como os da noite"},
 }
 const ATRASO_H := Vector2(1.0, 2.0)            ## horas de jogo até a testemunha contar
@@ -141,7 +142,8 @@ static func registrar(ev: String, p: Vector2, vitima: Node = null, alvo: String 
 		if alvo != "" and not por_com.is_empty():
 			quem_sofreu = " (%s)" % Consequencias.nome_npc(str(por_com.keys()[0]), alvo)
 		DiarioPartida.evento("crime", "%s%s — %s." % [{"furto": "Furto", "agressao": "Agressão", "assassinato": "Assassinato",
-			"ameaca": "Ameaça", "sangue": "Bebeu sangue de uma pessoa"}.get(ev, ev), quem_sofreu, ("%d pessoa(s) viram" % viram.size()) if not viram.is_empty() else "ninguém viu"])
+			"ameaca": "Ameaça", "sangue": "Bebeu sangue de uma pessoa",
+			"rapto": "Arrastou uma pessoa desacordada"}.get(ev, ev), quem_sofreu, ("%d pessoa(s) viram" % viram.size()) if not viram.is_empty() else "ninguém viu"])
 	if not viram.is_empty():
 		var nomes: PackedStringArray = []
 		for npc in viram.slice(0, 2):

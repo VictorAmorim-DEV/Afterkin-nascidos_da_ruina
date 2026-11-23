@@ -77,17 +77,26 @@ static func dica(j: Node) -> String:
 	if estagio(j) < 1:
 		return ""
 	var a := alvo(j)
+	if a.is_empty() and int(j.postura) == 1:
+		var v := _vitima_de_pe(j)
+		if v != null:
+			return "%s — nocautear %s (por trás)" % [Controles.nome("morder"), v.nome()]
 	if not a.has("no"):
 		return ""
 	return "%s — beber o sangue %s" % [Controles.nome("morder"), str(a["nome"])]
 
 
-## Tecla B: bebe do alvo mais perto, se der.
+## Tecla B: bebe do alvo mais perto, se der; sem alvo, tenta nocautear um errante de pé (rapto).
 static func beber(j: Node) -> void:
 	var e := estagio(j)
 	if e < 0:
 		return
 	var a := alvo(j)
+	if a.is_empty() and e >= 1:
+		var v := _vitima_de_pe(j)
+		if v != null:
+			nocautear(j, v)
+			return
 	if a.is_empty():
 		if e >= 1:
 			j.aviso("Não há sangue ao alcance.")
@@ -125,9 +134,85 @@ static func beber(j: Node) -> void:
 ## Pessoa viva: fica mais fraca, lembra de você e, se alguém de uma comunidade viu, é crime grave.
 static func _ferir_pessoa(j: Node, e: Errante) -> void:
 	e.agente["vida"] = maxf(5.0, float(e.agente["vida"]) - 20.0)
+	e.vida = maxf(2.0, e.vida - 9.0)
 	e.agente["opiniao"] = int(e.agente.get("opiniao", 0)) - 80
-	e.falar("Socorro! Ele bebeu o meu sangue!" if str(j.genero) == "m" else "Socorro! Ela bebeu o meu sangue!")
+	e.bebido = true
+	e.set_meta("sem_sangue", true)            # um gole por vez: a vítima precisa de tempo
+	if not e.desacordado():                   # acordado e caído: ele vê quem foi
+		e.falar("Socorro! Ele bebeu o meu sangue!" if str(j.genero) == "m" else "Socorro! Ela bebeu o meu sangue!")
+		if not rosto_coberto(j):
+			Reputacao.boato_errante(-25, "sangue")
 	Reputacao.registrar("sangue", IsoMath.tela_para_mundo(e.global_position))
+
+
+# ───────────────────────────── rapto (3.2c) ─────────────────────────────
+
+## Capuz na mochila (até existir roupa vestida): quem acorda não reconhece o rosto.
+static func rosto_coberto(j: Node) -> bool:
+	return Itens.DB.has("capuz") and j.inventario.contar("capuz") > 0
+
+
+## Errante de pé ao alcance que dá para nocautear (não hostil, sem estar caído).
+static func _vitima_de_pe(j: Node) -> Errante:
+	var pj := IsoMath.tela_para_mundo(j.global_position)
+	var melhor: Errante = null
+	var dist := ALCANCE
+	for n in j.get_tree().get_nodes_in_group("errante"):
+		var e := n as Errante
+		if e == null or e.morto or e.caido() or e.hostil():
+			continue
+		var d := IsoMath.tela_para_mundo(e.global_position).distance_to(pj)
+		if d < dist:
+			dist = d
+			melhor = e
+	return melhor
+
+
+## Golpe na nuca: só agachado e por trás (de frente ele te vê e se defende).
+static func nocautear(j: Node, e: Errante) -> void:
+	var para_jogador := IsoMath.tela_para_mundo(j.global_position - e.global_position).normalized()
+	var olhar: Vector2 = e._olhar.normalized() if e._olhar.length() > 0.01 else Vector2.DOWN
+	if int(j.postura) != 1 or olhar.dot(para_jogador) > -0.2:
+		j.aviso("%s vai te ver. Chegue por trás, agachado." % e.nome())
+		return
+	e.nocautear()
+	j.golpe_t = 0.3
+	j.aviso("Um golpe na nuca, e %s cai desacordado. %s arrasta, %s bebe." % [e.nome(), Controles.nome("interact"),
+		Controles.nome("morder")])
+	Reputacao.registrar("agressao", IsoMath.tela_para_mundo(e.global_position))
+	DiarioPartida.evento("rapto", "Nocauteou %s." % e.nome())
+
+
+## E no desacordado: começa ou para de arrastar.
+static func arrastar(j: Node, e: Errante) -> void:
+	if e.arrastado_por != null:
+		e.arrastado_por = null
+		j.carregando = null
+		j.aviso("Você solta %s." % e.nome())
+		return
+	if j.carregando != null and is_instance_valid(j.carregando):
+		j.carregando.arrastado_por = null
+	e.arrastado_por = j
+	j.carregando = e
+	j.set_meta("rapto_visto", false)
+	j.aviso("Você arrasta %s. Devagar, e sem correr." % e.nome())
+
+
+## Enquanto arrasta: se alguém de uma comunidade vir, é crime (uma vez por arrasto).
+static func vigiar_arrasto(j: Node) -> void:
+	var e: Errante = j.carregando
+	if e == null or not is_instance_valid(e) or not e.desacordado():
+		j.carregando = null
+		return
+	if bool(j.get_meta("rapto_visto", false)):
+		return
+	var p := IsoMath.tela_para_mundo(e.global_position)
+	for n in j.get_tree().get_nodes_in_group("npc"):
+		var npc := n as Npc
+		if npc != null and not npc.morto and npc.comunidade != "" and not npc.dormindo and Reputacao._viu(npc, j, p):
+			j.set_meta("rapto_visto", true)
+			Reputacao.registrar("rapto", p)
+			return
 
 
 ## Da Sede em diante: o cheiro de sangue fresco mais perto (corpo ou gente caída), para o aviso do jogador.

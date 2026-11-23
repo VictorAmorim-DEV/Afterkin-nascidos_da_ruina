@@ -97,6 +97,8 @@ var sangue_forca: float = 0.0            ## dano extra no corpo a corpo enquanto
 var sangue_vel: float = 0.0              ## velocidade extra enquanto dura
 var _farejo_t: float = 0.0               ## s até sentir o cheiro de sangue de novo (Sede em diante)
 var _farejado: Node = null
+var carregando: Node2D = null            ## errante desacordado que está arrastando (Sangue: rapto)
+var _arrasto_t: float = 0.0
 
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
@@ -315,7 +317,7 @@ func _physics_process(delta: float) -> void:
 	var quer_correr := Input.is_action_pressed("run") and movendo and cos_a > 0.05
 	if quer_correr and not exausto and stamina > 8.0 and postura != Postura.EM_PE:
 		postura = Postura.EM_PE
-	correndo = quer_correr and not exausto and stamina > 0.0 and postura == Postura.EM_PE
+	correndo = quer_correr and not exausto and stamina > 0.0 and postura == Postura.EM_PE and carregando == null
 
 	if tem_mira:
 		var taxa := 14.0
@@ -374,6 +376,8 @@ func velocidade_atual() -> float:
 		v *= 0.85
 	if forma_rato():
 		v *= 1.25
+	if carregando != null:
+		v = minf(v, walk_speed * 0.45)          # arrastando alguém: devagar
 	return v * (1.0 + sangue_vel)
 
 
@@ -618,6 +622,12 @@ func _atualizar_sangue(delta: float, horas: float) -> void:
 			sangue_forca = 0.0
 			sangue_vel = 0.0
 			aviso("A força do sangue passou.")
+	if carregando != null:
+		correndo = false
+		_arrasto_t -= delta
+		if _arrasto_t <= 0.0:
+			_arrasto_t = 1.0
+			Sangue.vigiar_arrasto(self)
 	_farejo_t -= delta
 	if _farejo_t > 0.0:
 		return
@@ -1085,6 +1095,9 @@ func _morrer() -> void:
 	if dirigindo != null and dirigindo.has_method("sair"):
 		dirigindo.sair()
 	morto = true
+	if carregando != null and is_instance_valid(carregando):
+		carregando.arrastado_por = null
+	carregando = null
 	var causa := "de fome" if fome <= 0.0 else ("de sede" if sede <= 0.0 else "")
 	if causa == "":
 		causa = {"zombie": "atacado por um zumbi", "rat": "atacado por um rato gigante", "vampire": "atacado por um vampiro",
