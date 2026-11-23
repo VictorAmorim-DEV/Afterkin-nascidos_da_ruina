@@ -250,6 +250,8 @@ func _morrer_por(por_jogador: bool) -> void:
 	morto = true
 	conversando = false
 	remove_from_group("interativo")
+	add_to_group("corpo")
+	set_meta("morte_h", Reputacao.agora_h())
 	_col.set_deferred("disabled", true)
 	velocity = Vector2.ZERO
 	_sprite.animation = &"caido"
@@ -281,7 +283,7 @@ func _morrer_por(por_jogador: bool) -> void:
 	if j != null and por_jogador:
 		j.aviso("%s está mort%s." % [nome(), "a" if agente["genero"] == "f" else "o"])
 	var t := create_tween()
-	t.tween_interval(20.0)
+	t.tween_interval(60.0)
 	t.tween_property(self, "modulate:a", 0.0, 2.0)
 	t.tween_callback(queue_free)
 

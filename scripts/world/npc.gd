@@ -277,6 +277,8 @@ func _morrer() -> void:
 	morto = true
 	conversando = false
 	remove_from_group("interativo")
+	add_to_group("corpo")                      # o corpo fica um tempo no chão (Sangue: recém-morto)
+	set_meta("morte_h", Reputacao.agora_h())
 	_col.set_deferred("disabled", true)
 	velocity = Vector2.ZERO
 	_sprite.animation = &"caido" if _sprite.sprite_frames.has_animation(&"caido") else _sprite.animation
@@ -292,7 +294,7 @@ func _morrer() -> void:
 	if j != null:
 		j.aviso("%s está %s." % [nome(), "morta" if str(dados.get("genero", "m")) == "f" else "morto"])
 	var t := create_tween()
-	t.tween_interval(20.0)
+	t.tween_interval(60.0)
 	t.tween_property(self, "modulate:a", 0.0, 2.0)
 	t.tween_callback(queue_free)
 

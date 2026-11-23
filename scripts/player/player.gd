@@ -92,6 +92,11 @@ var raca: String = "human"               ## human, rat, vampire ou zombie (V13: 
 var forma: String = "human"              ## só o rato alterna: "human" ou "rat" (V13: player.form)
 var doenca: Dictionary = {}              ## vazio = saudável; {tipo, horas, total, estagio, origem}
 var sol: float = 0.0                     ## exposição solar do vampiro, em segundos ao sol direto (acima de 60 queima)
+var sangue_t: float = 0.0                ## horas de jogo que ainda restam do efeito do sangue (Sangue)
+var sangue_forca: float = 0.0            ## dano extra no corpo a corpo enquanto dura (0,3 = +30%)
+var sangue_vel: float = 0.0              ## velocidade extra enquanto dura
+var _farejo_t: float = 0.0               ## s até sentir o cheiro de sangue de novo (Sede em diante)
+var _farejado: Node = null
 
 var _passo: float = 0.0
 var _inclinacao: float = 0.0
@@ -237,6 +242,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		atacar()
 	elif event.is_action_pressed("transform"):
 		transformar()
+	elif event.is_action_pressed("morder"):
+		Sangue.beber(self)
 	elif event.is_action_pressed("flashlight"):
 		lanterna_ligada = not lanterna_ligada
 
@@ -367,7 +374,7 @@ func velocidade_atual() -> float:
 		v *= 0.85
 	if forma_rato():
 		v *= 1.25
-	return v
+	return v * (1.0 + sangue_vel)
 
 
 func nome_postura() -> String:
@@ -597,8 +604,29 @@ func _atualizar_vitais(delta: float) -> void:
 			vida = maxf(0.0, vida - delta * 1.0)
 	_atualizar_sol(delta)
 	_atualizar_doenca(delta)
+	_atualizar_sangue(delta, horas)
 	if vida <= 0.0 and not morto:
 		_morrer()
+
+
+## Efeito do sangue (Sangue) passando; da Sede em diante, o faro avisa de sangue fresco por perto.
+func _atualizar_sangue(delta: float, horas: float) -> void:
+	if sangue_t > 0.0:
+		sangue_t -= horas
+		if sangue_t <= 0.0:
+			sangue_t = 0.0
+			sangue_forca = 0.0
+			sangue_vel = 0.0
+			aviso("A força do sangue passou.")
+	_farejo_t -= delta
+	if _farejo_t > 0.0:
+		return
+	_farejo_t = 8.0
+	var f := Sangue.farejar(self)
+	var no: Node = f.get("no")
+	if no != null and no != _farejado:
+		aviso("Cheiro de sangue fresco, a uns %d m %s." % [roundi(float(f["dist"]) / IsoMath.METRO), f["rumo"]])
+	_farejado = no
 
 
 ## Mensagem curta na tela (toast do HUD).
@@ -788,6 +816,7 @@ func atacar() -> void:
 		dano *= 1.1
 	if raca == "vampire" and _eh_noite():
 		dano *= 1.3
+	dano *= 1.0 + sangue_forca
 	if forma_rato():
 		dano *= 1.3
 	dano *= BONUS_ARMA.get(inventario.id_equipado(), 1.0)
@@ -1088,6 +1117,9 @@ func renascer() -> void:
 	incubacao_h = -1.0
 	sol = 0.0
 	doenca = {}
+	sangue_t = 0.0
+	sangue_forca = 0.0
+	sangue_vel = 0.0
 	visible = true
 	set_physics_process(true)
 
@@ -1231,6 +1263,9 @@ func definir_raca(r: String, reiniciar: bool = true) -> void:
 		incubacao_h = -1.0
 		sol = 0.0
 		doenca = {}
+		sangue_t = 0.0
+		sangue_forca = 0.0
+		sangue_vel = 0.0
 		inventario.inicial()
 	else:
 		vida = minf(vida, vida_max)
@@ -1447,6 +1482,8 @@ func texto_doenca() -> String:
 	var txt: String = doenca.tipo
 	if Infeccao.ativa(self):
 		txt += " — " + Infeccao.nome_estagio(int(doenca.estagio))   # o estágio se sente; as horas, só com diagnóstico
+		if sangue_t > 0.0:
+			txt += " · sangue: força +%d%%" % roundi(sangue_forca * 100.0) + (", velocidade +%d%%" % roundi(sangue_vel * 100.0) if sangue_vel > 0.0 else "")
 	if Medicina.tem("diagnostico"):            # diagnóstico: a Enfermeiro(a) ou quem aprendeu com o mestre
 		txt += " · estágio %d · %dh restantes" % [int(doenca.estagio), maxi(0, ceili(doenca.horas))]
 	var sintomas: PackedStringArray = []
@@ -1529,6 +1566,7 @@ func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
 	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "genero": genero, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(),
 		"stamina": stamina, "descanso": descanso, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
+		"sangue": [sangue_t, sangue_forca, sangue_vel],
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
 
@@ -1560,6 +1598,10 @@ func restaurar(d: Dictionary) -> void:
 		doenca.horas = resto
 		doenca.estagio = _estagio_doenca(Infeccao.TOTAL_H)
 	lanterna_ligada = bool(d.get("lanterna", true))
+	var sg: Array = d.get("sangue", [0.0, 0.0, 0.0])
+	sangue_t = float(sg[0])
+	sangue_forca = float(sg[1])
+	sangue_vel = float(sg[2])
 	var slots := SaveJogo.slots_de(d.get("slots", []))
 	for i in mini(slots.size(), inventario.slots.size()):
 		inventario.slots[i] = slots[i]

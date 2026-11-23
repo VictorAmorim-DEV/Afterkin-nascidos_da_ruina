@@ -11,7 +11,7 @@ const ACOES := [
 	["move_up", "Mover para cima"], ["move_down", "Mover para baixo"], ["move_left", "Mover para a esquerda"],
 	["move_right", "Mover para a direita"], ["run", "Correr (segurar)"], ["crouch", "Agachar (alterna)"],
 	["prone", "Deitar (alterna)"], ["jump", "Pular"], ["interact", "Interagir / vasculhar / pegar"],
-	["attack", "Atacar / colher"], ["transform", "Alternar forma (ratos)"], ["flashlight", "Lanterna"],
+	["attack", "Atacar / colher"], ["morder", "Beber sangue (infectado)"], ["transform", "Alternar forma (ratos)"], ["flashlight", "Lanterna"],
 	["inventory", "Inventário"], ["minimapa", "Mapa do mundo"], ["salvar_rapido", "Salvar a partida"],
 	["carregar_rapido", "Carregar a partida salva"], ["menu", "Menu / configurações"]]
 
@@ -24,7 +24,7 @@ static func iniciar() -> void:
 	if _carregado:
 		return
 	_carregado = true
-	for par in [["minimapa", KEY_M], ["salvar_rapido", KEY_F5], ["carregar_rapido", KEY_F8]]:
+	for par in [["minimapa", KEY_M], ["salvar_rapido", KEY_F5], ["carregar_rapido", KEY_F8], ["morder", KEY_B]]:
 		var nome_acao: String = par[0]
 		if not InputMap.has_action(nome_acao):
 			InputMap.add_action(nome_acao)

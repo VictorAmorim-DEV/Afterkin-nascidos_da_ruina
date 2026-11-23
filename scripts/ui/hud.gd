@@ -146,6 +146,8 @@ func _atualizar_dica() -> void:
 			if t != "" and pr > melhor:
 				texto = t
 				melhor = pr
+	if texto == "" and _jogador != null:
+		texto = Sangue.dica(_jogador)          # infectado perto de um corpo ou de alguém caído
 	dica.text = texto
 	dica.visible = texto != ""
 

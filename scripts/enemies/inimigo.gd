@@ -279,6 +279,8 @@ func receber_dano(n: float, por_jogador: bool = true) -> void:
 func _morrer() -> void:
 	morto = true
 	remove_from_group("inimigo")
+	add_to_group("corpo")                      # dá para beber o sangue (Sangue) enquanto o corpo está aí
+	set_meta("morte_h", Reputacao.agora_h())
 	if _golpe_jogador and Comunidades.perto(_mundo(), 15.0 * M) != "":
 		Reputacao.registrar("defesa", _mundo())   # quem viu, conta: você enfrentou um monstro perto do muro
 	$CollisionShape2D.set_deferred("disabled", true)
@@ -296,7 +298,7 @@ func _morrer() -> void:
 			j.aviso("Inimigo derrotado; a comida ficou no chão (mochila cheia).")
 	queue_redraw()
 	var t := create_tween()
-	t.tween_interval(6.0)
+	t.tween_interval(60.0)
 	t.tween_property(self, "modulate:a", 0.0, 1.5)
 	t.tween_callback(queue_free)
 

@@ -76,6 +76,8 @@ static func no_limiar(j: Node) -> bool:
 static func sintoma(j: Node, i: int) -> float:
 	var e := estagio(j)
 	var v: float = (SINTOMAS[e] as Array)[i]
+	if i == 3 and float(j.sangue_t) > 0.0:
+		v = 0.0                                  # Limiar: com sangue no corpo, a vida não cai
 	if i == 0 and e >= 1 and j.ao_sol_direto():
 		v *= SOL_CANSA
 	return v
