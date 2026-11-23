@@ -4,8 +4,10 @@ extends CanvasLayer
 ## Itens, teleporte, chaves (Dev), tempo, cura/doenças e limpar inimigos. Não pausa o jogo.
 
 const TECLA := KEY_F1
+const LARGURA := 340.0                   ## largura fixa do conteúdo: o resto da tela fica livre para o jogo
 
 var _raiz := PanelContainer.new()
+var _rolagem := ScrollContainer.new()     ## o painel rola com a rodinha (fora dele, a rodinha volta a ser o zoom)
 var _itens := OptionButton.new()
 var _qtd := SpinBox.new()
 var _lugares := OptionButton.new()
@@ -30,10 +32,15 @@ func _ready() -> void:
 	_raiz.position = Vector2(16, 70)
 	_raiz.visible = false
 	add_child(_raiz)
+	_rolagem.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_raiz.add_child(_rolagem)
 	var col := VBoxContainer.new()
 	col.add_theme_constant_override("separation", 6)
-	col.custom_minimum_size = Vector2(330, 0)
-	_raiz.add_child(col)
+	col.custom_minimum_size = Vector2(LARGURA, 0)
+	_rolagem.add_child(col)
+	get_viewport().size_changed.connect(_ajustar_altura)
+	_ajustar_altura()
+	_raiz.mouse_exited.connect(func(): get_viewport().gui_release_focus())   # o teclado volta para o jogo
 	_titulo(col, "MODO DESENVOLVEDOR  (F1 fecha)")
 
 	_titulo(col, "Itens")
@@ -57,7 +64,7 @@ func _ready() -> void:
 	lt.add_child(_lugares)
 	lt.add_child(_botao("Ir", _ir_lugar))
 	col.add_child(lt)
-	col.add_child(_botao("Ir para o marcador do mapa (botão direito no mapa)", _ir_marcador))
+	col.add_child(_botao("Ir ao marcador do mapa (botão direito)", _ir_marcador))
 
 	_titulo(col, "Chaves")
 	for par in [["Fôlego infinito", "folego_infinito"], ["Invencível (sem dano nem infecção)", "invencivel"],
@@ -88,7 +95,7 @@ func _ready() -> void:
 		_aviso("Mapa revelado.")))
 
 	_titulo(col, "Tempo")
-	var lh := HBoxContainer.new()
+	var lh := HFlowContainer.new()   # linha de botões que quebra (painel de largura fixa)
 	for par in [["06h", 360.0], ["12h", 720.0], ["19h", 1140.0], ["00h", 0.0]]:
 		lh.add_child(_botao(par[0], _ir_hora.bind(par[1])))
 	lh.add_child(_botao("+1 h", func(): _ir_hora(-1.0)))
@@ -104,7 +111,7 @@ func _ready() -> void:
 	col.add_child(lv)
 
 	_titulo(col, "Jogador e mundo")
-	var lj := HBoxContainer.new()
+	var lj := HFlowContainer.new()   # linha de botões que quebra (painel de largura fixa)
 	lj.add_child(_botao("Curar tudo", _curar))
 	lj.add_child(_botao("Disenteria", _doenca.bind("Disenteria")))
 	lj.add_child(_botao("Febre da carniça", _doenca.bind("Febre da carniça")))
@@ -114,8 +121,10 @@ func _ready() -> void:
 
 	_titulo(col, "Comunidades (reputação, reservas, diário)")
 	_rep.add_theme_font_size_override("font_size", 12)
+	_rep.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART    # linhas longas quebram, em vez de alargar o painel
+	_rep.custom_minimum_size = Vector2(LARGURA, 0)
 	col.add_child(_rep)
-	var lr := HBoxContainer.new()
+	var lr := HFlowContainer.new()   # linha de botões que quebra (painel de largura fixa)
 	lr.add_child(_botao("+20 aqui", _mexer_rep.bind(20)))
 	lr.add_child(_botao("−20 aqui", _mexer_rep.bind(-20)))
 	lr.add_child(_botao("Simular 1 dia", func():
@@ -131,7 +140,7 @@ func _ready() -> void:
 	col.add_child(lr)
 
 	_titulo(col, "Medicina (etapa 11)")
-	var lm := HBoxContainer.new()
+	var lm := HFlowContainer.new()   # linha de botões que quebra (painel de largura fixa)
 	lm.add_child(_botao("Cumprir a tarefa", func():
 		if Medicina.tarefa.is_empty():
 			_aviso("Nenhuma tarefa de Medicina em andamento.")
@@ -242,7 +251,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventKey and event.pressed and not event.echo and (event as InputEventKey).keycode == TECLA:
 		_raiz.visible = not _raiz.visible
+		if _raiz.visible:
+			for o in [_itens, _lugares, _vel]:
+				(o as Control).focus_mode = Control.FOCUS_NONE   # setas e espaço não ficam presos numa lista
+				(o as OptionButton).fit_to_longest_item = false   # nomes longos não alargam o painel
+				(o as Control).clip_contents = true
+			_ajustar_altura()
+		else:
+			get_viewport().gui_release_focus()
 		get_viewport().set_input_as_handled()
+
+
+## Altura do painel: até o pé da tela (o conteúdo que não couber rola).
+func _ajustar_altura() -> void:
+	var h := get_viewport().get_visible_rect().size.y - _raiz.position.y - 16.0
+	_rolagem.custom_minimum_size = Vector2(LARGURA + 14.0, maxf(200.0, h - 24.0))
+	_raiz.size = Vector2.ZERO
 
 
 func _j() -> Node2D:
