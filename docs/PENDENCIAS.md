@@ -97,7 +97,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   `docs/DECISOES_DESIGN.md`). Código novo escrito "por jogador" (co-op). Etapas:
   - ✅ 3.1 (`978bebd`) Herança da V13 e vocabulário: todos começam humanos (sai a raça da criação; F1 continua), febre da carniça
     no lugar da mordida de zumbi, zumbis e ratos apresentados como Necróticos e Bestiais.
-  - ⬜ 3.2 Infecção vampírica: 48 h em 4 estágios (Marca, Fome, Sede, Limiar), poderes e custos, mordida como
+  - 🔄 3.2 Infecção vampírica: 48 h em 4 estágios (Marca, Fome, Sede, Limiar), poderes e custos, mordida como
     habilidade do vampiro (aviso, recarga, chance pelo jeito da mordida), sangue (bicho, corpo, pessoa) e rapto.
   - ⬜ 3.3 Cura e Medicina com peso: antídoto em camadas, soro de contenção, diagnóstico com as horas, sequela;
     Mãe da Colônia no ninho de morcegos (sangue antigo, um por jogador perto, renasce 1 h real com a sala aberta).

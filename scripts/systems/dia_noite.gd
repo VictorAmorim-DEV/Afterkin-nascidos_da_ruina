@@ -35,6 +35,7 @@ const INICIO_FASE := [0.0, 5.0, 7.0, 12.0, 16.0, 19.0]
 ## Tinta do bioma (multiplica a luz do dia/noite). O Mundo muda isto com um Tween ao cruzar faixas de bioma.
 var tinta_bioma := Color.WHITE
 var _cor_base := Color.WHITE
+const VISAO_NOITE := Color(0.62, 0.62, 0.72)   ## até onde a noite clareia para quem enxerga no escuro
 
 
 func _ready() -> void:
@@ -55,6 +56,12 @@ func _process(delta: float) -> void:
 func _aplicar() -> void:
 	_cor_base = cor_ambiente(minutos)
 	color = Color(_cor_base.r * tinta_bioma.r, _cor_base.g * tinta_bioma.g, _cor_base.b * tinta_bioma.b)
+	var j := get_tree().get_first_node_in_group("jogador")   # tela deste jogador (no co-op, o jogador local)
+	if j != null and "doenca" in j:
+		var v := Infeccao.visao_escuro(j)
+		if v > 0.0:                          # infectado ou vampiro: a noite clareia (tom frio, sem cor de dia)
+			var c := color
+			color = c.lerp(Color(maxf(c.r, VISAO_NOITE.r), maxf(c.g, VISAO_NOITE.g), maxf(c.b, VISAO_NOITE.b)), v)
 
 
 ## Cor da luz ambiente no minuto dado (0 a 1440).

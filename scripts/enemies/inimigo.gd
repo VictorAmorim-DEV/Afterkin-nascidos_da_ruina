@@ -36,6 +36,13 @@ var _flip_dorme: bool = false
 var _ciclo: Node = null
 var _golpe_jogador := false            ## o último dano veio do jogador (recompensa e "defesa" só nesse caso)
 const OUVE_HUMANO := 9.0 * M           ## de quantos u um monstro acordado percebe um humano andando
+## Mordida do vampiro (habilidade; docs/DECISOES_DESIGN.md, marco 3): aviso visível, depois o bote.
+const AVISO_MORDIDA := 0.6             ## s de aviso (o vampiro se encolhe e os olhos brilham): dá para fugir
+const RECARGA_MORDIDA := 20.0          ## s entre uma mordida e outra
+const INICIA_MORDIDA := 1.0 * M        ## distância em que ele prepara o bote
+const ALCANCE_MORDIDA := 0.75 * M      ## no fim do aviso, se o jogador ainda estiver aqui, a mordida pega
+var _mordida_t: float = 0.0            ## > 0: preparando o bote
+var _mordida_cd: float = 0.0
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -115,6 +122,8 @@ func _physics_process(delta: float) -> void:
 	if d < ouve or ve:
 		alerta = 4.0
 
+	if raca == "vampire" and _mordida(delta, j, jog, d, eb == pb):
+		return
 	var vel := 62.0 if raca == "rat" else 46.0
 	var noite := _noite()
 	if raca == "vampire" and noite:
@@ -188,11 +197,36 @@ func _physics_process(delta: float) -> void:
 		golpe_t = 0.25
 		if j == jog:
 			j.receber_dano(8.0 if raca == "zombie" else 6.0, raca)
-			if randf() < 0.12:
+			if raca != "vampire" and randf() < 0.12:   # o vampiro só infecta pela mordida (habilidade)
 				j.infectar(raca)
 		else:
 			j.receber_dano(8.0 if raca == "zombie" else 6.0, false)   # humano atacado pelo monstro
 	_animar(dir if dir != Vector2.ZERO else (pm - em), dir != Vector2.ZERO)
+
+
+## Habilidade de mordida do vampiro. Devolve true enquanto ele está parado preparando o bote.
+func _mordida(delta: float, presa: Node, jog: Node, d: float, mesmo_lugar: bool) -> bool:
+	_mordida_cd -= delta
+	if _mordida_t > 0.0:
+		_mordida_t -= delta
+		var pulso := 0.5 + 0.5 * sin(_mordida_t * 40.0)
+		sprite.modulate = Color(1.0, 0.45 + 0.3 * pulso, 0.45 + 0.3 * pulso)
+		velocity = Vector2.ZERO
+		if _mordida_t <= 0.0:
+			sprite.modulate = Color.WHITE
+			golpe_t = 0.3
+			var pj := IsoMath.tela_para_mundo(jog.global_position)
+			if not jog.morto and _mundo().distance_to(pj) < ALCANCE_MORDIDA:
+				jog.receber_mordida(_mundo())
+			elif not jog.morto:
+				get_tree().call_group("hud", "aviso", "Você escapou do bote do vampiro.")
+		return true
+	if presa == jog and alerta > 0.0 and _mordida_cd <= 0.0 and d < INICIA_MORDIDA and mesmo_lugar and not jog.morto:
+		_mordida_t = AVISO_MORDIDA
+		_mordida_cd = RECARGA_MORDIDA
+		get_tree().call_group("hud", "aviso", "O vampiro se encolhe para dar o bote!")
+		return true
+	return false
 
 
 ## Humano (errante ou morador acordado) mais perto que o jogador e ao alcance de percepção; null se nenhum.

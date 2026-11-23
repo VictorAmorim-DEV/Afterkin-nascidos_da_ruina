@@ -115,7 +115,15 @@ func _ready() -> void:
 	lj.add_child(_botao("Curar tudo", _curar))
 	lj.add_child(_botao("Disenteria", _doenca.bind("Disenteria")))
 	lj.add_child(_botao("Febre da carniça", _doenca.bind("Febre da carniça")))
-	lj.add_child(_botao("Mutação", _doenca.bind("Mutação vampírica")))
+	lj.add_child(_botao("Mordida de vampiro", func():
+		_j().doenca = {}
+		_j().aviso(Infeccao.morder(_j()))))
+	lj.add_child(_botao("Próximo estágio", func():
+		var j := _j()
+		if not Infeccao.ativa(j):
+			_aviso("Sem infecção vampírica.")
+			return
+		j.doenca["horas"] = maxf(0.01, float(j.doenca["horas"]) - Infeccao.horas_ate_proximo(j) - 0.01)))
 	col.add_child(lj)
 	col.add_child(_botao("Matar inimigos num raio de 30 m", _matar_perto))
 

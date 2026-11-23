@@ -611,9 +611,15 @@ func comer() -> bool:
 	if inventario.contar("comida") <= 0:
 		aviso("Você não tem comida.")
 		return false
-	fome = minf(100.0, fome + 35.0)
-	vida = minf(vida_max, vida + 8.0)
-	aviso("Você comeu e recuperou energia.")
+	var k := Infeccao.fator_comida(self)
+	fome = minf(100.0, fome + 35.0 * k)
+	vida = minf(vida_max, vida + 8.0 * k)
+	if k < 0.3:
+		aviso("A comida desce mal e enjoa. Quase não matou a fome.")
+	elif k < 1.0:
+		aviso("Você comeu, mas a fome estranha continua.")
+	else:
+		aviso("Você comeu e recuperou energia.")
 	return true
 
 
@@ -1279,17 +1285,22 @@ func _dentro_de_casa() -> bool:
 ## Vampiro de dia, a céu aberto. Protegem: o alcance do totem (V13) e, por decisão desta
 ## versão, estar dentro de uma casa.
 func exposto_ao_sol() -> bool:
-	return _sente_sol() and not _eh_noite() and not _dentro_de_casa() and not territorio.protege(global_position)
+	return _sente_sol() and ao_sol_direto()
 
 
-## Vampiro, ou humano com a mutação vampírica do estágio 2 em diante (já sente o sol, pela metade).
+## De dia, a céu aberto e fora da sombra protetora do território.
+func ao_sol_direto() -> bool:
+	return not _eh_noite() and not _dentro_de_casa() and not territorio.protege(global_position)
+
+
+## Vampiro, ou infectado da Sede em diante (Infeccao.SOL).
 func _sente_sol() -> bool:
-	return raca == "vampire" or (doenca.get("tipo", "") == "Mutação vampírica" and int(doenca.estagio) >= 2)
+	return Infeccao.sol(self) > 0.0
 
 
 func _atualizar_sol(delta: float) -> void:
 	if _sente_sol() and not _eh_noite():
-		var k := 1.0 if raca == "vampire" else 0.5
+		var k := Infeccao.sol(self)
 		if exposto_ao_sol():
 			sol += delta * k                     # em segundos reais: não depende da velocidade do relógio
 			if sol > 60.0:
@@ -1298,6 +1309,19 @@ func _atualizar_sol(delta: float) -> void:
 			sol = maxf(0.0, sol - delta * 0.2)
 	elif _eh_noite():
 		sol = maxf(0.0, sol - delta)
+
+
+## Mordida do vampiro (habilidade, Inimigo): tira vida e, conforme o jeito, rompe fundo e infecta (Infeccao).
+func receber_mordida(de_onde_mundo: Vector2) -> void:
+	if morto or Dev.invencivel:
+		return
+	receber_dano(Infeccao.DANO_MORDIDA, "vampire")
+	if raca != "human":
+		return
+	if randf() < Infeccao.chance_mordida(self, de_onde_mundo):
+		aviso(Infeccao.morder(self))
+	else:
+		aviso("O vampiro te mordeu, mas não rompeu fundo.")
 
 
 ## Mordida/golpe de inimigo (V13: infectPlayer). Cada origem causa uma doença diferente.
@@ -1318,8 +1342,7 @@ func infectar(origem: String) -> void:
 			doenca = {"tipo": "Leptospirose", "horas": 48.0, "total": 48.0, "estagio": 0.0, "origem": "rat"}
 			aviso("Mordida contaminada! Leptospirose contraída. Procure antibióticos.")
 		"vampire":
-			doenca = {"tipo": "Mutação vampírica", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "vampire"}
-			aviso("Você foi mordido. A mutação começou: encontre um antídoto em ninhos de morcegos.")
+			aviso(Infeccao.morder(self))
 		_:
 			doenca = nova_febre_carnica()
 			aviso("A mordida do zumbi infeccionou: febre da carniça. Procure antibiótico ou um médico.")
@@ -1330,8 +1353,6 @@ func infectar(origem: String) -> void:
 const SINTOMAS := {
 	"Leptospirose": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.8, 1.0, 1.0, 0.0, 1.1], [0.6, 0.92, 1.2, 0.0, 1.2],
 		[0.45, 0.85, 1.3, 0.12, 1.3]],
-	"Mutação vampírica": [[1.0, 1.0, 1.0, 0.0, 1.0], [1.0, 1.0, 1.3, 0.0, 1.0], [0.85, 1.0, 1.6, 0.0, 1.0],
-		[0.75, 1.0, 2.0, 0.05, 1.0]],
 	# febre da carniça (mordida de zumbi, marco 3): fraqueza e febre que pioram em 3 dias; no fim, mata
 	"Febre da carniça": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.85, 0.95, 1.1, 0.0, 1.2], [0.7, 0.9, 1.2, 0.03, 1.3],
 		[0.55, 0.85, 1.3, 0.1, 1.4]],
@@ -1342,8 +1363,6 @@ const SINTOMAS := {
 const AVISOS_ESTAGIO := {
 	"Leptospirose": ["", "Febre e dores: o fôlego volta mais devagar.", "Febre alta: você está mais lento.",
 		"Estado grave: a leptospirose está consumindo sua vida."],
-	"Mutação vampírica": ["", "Fome estranha: você precisa comer mais.", "A luz do sol começa a queimar sua pele.",
-		"A mutação está quase completa. Encontre um antídoto!"],
 	"Febre da carniça": ["", "A mordida inchou e a febre subiu: você cansa mais rápido.",
 		"Febre alta e fraqueza: a ferida cheira mal. Um antibiótico ainda resolve.",
 		"Estado grave: a febre da carniça está consumindo sua vida."],
@@ -1354,6 +1373,8 @@ const AVISOS_ESTAGIO := {
 
 ## Fator do sintoma 'i' (0 fôlego, 1 velocidade, 2 fome, 3 vida/s, 4 sede) no estágio atual; 1 (ou 0) sem doença.
 func sintoma(i: int) -> float:
+	if Infeccao.ativa(self):
+		return Infeccao.sintoma(self, i)
 	if doenca.is_empty() or not SINTOMAS.has(doenca.tipo):
 		return 0.0 if i == 3 else 1.0
 	var t: Array = SINTOMAS[doenca.tipo][clampi(int(doenca.estagio), 0, 3)]
@@ -1375,6 +1396,8 @@ func nova_febre_carnica() -> Dictionary:
 ## Estágio da doença agora. As outras seguem 4 quartos do prazo (o último é o 3); a disenteria sobe rápido
 ## (1 h → estágio 1, 3 h → estágio 2) e fica no platô do estágio 2 até passar.
 func _estagio_doenca(total: float) -> float:
+	if Infeccao.ativa(self):
+		return float(Infeccao.estagio_por_horas(float(doenca.horas)))
 	var passou: float = total - float(doenca.horas)
 	if doenca.tipo == "Disenteria":
 		return 0.0 if passou < 1.0 else (1.0 if passou < 3.0 else 2.0)
@@ -1390,7 +1413,7 @@ func _atualizar_doenca(delta: float) -> void:
 	var antes := int(doenca.estagio)
 	doenca.estagio = _estagio_doenca(total)
 	if int(doenca.estagio) > antes:
-		var msg: String = (AVISOS_ESTAGIO.get(doenca.tipo, ["", "", "", ""]) as Array)[int(doenca.estagio)]
+		var msg: String = (Infeccao.AVISOS if Infeccao.ativa(self) else AVISOS_ESTAGIO.get(doenca.tipo, ["", "", "", ""]) as Array)[int(doenca.estagio)]
 		if msg != "":
 			aviso(msg)
 	vida = maxf(0.0, vida - sintoma(3) * delta)
@@ -1407,14 +1430,14 @@ func _atualizar_doenca(delta: float) -> void:
 			aviso("A leptospirose foi fatal.")
 		else:
 			aviso("Seu organismo resistiu à leptospirose.")
-	elif randf() < 0.5:
-		var nova: String = doenca.origem
+	elif Infeccao.ativa(self):
 		doenca = {}
-		definir_raca(nova, false)
-		aviso("A mutação completou: você agora é %s." % NOMES_RACA[nova])
+		definir_raca("vampire", false)
+		aviso("A febre some de uma vez. O coração quase não bate. Você agora é um vampiro.")
+		DiarioPartida.evento("transformacao", "Virou vampiro (a infecção chegou ao fim).")
 	else:
 		vida = 0.0
-		aviso("A infecção foi fatal.")
+		aviso("A doença foi fatal.")
 	doenca = {}
 
 
@@ -1422,6 +1445,8 @@ func texto_doenca() -> String:
 	if doenca.is_empty():
 		return "Saudável"
 	var txt: String = doenca.tipo
+	if Infeccao.ativa(self):
+		txt += " — " + Infeccao.nome_estagio(int(doenca.estagio))   # o estágio se sente; as horas, só com diagnóstico
 	if Medicina.tem("diagnostico"):            # diagnóstico: a Enfermeiro(a) ou quem aprendeu com o mestre
 		txt += " · estágio %d · %dh restantes" % [int(doenca.estagio), maxi(0, ceili(doenca.horas))]
 	var sintomas: PackedStringArray = []
@@ -1462,9 +1487,12 @@ func usar_antibiotico() -> void:
 	elif doenca.tipo == "Disenteria":
 		doenca = {}
 		aviso("O antibiótico curou a disenteria.")
-	elif doenca.tipo == "Mutação vampírica":
-		_aliviar(6.0)                          # só o antídoto dos ninhos de morcegos cura
-		aviso("O antibiótico só retardou a mutação (+6h). Procure um antídoto em ninhos de morcegos.")
+	elif Infeccao.ativa(self):
+		if Infeccao.no_limiar(self):
+			aviso("O antibiótico não faz mais nada. A infecção passou do ponto.")
+			return
+		_aliviar(6.0)                          # só o antídoto cura (etapa 3.3: cura em camadas)
+		aviso("O antibiótico só retardou a infecção (+6h). Ela não se cura assim.")
 	elif doenca.tipo == "Febre da carniça":
 		doenca = {}
 		aviso("O antibiótico curou a febre da carniça.")
@@ -1477,18 +1505,21 @@ func usar_antibiotico() -> void:
 func _aliviar(h: float) -> void:
 	var total: float = doenca.get("total", 48.0)
 	doenca.horas = minf(total, doenca.horas + h)
-	doenca.estagio = clampf((total - doenca.horas) / total * 4.0, 0.0, 3.0)
+	doenca.estagio = _estagio_doenca(total)
 
 
 ## Antídoto dos ninhos de morcegos: cura a mutação vampírica. Para outras doenças não é gasto.
 func usar_antidoto() -> void:
-	if doenca.get("tipo", "") != "Mutação vampírica":
-		aviso("O antídoto só age contra a mutação vampírica.")
+	if not Infeccao.ativa(self):
+		aviso("O antídoto só age contra a infecção vampírica.")
+		return
+	if Infeccao.no_limiar(self):
+		aviso("O antídoto não funciona mais. Algo dentro de você parou de lutar.")
 		return
 	inventario.remover("antidoto", 1)
 	doenca = {}
 	sol = 0.0
-	aviso("O antídoto interrompeu a mutação vampírica.")
+	aviso("O antídoto interrompeu a infecção vampírica.")
 
 
 # =====================================================================
@@ -1523,6 +1554,11 @@ func restaurar(d: Dictionary) -> void:
 	doenca = (d.get("doenca", {}) as Dictionary).duplicate()
 	if str(doenca.get("tipo", "")) == "Infecção zumbi":       # save antigo: a mordida de zumbi virou doença
 		doenca = nova_febre_carnica()
+	elif str(doenca.get("tipo", "")) == "Mutação vampírica":  # save antigo (24 h): passa para a infecção de 48 h
+		var resto: float = float(doenca.get("horas", 24.0)) / 24.0 * Infeccao.TOTAL_H
+		doenca = Infeccao.nova()
+		doenca.horas = resto
+		doenca.estagio = _estagio_doenca(Infeccao.TOTAL_H)
 	lanterna_ligada = bool(d.get("lanterna", true))
 	var slots := SaveJogo.slots_de(d.get("slots", []))
 	for i in mini(slots.size(), inventario.slots.size()):
