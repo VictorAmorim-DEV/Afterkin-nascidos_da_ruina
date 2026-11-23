@@ -111,6 +111,7 @@ ignoradas (morte comum). A arquitetura infecção → natureza fica genérica.
 - Descartado: nível e XP; escolha de raça no início; raridade em cores com atributos sorteados.
 - Adiado (pós-MVP): multiplayer, PvP, estados de envolvimento, infâmia separada, guildas, economia entre jogadores,
   Bestiais, Necróticos, Profanos, estações, novos sistemas de veículos, as outras 15 cidades como conteúdo.
+- *(23/11/2026: o co-op de 1 a 10 virou o formato do jogo; ver "Marco 3 e o formato do jogo" no fim.)*
 - Aspiração da Fase 3 (Q2): co-op com host e depois PvP. Regra: não pagar nada de rede agora, mas manter o estado do
   jogo serializável e centralizado.
 
@@ -127,7 +128,8 @@ sessão o jogador vê o território vampírico e ouve o rumor da cura antes de s
 contextuais curtas na primeira vez que algo acontece.
 
 ## 12. MVP: 6 marcos com playtest (Q6, Q33, Q34)
-Uma única cidade da ilha e o entorno, single-player.
+Uma única cidade da ilha e o entorno, single-player. *(23/11/2026: o jogo passa a ser co-op de 1 a 10, e os marcos
+4–5 mudam com a guerra das raças; ver "Marco 3 e o formato do jogo" no fim.)*
 
 1. **Incursão humana**: o loop sair → arriscar → voltar é divertido sozinho? (fases do dia, sede e fome, fim do XP, origens)
 2. **Comunidade e rumores**: o jogador quer voltar e se relacionar? (NPCs, escambo, reputação, uma especialização).
@@ -597,3 +599,123 @@ Victor aprovou este rumo para recuperar a essência:
   com apelido ("Rita do Cais").
 - **Guga e Caio:** a opção "vou falar com o médico" some se o doutor já sabe; "Já falei com o médico" aparece no lugar.
   O Caio fala do Guga tratado ou curado.
+
+## Marco 3 e o formato do jogo (entrevista de 22–23/11/2026)
+
+Esta seção vale sobre as anteriores onde houver conflito (§7, §8, §9, §11, §12 e o Ancestral da Q31).
+
+### Formato do jogo
+- **Modo história cooperativo, de 1 a 10 jogadores.** A sala roda no PC de quem a cria (como em Green Hell e
+  The Forest); se o host sai, a sala fecha. Sem MMO e sem servidor dedicado por enquanto (💭: servidor 24 h).
+- **Amigos e convites sem depender de uma loja:** Epic Online Services (contas, amigos, lobby, retransmissão; conferir
+  custo e limites antes do teste de rede), convite da Steam como atalho e **código da sala** como reserva. A rede fica
+  separada da loja no código (Steam, Epic ou launcher próprio).
+- **Configurações da sala:** dificuldade (Novato, Intermediário, Expert), morte permanente (desligada por padrão) e
+  outras que vierem.
+- **Regra do co-op:** nada no mundo depende de um único jogador. O que é pessoal fica no personagem (infecção,
+  natureza, diário, habilidades, inventário, reputação); o que é do mundo pode ser feito por qualquer um e se repete.
+  O código novo não supõe um jogador só (hoje são 59 pontos em 37 scripts, convertidos no teste de rede).
+- **Do mundo (do grupo):** missões principais, comunidades e o que lembram, rumores, ninhos, construções. O mundo é
+  salvo no host; o personagem de cada jogador fica salvo por mundo.
+- **Reputação por jogador:** cada NPC julga cada jogador pelo que ele fez (o Jajá pode acobertar um e denunciar outro).
+- **Escala:** loot compartilhado; a pressão dos inimigos cresce com o número de jogadores (+25% por jogador além do
+  primeiro, provisório); os recursos das comunidades são limitados. Calibrar para 1–4; 10 é o limite.
+- **Caído e reanimação (só co-op):** com a vida zerada, 60 s sangrando; um amigo levanta com o **kit de reanimação**.
+  No solo, morre direto.
+- **Morte comum:** abre o mapa de renascimento com os locais descobertos, as camas e a base do grupo.
+- **Descartado:** linhagem e legado (o mundo é do grupo).
+
+### Vocabulário
+- **Raça:** Humano, Profano, Necrótico, Bestial.
+- **Espécie** (dentro da raça): Profano: vampiro, feiticeira/bruxo, necromante, banshee · Necrótico: zumbi, carniçal,
+  esqueleto, múmia · Bestial: lobisomem, homem-tigre (talvez Bárbaro), Ratman.
+- **Origem:** a vida antes do fim (Policial, Mecânico…). **Especialização:** o que se aprende jogando (Medicina,
+  Furtividade…).
+- Ao se transformar, as especializações humanas ficam adormecidas e surgem as da espécie nova; as antigas podem dar
+  um "eco" (ex.: Medicina → regenera mais rápido; desenhar depois). Quem volta a ser humano recupera tudo e ganha um
+  bônus contra a espécie que foi (ex.: +10% de dano ou −10% de chance de mordida).
+- **MVP:** Humano e Profano (só a espécie vampiro). Necróticos (zumbis) e Bestiais (ratos) são ameaças, sem base e
+  não jogáveis.
+
+### História: a guerra das raças
+- **A guerra é entre raças;** espécies da mesma raça são aliadas.
+- **Bases:** cada espécie tem a sua base (dungeon ou não) com um boss que não renasce. A **base-mestra** da raça, com
+  um **totem** que protege o local, só aparece depois que os bosses de todas as espécies da raça caem; o totem é
+  destruído depois do boss dela. Profanos no MVP: o ninho do Ancestral. Humanos: uma fortaleza dos militares com um
+  comandante. Mini bosses renascem.
+- **Quatro finais:** (1) humanos encontram a **cura global** (não é o antídoto: devolve todas as raças à forma
+  humana); (2) humanos destroem as outras raças; (3) quem se transformou destrói as outras raças, humanos
+  incluídos; (4) quem se transformou obriga as outras raças a se renderem e virarem a sua. Depois do epílogo, o mundo
+  continua.
+- **Cura global:** pede peças de cada raça (ex.: o sangue do Ancestral) e termina no laboratório, que a lança no ar
+  como uma nuvem transparente (cutscene). A Medicina não é obrigatória: sem ela no grupo, o Dr. Heitor faz a cura com
+  reputação máxima.
+- **Raça extinta:** quando cai a última base-mestra, os jogadores daquela raça escolhem render-se e se transformar,
+  ou morrer como os últimos (espectadores até o epílogo, ou personagem novo).
+- **Quando o amigo vira:** durante a infecção, aliados. Depois da transformação, **trégua de 2 dias de jogo** (sem
+  fogo amigo) para salvar (reversão cara e individual), juntar-se (ritual ou mordida) ou romper; sem decisão, viram
+  inimigos e o PvP entre eles liga. Humanos e outras raças só jogam juntos nesses casos.
+- **Ritual de transformação** (o antigo pacto): marco 5.
+
+### Especializações e habilidades
+- Sem limite fixo de especializações (substitui o "máx. 2"): o custo (tempo, reputação, tarefas) limita.
+- **Sem nível de personagem; cada habilidade tem o seu nível** (como no Project Zomboid). Hobbies e trabalhos
+  (rede, caça, pesca, vigia) dão níveis baixos em habilidades ligadas; a missão do mestre dá o nível máximo da
+  especialização. Entra logo depois do marco 3.
+
+### Marco 3 — o dilema da infecção
+- **Pergunta:** o jogador hesita, sente a tentação, a decisão pesa? O marco vai de humano a infectado e daí a
+  curado ou transformado; o vampiro do fim é o provisório da V13 até o marco 4.
+- **Herança da V13:** todos começam humanos (a raça sai da criação; o F1 continua). A mordida de zumbi vira a
+  **febre da carniça** (3 dias de piora; antibiótico ou Medicina; ignorada, mata com morte comum). O rato continua com
+  a leptospirose. Só a mordida do vampiro transforma.
+- **Mordida como habilidade do vampiro:** aviso de ~0,6 s (dá para esquivar), recarga de 20 s. Chance de infectar:
+  de frente e de pé 25%, pelas costas ou agachado/deitado 50%, caído ou atordoado 80%; gola ou cachecol de couro −15%.
+  O aviso diz se rompeu fundo. Golpes comuns não infectam. Mordida em quem já está infectado adianta +6 h. Sem
+  imunidade depois da cura.
+- **48 h de jogo em 4 estágios:** Marca (0–12 h), Fome (12–24 h), Sede (24–40 h), Limiar (40–48 h).
+
+  | Estágio | Vem sozinho | Bebendo sangue | Custo |
+  |---|---|---|---|
+  | Marca | nada | nada | febre leve: fôlego −15% |
+  | Fome | enxerga melhor no escuro | força +30% no corpo a corpo por 10 min | comida sacia metade; o sol cansa |
+  | Sede | escuro quase claro; fareja feridos e sangue | força +50% e velocidade +20% por 15 min | o sol queima; comida enjoa; os olhos mudam (NPCs notam) |
+  | Limiar | o mesmo | o mesmo, por mais tempo | sol pesado; perde vida sem beber |
+
+- **Sangue:** bicho (meio efeito, +1 h), corpo recém-morto (até ~1 h; efeito inteiro, +3 h), pessoa viva
+  dormindo ou caída (efeito dobrado, +6 h, crime grave se alguém vir). **Rapto:** nocautear alguém isolado, arrastar
+  devagar até um lugar sem testemunhas e beber sem matar; quem sobrevive conta (a menos que você estivesse de capuz).
+  Manter cativo fica para o marco 4.
+- **O que se sabe:** o estágio aparece, as horas não; o diagnóstico de Medicina (do jogador ou do Heitor) mostra as
+  horas. O Limiar é anunciado ("Algo dentro de você parou de lutar") e daí nada cura.
+- **Cura:** estágios 1–2, o antídoto; estágio 3, antídoto mais tratamento de médico, com chance de falhar e sequela
+  (vida máxima −10 por alguns dias); o soro de contenção (receita de Medicina; o Heitor vende caro) pausa 6 h nos
+  estágios 1–3.
+- **Antídoto:** o Heitor conta a expedição antiga, revela o ninho e alerta do perigo; prepara o antídoto com o
+  **sangue antigo** da **Mãe da Colônia**, mini boss do ninho de morcegos (forte, morde e chama morcegos). Um drop por
+  jogador perto quando ela morre; renasce 1 h real com a sala aberta. Não é preciso destruir o ninho.
+- **Morte infectada:** só nos estágios 3–4 acorda transformado; nos estágios 1–2 é morte comum e a infecção some.
+- **Reação social:** infectado conhecido fica de **quarentena** (enfermaria, médico e líder); transformado conhecido
+  é monstro (o guarda ataca de dia e de noite; reputação no mínimo). Sabem pelos olhos (Sede), pela vistoria no
+  portão ou por alguém que conte. **Esconder** (cachecol ou gola cobre a mordida; capuz, sombra ou óculos escuros
+  cobrem os olhos), **mentir** na vistoria (chance; se pego, perde reputação e entra em quarentena) ou **contar** ao
+  médico ou ao líder (quarentena sem perda e acesso ao tratamento). Um NPC por comunidade pode **acobertar** e um pode
+  **denunciar**, conforme o que cada jogador fez.
+- **Diário do jogador (tecla J;** separado do registro de playtest, `DiarioPartida`): página 1 com o **Objetivo
+  atual**, inimigos mortos por tipo, dias e horas sobrevividos e "O que está acontecendo comigo?" (ex.: "Infecção
+  causada por mordida de vampiro — Fome"); páginas seguintes com a lista de rumores, descobertas, locais e habilidades
+  marcados com [✅] ("Me tornei médico com o Dr. Heitor", "Sobrevivi à mordida de um vampiro"); página **Raças e
+  espécies**, preenchida ao ver ou ouvir falar de cada uma.
+- **O começo** (substitui a §11): cutscene na primeira entrada de cada personagem (quem entra depois também vê),
+  pulável a partir de 5 s segurando ESC por 2 s. Todos acordam na enfermaria da Vila dos Pescadores, resgatados pelo
+  **Toné** (padrão no código); a origem muda só o kit. Primeira fala: "O que aconteceu? Onde estou?". No marco 3 a
+  cutscene é provisória (tela preta, textos e sons que citam as quatro raças, o olho fechando e abrindo); a completa
+  (queda do mundo, espécies, militares, resgate de carro) vem com a arte.
+- **Ato 1 (missão principal):** acordar → Toné (o resgate) → Dona Iracema (a Vila acolhe) → Dr. Heitor (os "da noite",
+  um aviso breve de que surgiram outras espécies, a expedição, o ingrediente, o soro) → "Veja com seus olhos" (avistar
+  o território vampírico de um ponto alto antes de escurecer) → **A noite do ataque** (os vampiros atacam a Vila; a
+  mordida é possível) → desfecho: mordido, buscar a cura ou ceder; não mordido, "eles voltam" e o jogo fica livre.
+  No ato 2, outro NPC (a definir) explica as raças e as espécies.
+- **Depois do marco 3:** níveis de habilidade → teste de 3D → teste de rede (sala no host, EOS, Steam e código).
+- **Dose única** (o Jajá mordido junto, uma dose para os dois): guardada como ideia de cena, se couber num formato
+  que funcione com 1 a 10 jogadores.

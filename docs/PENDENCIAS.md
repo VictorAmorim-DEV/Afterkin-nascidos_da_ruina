@@ -93,18 +93,38 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   **Etapa 2b:** Mangue Vermelho (Assassinos), Vila Nova da Serra, Rancho do Cânion e Lago da Águia.
   - ⬜ Sprites novos dos NPCs (o Victor traz as folhas; eu recorto e animo).
   - ⬜ Skill `afterkin-npc` (rascunhar um NPC novo no formato dos JSON de comunidade e diálogo), na etapa 2b.
-- ⬜ Marco 3 — Dilema da infecção: estágios com tentação, ponto sem volta, cura, morte infectada, diário (decidir linhagem/legado).
-  Do playtest da 2a (21/11/2026):
-  - ⬜ Gancho das primeiras horas: a infecção começa cedo e dá o norte ("descubra o que está acontecendo com você").
-  - ⬜ Medicina com peso: tratar e retardar a infecção, lições com casos reais e progresso por uso (pensar junto com o Victor).
-  - ⬜ Laços pela infecção: quem esconde, quem denuncia, quem cuida de você.
+- ⬜ Marco 3 — Dilema da infecção (entrevista de 22–23/11/2026: "Marco 3 e o formato do jogo" em
+  `docs/DECISOES_DESIGN.md`). Código novo escrito "por jogador" (co-op). Etapas:
+  - ⬜ 3.1 Herança da V13 e vocabulário: todos começam humanos (sai a raça da criação; F1 continua), febre da carniça
+    no lugar da mordida de zumbi, zumbis e ratos apresentados como Necróticos e Bestiais.
+  - ⬜ 3.2 Infecção vampírica: 48 h em 4 estágios (Marca, Fome, Sede, Limiar), poderes e custos, mordida como
+    habilidade do vampiro (aviso, recarga, chance pelo jeito da mordida), sangue (bicho, corpo, pessoa) e rapto.
+  - ⬜ 3.3 Cura e Medicina com peso: antídoto em camadas, soro de contenção, diagnóstico com as horas, sequela;
+    Mãe da Colônia no ninho de morcegos (sangue antigo, um por jogador perto, renasce 1 h real com a sala aberta).
+  - ⬜ 3.4 Morte: transforma só nos estágios 3–4; mapa de renascimento com locais descobertos, camas e base.
+  - ⬜ 3.5 Reação social (laços pela infecção): quarentena, vistoria, esconder/mentir/contar, quem acoberta e quem
+    denuncia, transformado é monstro (guarda ataca de dia e de noite).
+  - ⬜ 3.6 Diário do jogador (J): objetivo atual, sobrevivência, "O que está acontecendo comigo?", lista com [✅],
+    página "Raças e espécies".
+  - ⬜ 3.7 Começo e ato 1 (gancho das primeiras horas): cutscene provisória (pular aos 5 s, ESC por 2 s), enfermaria
+    da Vila e o Toné, missão principal até "A noite do ataque".
+  - ⬜ 3.8 Playtest do marco 3.
+- ⬜ Depois do marco 3: níveis de habilidade (por hobbies e trabalhos; a missão do mestre dá o nível máximo; sem
+  nível de personagem). Junta as antigas ideias de habilidades e trabalhos do playtest 2a.
+- ⬜ Depois do 3D: teste de rede — sala no PC do host (até 10), Epic Online Services (amigos, lobby, retransmissão),
+  convite da Steam e código da sala, rede separada da loja; converter os pontos que supõem um jogador só;
+  configurações da sala (dificuldade Novato/Intermediário/Expert, morte permanente); caído e kit de reanimação.
+- ⬜ Cutscene completa de abertura (queda do mundo, espécies, militares, resgate de carro), quando houver arte.
 - ⬜ Depois do marco 3: teste curto de 3D (2–3 dias, num ramo separado) para decidir entre 3D completo, 3D gravado em
   sprite ou 2D. Montar um personagem completo (corpo base MPFB2 ou pacote modular, uma troca de roupa, uma armadura,
   uma arma na mão, uma capa com SpringBone, um ataque com animação Mixamo/Quaternius) e uma criatura gerada no Tripo
   ou Meshy. Referências: folhas de personagem que o Victor vai gerar (frente/lado/costas, pose em T ou A, fundo liso,
   1024 px+, peças de roupa e armas separadas; eu ajudo no prompt). Pede conta no Tripo ou no Meshy.
-- ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade.
-- ⬜ Marco 5 — Ninho e Vampiro Ancestral: prédio-ninho, chefe, três desfechos.
+- ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade, ecos das especializações, bônus ao
+  voltar a ser humano, trégua de 2 dias com o amigo que virou (salvar, juntar-se ou romper), cativo.
+- ⬜ Marco 5 — Guerra das raças: bases e bosses por espécie, base-mestra com totem, Ancestral e fortaleza humana,
+  ritual de transformação, os quatro finais (cura global com cutscene, extermínios, conversão forçada), raça extinta.
+  NPC do ato 2 que explica as raças e as espécies.
 - ⬜ Marco 6 — Base e cercos: construção do §60, Engenharia, cercos noturnos.
 
 ## Ideias em avaliação
@@ -112,8 +132,10 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
 - 💭 Loot: rever o que cada recipiente/local dá (a discutir).
 - 💭 Construções e funções de cada local; casas e prédios em lugares estranhos; distribuição de árvores e ruas.
 - 💭 Dificuldade dos monstros e o nome deles (em estudo: "Transformados").
-- 💭 Habilidades que melhoram com os trabalhos (costura, atenção, precisão…); pode casar com o marco 3 (playtest 2a).
-- 💭 Trabalhos com algo para fazer (vigia que avista e avisa, rede como pequena tarefa) (playtest 2a).
+- 💭 Trabalhos com algo para fazer (vigia que avista e avisa, rede como pequena tarefa) (playtest 2a); pode entrar
+  junto com os níveis de habilidade.
+- 💭 Servidor dedicado ou público (24 h, sem host); por enquanto, só a sala no PC do host.
+- 💭 Bestiais e Necróticos jogáveis; nomes (Bárbaro no lugar do Homem-tigre? Ratman).
 - 💭 Tamanho do mapa e distâncias entre os lugares (o Victor ainda está avaliando; não mexer por enquanto).
 
 ## Feito recentemente
