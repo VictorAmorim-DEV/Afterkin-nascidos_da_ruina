@@ -287,7 +287,7 @@ static func efeito(e: Dictionary, ctx: Dictionary, nos: Dictionary) -> PackedStr
 			var curou := ""
 			var c := Simulacao.estado(com)
 			var tipo := str((j.doenca as Dictionary).get("tipo", ""))
-			if tipo in ["Disenteria", "Leptospirose"] and int(c.get("remedio", 0)) > 0:
+			if tipo in ["Disenteria", "Leptospirose", "Febre da carniça"] and int(c.get("remedio", 0)) > 0:
 				c["remedio"] = int(c["remedio"]) - 1
 				j.doenca = {}
 				curou = " e deu o remédio para a %s" % tipo.to_lower()

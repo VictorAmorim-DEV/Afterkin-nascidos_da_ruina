@@ -10,6 +10,8 @@ const FRAMES := {
 	"vampire": "res://resources/sprite_frames/vampiro.tres",
 }
 const NOMES := {"zombie": "Zumbi", "rat": "Rato gigante", "vampire": "Vampiro"}
+## Raça de cada espécie (docs/DECISOES_DESIGN.md, "Vocabulário"): a guerra é entre raças.
+const RACAS := {"zombie": "Necrótico", "rat": "Bestial", "vampire": "Profano"}
 const M := IsoMath.METRO
 const DIRECOES: Array[String] = ["frente", "lado", "costas"]
 
@@ -295,3 +297,8 @@ func _animar(olhar_mundo: Vector2, andando: bool) -> void:
 		sprite.animation = anim
 	sprite.frame = mini(q, quadros.get_frame_count(anim) - 1)
 	sprite.flip_h = flip
+
+
+## "Zumbi (Necrótico)": a espécie com a raça, para o diário e os textos que apresentam o monstro.
+static func rotulo(especie: String) -> String:
+	return "%s (%s)" % [str(NOMES.get(especie, especie)), str(RACAS.get(especie, "?"))]

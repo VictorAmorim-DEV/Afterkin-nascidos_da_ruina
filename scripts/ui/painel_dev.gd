@@ -107,6 +107,7 @@ func _ready() -> void:
 	var lj := HBoxContainer.new()
 	lj.add_child(_botao("Curar tudo", _curar))
 	lj.add_child(_botao("Disenteria", _doenca.bind("Disenteria")))
+	lj.add_child(_botao("Febre da carniça", _doenca.bind("Febre da carniça")))
 	lj.add_child(_botao("Mutação", _doenca.bind("Mutação vampírica")))
 	col.add_child(lj)
 	col.add_child(_botao("Matar inimigos num raio de 30 m", _matar_perto))
@@ -329,8 +330,12 @@ func _curar() -> void:
 
 func _doenca(tipo: String) -> void:
 	var j := _j()
-	j.doenca = j.nova_disenteria() if tipo == "Disenteria" else \
-		{"tipo": tipo, "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "vampire"}
+	if tipo == "Disenteria":
+		j.doenca = j.nova_disenteria()
+	elif tipo == "Febre da carniça":
+		j.doenca = j.nova_febre_carnica()
+	else:
+		j.doenca = {"tipo": tipo, "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "vampire"}
 	_aviso("Doença: " + tipo)
 
 

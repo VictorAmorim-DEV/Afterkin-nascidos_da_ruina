@@ -789,7 +789,7 @@ func atacar() -> void:
 	golpe_t = 0.2
 	aviso("Você acertou um %s (%d de dano)." % [Inimigo.NOMES[alvo.raca], roundi(dano)])
 	alvo.receber_dano(dano)
-	if not alvo.morto and alvo.raca != "zombie" and randf() < 0.18:
+	if not alvo.morto and alvo.raca == "rat" and randf() < 0.18:   # o rato morde de volta; o vampiro morde por habilidade (marco 3)
 		infectar(alvo.raca)
 
 
@@ -1321,8 +1321,8 @@ func infectar(origem: String) -> void:
 			doenca = {"tipo": "Mutação vampírica", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "vampire"}
 			aviso("Você foi mordido. A mutação começou: encontre um antídoto em ninhos de morcegos.")
 		_:
-			doenca = {"tipo": "Infecção zumbi", "horas": 24.0, "total": 24.0, "estagio": 0.0, "origem": "zombie"}
-			aviso("Infecção zumbi contraída. A transformação ou morte pode ocorrer em 24h.")
+			doenca = nova_febre_carnica()
+			aviso("A mordida do zumbi infeccionou: febre da carniça. Procure antibiótico ou um médico.")
 
 
 ## Sintomas por estágio (RECURSO NOVO: a V13 só conta o estágio). Por doença, cinco fatores por estágio 0–3:
@@ -1332,8 +1332,9 @@ const SINTOMAS := {
 		[0.45, 0.85, 1.3, 0.12, 1.3]],
 	"Mutação vampírica": [[1.0, 1.0, 1.0, 0.0, 1.0], [1.0, 1.0, 1.3, 0.0, 1.0], [0.85, 1.0, 1.6, 0.0, 1.0],
 		[0.75, 1.0, 2.0, 0.05, 1.0]],
-	"Infecção zumbi": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.9, 0.95, 1.2, 0.0, 1.0], [0.75, 0.9, 1.5, 0.0, 1.0],
-		[0.6, 0.85, 1.8, 0.1, 1.0]],
+	# febre da carniça (mordida de zumbi, marco 3): fraqueza e febre que pioram em 3 dias; no fim, mata
+	"Febre da carniça": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.85, 0.95, 1.1, 0.0, 1.2], [0.7, 0.9, 1.2, 0.03, 1.3],
+		[0.55, 0.85, 1.3, 0.1, 1.4]],
 	# disenteria: estágio 2 é o platô longo (sede ×2, fôlego −20%), sem perder vida; o 3 não é usado
 	"Disenteria": [[1.0, 1.0, 1.0, 0.0, 1.0], [0.9, 1.0, 1.0, 0.0, 1.6], [0.8, 0.95, 1.1, 0.0, 2.0],
 		[0.7, 0.9, 1.2, 0.05, 2.5]],
@@ -1343,8 +1344,9 @@ const AVISOS_ESTAGIO := {
 		"Estado grave: a leptospirose está consumindo sua vida."],
 	"Mutação vampírica": ["", "Fome estranha: você precisa comer mais.", "A luz do sol começa a queimar sua pele.",
 		"A mutação está quase completa. Encontre um antídoto!"],
-	"Infecção zumbi": ["", "Pele fria e passos pesados.", "Músculos rígidos: você está mais lento e faminto.",
-		"A infecção está tomando seu corpo."],
+	"Febre da carniça": ["", "A mordida inchou e a febre subiu: você cansa mais rápido.",
+		"Febre alta e fraqueza: a ferida cheira mal. Um antibiótico ainda resolve.",
+		"Estado grave: a febre da carniça está consumindo sua vida."],
 	"Disenteria": ["", "Cólicas: você está perdendo líquido e a sede aumenta.",
 		"Diarreia forte: a sede dobrou e você está mais fraco. Vai demorar a passar; um antibiótico cura.", ""],
 }
@@ -1362,6 +1364,12 @@ func sintoma(i: int) -> float:
 ## ou até um antibiótico (pedido do playtest de 18/11/2026).
 func nova_disenteria() -> Dictionary:
 	return {"tipo": "Disenteria", "horas": 36.0, "total": 36.0, "estagio": 0.0, "origem": "agua"}
+
+
+## Febre da carniça (mordida de zumbi; docs/DECISOES_DESIGN.md, marco 3): 3 dias de jogo piorando. Antibiótico ou
+## médico curam; ignorada, mata (morte comum, sem transformar).
+func nova_febre_carnica() -> Dictionary:
+	return {"tipo": "Febre da carniça", "horas": 72.0, "total": 72.0, "estagio": 0.0, "origem": "zombie"}
 
 
 ## Estágio da doença agora. As outras seguem 4 quartos do prazo (o último é o 3); a disenteria sobe rápido
@@ -1390,6 +1398,9 @@ func _atualizar_doenca(delta: float) -> void:
 		return
 	if doenca.tipo == "Disenteria":
 		aviso("A disenteria passou. Beba água limpa.")
+	elif doenca.tipo == "Febre da carniça":
+		vida = 0.0
+		aviso("A febre da carniça foi fatal.")
 	elif doenca.tipo == "Leptospirose":
 		if randf() < 0.7:
 			vida = 0.0
@@ -1454,9 +1465,12 @@ func usar_antibiotico() -> void:
 	elif doenca.tipo == "Mutação vampírica":
 		_aliviar(6.0)                          # só o antídoto dos ninhos de morcegos cura
 		aviso("O antibiótico só retardou a mutação (+6h). Procure um antídoto em ninhos de morcegos.")
-	else:
+	elif doenca.tipo == "Febre da carniça":
 		doenca = {}
-		aviso("O tratamento interrompeu a mutação.")
+		aviso("O antibiótico curou a febre da carniça.")
+	else:
+		_aliviar(6.0)
+		aviso("O antibiótico aliviou um pouco (+6h).")
 
 
 ## Devolve 'h' horas ao prazo da doença (sem passar do total) e recalcula o estágio.
@@ -1507,6 +1521,8 @@ func restaurar(d: Dictionary) -> void:
 	descanso = float(d.get("descanso", 100.0))
 	sol = float(d.get("sol", 0.0))
 	doenca = (d.get("doenca", {}) as Dictionary).duplicate()
+	if str(doenca.get("tipo", "")) == "Infecção zumbi":       # save antigo: a mordida de zumbi virou doença
+		doenca = nova_febre_carnica()
 	lanterna_ligada = bool(d.get("lanterna", true))
 	var slots := SaveJogo.slots_de(d.get("slots", []))
 	for i in mini(slots.size(), inventario.slots.size()):
