@@ -95,7 +95,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ⬜ Skill `afterkin-npc` (rascunhar um NPC novo no formato dos JSON de comunidade e diálogo), na etapa 2b.
 - ⬜ Marco 3 — Dilema da infecção (entrevista de 22–23/11/2026: "Marco 3 e o formato do jogo" em
   `docs/DECISOES_DESIGN.md`). Código novo escrito "por jogador" (co-op). Etapas:
-  - ⬜ 3.1 Herança da V13 e vocabulário: todos começam humanos (sai a raça da criação; F1 continua), febre da carniça
+  - ✅ 3.1 (`978bebd`) Herança da V13 e vocabulário: todos começam humanos (sai a raça da criação; F1 continua), febre da carniça
     no lugar da mordida de zumbi, zumbis e ratos apresentados como Necróticos e Bestiais.
   - ⬜ 3.2 Infecção vampírica: 48 h em 4 estágios (Marca, Fome, Sede, Limiar), poderes e custos, mordida como
     habilidade do vampiro (aviso, recarga, chance pelo jeito da mordida), sangue (bicho, corpo, pessoa) e rapto.
