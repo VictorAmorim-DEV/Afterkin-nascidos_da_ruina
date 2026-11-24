@@ -106,7 +106,9 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     Mãe da Colônia no ninho de morcegos (sangue antigo, um por jogador perto, renasce 1 h real com a sala aberta).
   - ⬜ 3.4 Morte: transforma só nos estágios 3–4; mapa de renascimento com locais descobertos, camas e base.
   - ⬜ 3.5 Reação social (laços pela infecção): quarentena, vistoria, esconder/mentir/contar, quem acoberta e quem
-    denuncia, transformado é monstro (guarda ataca de dia e de noite).
+    denuncia, transformado é monstro (guarda ataca de dia e de noite). A regra da comunidade vale para qualquer
+    infectado ou transformado, jogador ou NPC (23/11/2026): quarentena (enfermaria ou casa trancada até existir a
+    cela), expulsão, ou morte se ninguém tiver afinidade com ele; atacando, os outros reagem.
   - ⬜ 3.6 Diário do jogador (J): objetivo atual, sobrevivência, "O que está acontecendo comigo?", lista com [✅],
     página "Raças e espécies".
   - ⬜ 3.7 Começo e ato 1 (gancho das primeiras horas): cutscene provisória (pular aos 5 s, ESC por 2 s), enfermaria
@@ -125,10 +127,14 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   1024 px+, peças de roupa e armas separadas; eu ajudo no prompt). Pede conta no Tripo ou no Meshy.
 - ⬜ Marco 4 — Vida de vampiro: sangue, sol, território vampírico, Furtividade, ecos das especializações, bônus ao
   voltar a ser humano, trégua de 2 dias com o amigo que virou (salvar, juntar-se ou romper), cativo.
+  - ⬜ NPC mordido pelo jogador vampiro (23/11/2026): pega a infecção e, sem cura em 24 h de jogo, vira vampiro;
+    morrer antes impede, em qualquer estágio. Transformado, pode explicar quem é ou atacar se não resistir; a
+    comunidade reage pela regra da 3.5. O humano infectado não passa a infecção: só o transformado.
 - ⬜ Marco 5 — Guerra das raças: bases e bosses por espécie, base-mestra com totem, Ancestral e fortaleza humana,
   ritual de transformação, os quatro finais (cura global com cutscene, extermínios, conversão forçada), raça extinta.
   NPC do ato 2 que explica as raças e as espécies.
 - ⬜ Marco 6 — Base e cercos: construção do §60, Engenharia, cercos noturnos.
+  - ⬜ Cela de quarentena (nas comunidades e na base), para prender infectados e transformados (23/11/2026).
 
 ## Ideias em avaliação
 - 💭 (o Victor ainda está pensando em mais coisas para acrescentar)

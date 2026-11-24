@@ -719,3 +719,7 @@ Esta seção vale sobre as anteriores onde houver conflito (§7, §8, §9, §11,
 - **Depois do marco 3:** níveis de habilidade → teste de 3D → teste de rede (sala no host, EOS, Steam e código).
 - **Dose única** (o Jajá mordido junto, uma dose para os dois): guardada como ideia de cena, se couber num formato
   que funcione com 1 a 10 jogadores.
+- **Quem passa a infecção** (23/11/2026): só quem já se transformou. O humano infectado não infecta ninguém, nem
+  bebendo sangue. O NPC mordido por um vampiro pega a infecção e vira em 24 h de jogo se não for curado; morto antes,
+  não vira (em qualquer estágio). A comunidade trata o NPC infectado ou transformado pela mesma regra do jogador
+  (quarentena, expulsão ou morte, conforme a afinidade). Detalhes no marco 4; a cela, no marco 6.
