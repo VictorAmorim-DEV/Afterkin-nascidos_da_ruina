@@ -149,6 +149,74 @@ static func renascer_no_lugar(arvore: SceneTree, id: String) -> String:
 	return "Você acorda %s." % str(a["onde"])
 
 
+## Renasce junto ao totem da base (Territorio). Devolve a frase para o aviso.
+static func renascer_na_base(arvore: SceneTree) -> String:
+	var p := posicao_base(arvore)
+	if p == Vector2.INF:
+		return ""
+	Inicio.zona_segura = Rect2()
+	_levar(arvore, p + Vector2(0.0, 1.5 * IsoMath.METRO))
+	DiarioPartida.evento("renascer", "Renasceu na base.")
+	return "Você acorda junto ao totem da sua base."
+
+
+## Renasce do lado de fora do portão de uma comunidade que te aceita.
+static func renascer_na_comunidade(arvore: SceneTree, com: String) -> String:
+	var g := Comunidades.geo(com)
+	if g.is_empty() or (g["portoes"] as Array).is_empty():
+		return ""
+	Inicio.zona_segura = Rect2()
+	_levar(arvore, ((g["portoes"] as Array)[0] as Dictionary)["fora"])
+	DiarioPartida.evento("renascer", "Renasceu no portão %s." % Comunidades.de(com))
+	return "Você acorda encostado no portão %s." % Comunidades.de(com)
+
+
+## Totem da base (mundo) ou INF sem base.
+static func posicao_base(arvore: SceneTree) -> Vector2:
+	var j := arvore.get_first_node_in_group("jogador")
+	if j == null or not j.territorio.tem_totem():
+		return Vector2.INF
+	var no: Node2D = j.territorio.totem.get("no")
+	if no == null or not is_instance_valid(no):
+		return Vector2.INF
+	return IsoMath.tela_para_mundo(no.global_position)
+
+
+## Lugares de início que o jogador já viu (área revelada no mapa); o lugar onde ele morava sempre conta.
+static func lugares_descobertos(local_inicio: String) -> Array:
+	var out: Array = []
+	for id in Inicio.IDS:
+		if id == local_inicio or _area_revelada(str(id)):
+			out.append(id)
+	if out.is_empty():
+		out.append(Inicio.IDS[0])
+	return out
+
+
+static func _area_revelada(id: String) -> bool:
+	var area := str((Inicio.DADOS.get(id, {}) as Dictionary).get("area", ""))
+	for a in MundoGen.AREAS.size():
+		if MundoGen.AREAS[a]["nome"] == area:
+			var r: Rect2 = MundoGen.area_rect(a)
+			for k in 9:
+				if Descobertas.revelado(r.position + r.size * Vector2(0.25 + 0.25 * (k % 3), 0.25 + 0.25 * (k / 3))):
+					return true
+	return false
+
+
+## Comunidades descobertas que deixam você chegar (reputação de 0 para cima).
+static func comunidades_abertas() -> Array:
+	var out: Array = []
+	for id in Comunidades.ids():
+		var g := Comunidades.geo(str(id))
+		if g.is_empty() or Reputacao.valor(str(id)) < 0:
+			continue
+		var local := str(Comunidades.dados(str(id)).get("local", ""))
+		if Descobertas.acampamentos.has(local) or Descobertas.revelado(g["centro"]):
+			out.append(str(id))
+	return out
+
+
 static func _levar(arvore: SceneTree, p: Vector2) -> void:
 	var j := arvore.get_first_node_in_group("jogador")
 	if j != null:

@@ -1112,6 +1112,10 @@ func _morrer() -> void:
 		dirigindo.sair()
 	morto = true
 	Sangue._largar(self)
+	if raca == "human" and Infeccao.ativa(self) and Infeccao.estagio(self) >= 2:
+		_morrer_infectado()                     # Sede ou Limiar: não renasce, acorda transformado onde caiu
+		return
+	var febre := Infeccao.ativa(self)
 	var causa := "de fome" if fome <= 0.0 else ("de sede" if sede <= 0.0 else "")
 	if causa == "":
 		causa = {"zombie": "atacado por um zumbi", "rat": "atacado por um rato gigante", "vampire": "atacado por um vampiro",
@@ -1121,12 +1125,42 @@ func _morrer() -> void:
 	world_vel = Vector2.ZERO
 	velocity = Vector2.ZERO
 	Respawn.largar_mochila(self)
-	aviso("Você morreu. O mundo continua sem você.")
+	aviso("Você morreu. O mundo continua sem você." + (" A infecção morreu com você." if febre else ""))
 	set_physics_process(false)
 	sprite.animation = &"caido"
 	sprite.frame = 0
 	await get_tree().create_timer(3.0).timeout
 	get_tree().current_scene.add_child(TelaRespawn.new())
+
+
+## Morte na Sede ou no Limiar (docs/DECISOES_DESIGN.md, marco 3): a escuridão dura alguns segundos e você acorda
+## vampiro ali mesmo, com a mochila, metade da vida e a noite clara. Na Marca e na Fome a morte é comum.
+func _morrer_infectado() -> void:
+	var onde := Respawn.nome_do_lugar(IsoMath.tela_para_mundo(global_position))
+	DiarioPartida.evento("morte", "Morreu infectado (%s), %s." % [Infeccao.nome_estagio(Infeccao.estagio(self)), onde])
+	world_vel = Vector2.ZERO
+	velocity = Vector2.ZERO
+	set_physics_process(false)
+	sprite.animation = &"caido"
+	sprite.frame = 0
+	aviso("Tudo escurece. Mas não acaba.")
+	var t := create_tween()
+	t.tween_property(sprite, "modulate", Color(0.35, 0.3, 0.4), 2.5)
+	await get_tree().create_timer(5.0).timeout
+	doenca = {}
+	sangue_t = 0.0
+	sangue_forca = 0.0
+	sangue_vel = 0.0
+	sol = 0.0
+	definir_raca("vampire", false)
+	vida = vida_max * 0.5
+	stamina = stamina_max
+	exausto = false
+	morto = false
+	sprite.modulate = Color.WHITE
+	set_physics_process(true)
+	aviso("Você abre os olhos. O coração não bate. A fome agora é outra: você é um vampiro.")
+	DiarioPartida.evento("transformacao", "Acordou transformado em vampiro, %s." % onde)
 
 
 ## Volta à vida depois da TelaRespawn (quem escolhe o lugar e teleporta é o Respawn). Acorda com a vida cheia,

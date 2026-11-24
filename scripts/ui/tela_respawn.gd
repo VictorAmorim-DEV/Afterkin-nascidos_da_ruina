@@ -110,10 +110,26 @@ func _preencher() -> void:
 		if primeiro == null:
 			primeiro = b
 			primeira = ["cama", i]
-	_secao("Lugares de início (uma casa qualquer)")
+	var pb := Respawn.posicao_base(get_tree())
+	if pb != Vector2.INF:
+		_secao("Sua base")
+		var bb := _botao(grupo, "Junto ao totem — %s" % Respawn.nome_do_lugar(pb), ["base"])
+		if primeiro == null:
+			primeiro = bb
+			primeira = ["base"]
+	var coms := Respawn.comunidades_abertas()
+	if not coms.is_empty():
+		_secao("Comunidades que te aceitam (no portão)")
+		for com in coms:
+			var bc := _botao(grupo, "%s — %s" % [Comunidades.nome(com), Reputacao.nivel(Reputacao.valor(com))], ["comunidade", com])
+			if primeiro == null:
+				primeiro = bc
+				primeira = ["comunidade", com]
+	_secao("Lugares que você conhece (uma casa qualquer)")
 	var j := get_tree().get_first_node_in_group("jogador")
-	var preferido: String = j.local_inicio if j != null and j.local_inicio in Inicio.IDS else Inicio.IDS[0]
-	for id in Inicio.IDS:
+	var local: String = j.local_inicio if j != null else ""
+	var preferido: String = local if local in Inicio.IDS else Inicio.IDS[0]
+	for id in Respawn.lugares_descobertos(local):
 		var b := _botao(grupo, "%s — %s" % [Inicio.nome(id), Inicio.tipo(id)], ["lugar", id])
 		if primeiro == null and id == preferido:
 			primeiro = b
@@ -131,6 +147,18 @@ func _escolher(escolha: Array) -> void:
 		_mapa.destaque_ponto = c["p"]
 		_mapa.focar(c["p"], 5.0)
 		_descricao.text = "Renascer na sua cama, %s. Ninguém garante que o lugar continua seguro." % str(c["nome"])
+	elif escolha[0] == "base":
+		var pb := Respawn.posicao_base(get_tree())
+		_mapa.destaque = ""
+		_mapa.destaque_ponto = pb
+		_mapa.focar(pb, 5.0)
+		_descricao.text = "Renascer junto ao totem da sua base."
+	elif escolha[0] == "comunidade":
+		var g := Comunidades.geo(str(escolha[1]))
+		_mapa.destaque = ""
+		_mapa.destaque_ponto = g["centro"]
+		_mapa.focar(g["centro"], 5.0)
+		_descricao.text = "Renascer do lado de fora do portão %s, sem nada na mochila." % Comunidades.de(str(escolha[1]))
 	else:
 		var id: String = escolha[1]
 		_mapa.destaque_ponto = Vector2.INF
@@ -147,6 +175,10 @@ func _confirmar() -> void:
 	var frase := ""
 	if _escolha[0] == "cama":
 		frase = Respawn.renascer_na_cama(get_tree(), int(_escolha[1]))
+	elif _escolha[0] == "base":
+		frase = Respawn.renascer_na_base(get_tree())
+	elif _escolha[0] == "comunidade":
+		frase = Respawn.renascer_na_comunidade(get_tree(), str(_escolha[1]))
 	else:
 		frase = Respawn.renascer_no_lugar(get_tree(), str(_escolha[1]))
 	if frase == "":
