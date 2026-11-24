@@ -723,3 +723,26 @@ Esta seção vale sobre as anteriores onde houver conflito (§7, §8, §9, §11,
   bebendo sangue. O NPC mordido por um vampiro pega a infecção e vira em 24 h de jogo se não for curado; morto antes,
   não vira (em qualquer estágio). A comunidade trata o NPC infectado ou transformado pela mesma regra do jogador
   (quarentena, expulsão ou morte, conforme a afinidade). Detalhes no marco 4; a cela, no marco 6.
+
+### Marco 3.5 — reação social (entrevista de 24/11/2026, Q60–Q71)
+- **Portão sempre fechado, com guarda** (revezam por turno; sem guarda, o sucessor assume). Entrar e sair é falando
+  com ele: ele faz o controle e abre por alguns segundos; na saída, devolve o que guardou. Ninguém pula o muro.
+- **Controle pela reputação:** primeira vez ou de 0 a 50 — para, pergunta, examina e revista (recolhe armas de fogo,
+  arco e flecha, lança e afins; faca, machado, picareta e outras ferramentas ficam). De 50 a 70 — pergunta (mordida,
+  ferido, armado) e só olha; dizendo que está armado, deixa as armas com ele. Mentir que não está: descoberto se usar
+  ou deixar a arma à vista de um morador lá dentro (recolhe, −10 e 3 dias de revista). De 70 a 100 — só pergunta se
+  está ferido ou mordido e olha; se estiver, chama o médico na hora. Negativa: barrado.
+- **Vistoria da infecção:** o guarda olha o pescoço e, da Sede em diante, os olhos. Mentir ("nenhuma mordida") passa
+  com 85% com a mordida coberta e 25% descoberta; em alerta ele exige ver o pescoço (só os 25%; recusar fecha o
+  portão naquele dia). Pego mentindo: −10 e quarentena. Contar: quarentena sem perda, e ele chama o médico.
+- **Disfarce equipado:** três encaixes de acessório (pescoço, cabeça, olhos) no inventário, base do futuro sistema de
+  roupas. Cachecol de couro (3 panos: cobre a mordida, −15% de chance de infectar), capuz (2 panos: esconde o rosto e,
+  de noite, os olhos), óculos escuros (saque das cidades: escondem os olhos de dia). Só funcionam equipados.
+- **Quarentena (social, sem cela):** entra, mas só o médico e o líder conversam; escambo, trabalhos, cama, barril e
+  bancada fecham; acaba quando o médico confirma a cura; virando vampiro, é monstro. Vale para NPCs no marco 4.
+- **Quem nota:** da Sede em diante, todo NPC com quem você conversa de rosto descoberto nota os olhos. Acoberta quem
+  você ajudou ou com reputação "respeitado" ou mais; neutro conta com 50%; o guarda e o desconfiado da comunidade
+  (Seu Valdir na Vila, Seu Bento no Santuário) contam sempre. Contado, a comunidade sabe em 1–2 h e vem a quarentena.
+- **Alerta (72 h):** controle completo para todos, o guarda pede para ver o pescoço e quem nota conta sempre.
+- **Transformado conhecido:** reconhecido a menos de 6 m (de capuz e de noite, 50%). O guarda ataca de dia e de noite
+  e chama 2–3 moradores fortes; os outros fogem; reputação no mínimo (−40) e portão fechado.
