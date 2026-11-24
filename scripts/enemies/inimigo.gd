@@ -18,6 +18,9 @@ const DIRECOES: Array[String] = ["frente", "lado", "costas"]
 @export_enum("zombie", "rat", "vampire") var raca: String = "zombie"
 @export var dorme: bool = true
 var casa: Edificio = null          ## casa onde mora; o vampiro volta para ela de dia e dorme
+var chefe: String = ""             ## "mae" = Mãe da Colônia (MaeColonia), mini boss do ninho de morcegos
+var ninho_p := Vector2.ZERO        ## ninho da Mãe da Colônia (mundo)
+var _revoada_cd: float = 0.0
 
 var hp: float = 45.0
 var hp_max: float = 45.0
@@ -51,6 +54,10 @@ func _ready() -> void:
 	add_to_group("inimigo")
 	sprite.sprite_frames = load(FRAMES[raca])
 	hp_max = 25.0 if raca == "rat" else 45.0
+	if chefe == "mae":
+		hp_max = MaeColonia.VIDA
+		sprite.scale *= 1.45
+		sprite.self_modulate = Color(0.78, 0.62, 0.86)
 	hp = hp_max
 	_flip_dorme = randf() < 0.5
 	_animar(Vector2.DOWN, false)
@@ -111,7 +118,7 @@ func _physics_process(delta: float) -> void:
 		if d < ouve:
 			dorme = false
 			alerta = 4.0
-		elif _noite() and (raca == "rat" or raca == "vampire") and not saiu:
+		elif _noite() and (raca == "rat" or raca == "vampire") and not saiu and chefe == "":   # a Mãe não sai do ninho
 			dorme = false
 			passeio = true
 			saiu = true
@@ -221,9 +228,14 @@ func _mordida(delta: float, presa: Node, jog: Node, d: float, mesmo_lugar: bool)
 			elif not jog.morto:
 				get_tree().call_group("hud", "aviso", "Você escapou do bote do vampiro.")
 		return true
+	if chefe == "mae":
+		_revoada_cd -= delta
+		if presa == jog and alerta > 0.0 and _revoada_cd <= 0.0 and d < MaeColonia.REVOADA_ALCANCE and not jog.morto:
+			_revoada_cd = MaeColonia.RECARGA_REVOADA
+			Revoada.soltar(jog)
 	if presa == jog and alerta > 0.0 and _mordida_cd <= 0.0 and d < INICIA_MORDIDA and mesmo_lugar and not jog.morto:
 		_mordida_t = AVISO_MORDIDA
-		_mordida_cd = RECARGA_MORDIDA
+		_mordida_cd = MaeColonia.RECARGA_MORDIDA if chefe == "mae" else RECARGA_MORDIDA
 		get_tree().call_group("hud", "aviso", "O vampiro se encolhe para dar o bote!")
 		return true
 	return false
@@ -279,7 +291,10 @@ func receber_dano(n: float, por_jogador: bool = true) -> void:
 func _morrer() -> void:
 	morto = true
 	remove_from_group("inimigo")
-	Corpo.anexar(self, str(NOMES.get(raca, raca)), false)   # o corpo fica no chão até o jogador ir para longe
+	Corpo.anexar(self, nome_exibido(), false)   # o corpo fica no chão até o jogador ir para longe
+	if chefe == "mae":
+		MaeColonia.morreu(ninho_p)
+		MaeColonia.dar_sangue(get_tree(), global_position)
 	if _golpe_jogador and Comunidades.perto(_mundo(), 15.0 * M) != "":
 		Reputacao.registrar("defesa", _mundo())   # quem viu, conta: você enfrentou um monstro perto do muro
 	$CollisionShape2D.set_deferred("disabled", true)
@@ -288,7 +303,7 @@ func _morrer() -> void:
 	sprite.flip_h = _flip_dorme
 	var j := get_tree().get_first_node_in_group("jogador")
 	if _golpe_jogador:
-		DiarioPartida.abate(str(NOMES.get(raca, raca)))
+		DiarioPartida.abate(nome_exibido())
 	if j != null and _golpe_jogador:
 		if j.inventario.adicionar_itens([["comida", 1]]):
 			j.aviso("Inimigo derrotado. +1 comida.")
@@ -328,6 +343,10 @@ func _animar(olhar_mundo: Vector2, andando: bool) -> void:
 		sprite.animation = anim
 	sprite.frame = mini(q, quadros.get_frame_count(anim) - 1)
 	sprite.flip_h = flip
+
+
+func nome_exibido() -> String:
+	return "Mãe da Colônia" if chefe == "mae" else str(NOMES.get(raca, raca))
 
 
 ## "Zumbi (Necrótico)": a espécie com a raça, para o diário e os textos que apresentam o monstro.

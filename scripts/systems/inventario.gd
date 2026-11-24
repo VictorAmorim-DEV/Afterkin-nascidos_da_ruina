@@ -199,6 +199,8 @@ func usar(i: int) -> void:
 			jogador.usar_bandagem()
 		"soro":
 			jogador.beber_soro()
+		"soro_contencao":
+			jogador.usar_soro_contencao()
 		"kit_cirurgico":
 			jogador.usar_kit_cirurgico()
 		"cama":

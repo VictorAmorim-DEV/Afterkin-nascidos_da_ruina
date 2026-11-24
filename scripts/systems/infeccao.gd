@@ -19,6 +19,13 @@ const CHANCE_CAIDO := 0.8                            ## caído, dormindo ou desc
 const PROTECAO_PESCOCO := 0.15                       ## gola ou cachecol de couro
 const DANO_MORDIDA := 10.0
 
+## Cura (marco 3: cura em camadas).
+const PAUSA_SORO_H := 6.0                            ## soro de contenção
+const CHANCE_SEDE_MEDICO := 0.7                      ## tratamento da Sede com o médico (antídoto + cuidado)
+const CHANCE_SEDE_SOZINHO := 0.5                     ## o próprio jogador, com Cirurgia de campo
+const SEQUELA_H := 72.0                              ## falhou: 3 dias de jogo com a vida máxima menor
+const SEQUELA_VIDA := 10.0
+
 ## Sintomas por estágio: [recuperação do fôlego ×, velocidade ×, fome ×, vida perdida por segundo, sede ×]
 ## (mesmo formato de Player.SINTOMAS). A perda de vida do Limiar só vale sem sangue no corpo (3.2b).
 const SINTOMAS := [[0.85, 1.0, 1.0, 0.0, 1.0], [0.85, 1.0, 1.0, 0.0, 1.0], [0.8, 1.0, 1.0, 0.0, 1.0],
@@ -31,6 +38,19 @@ const AVISOS := ["",
 	"Uma fome estranha, que comida não resolve. E, no escuro, você enxerga mais do que deveria.",
 	"O sol queima a sua pele e a comida enjoa. Seus olhos mudaram: quem olhar de perto vai notar.",
 	"Algo dentro de você parou de lutar. Nenhuma cura funciona mais."]
+
+
+## Passa 'h' horas de jogo na infecção: o soro de contenção (pausa_h) segura primeiro.
+static func passar(j: Node, h: float) -> void:
+	var pausa: float = float(j.doenca.get("pausa_h", 0.0))
+	if pausa > 0.0:
+		var usa := minf(pausa, h)
+		j.doenca["pausa_h"] = pausa - usa
+		h -= usa
+		if float(j.doenca["pausa_h"]) <= 0.0:
+			j.doenca.erase("pausa_h")
+			j.aviso("O efeito do soro de contenção passou. A infecção volta a andar.")
+	j.doenca["horas"] = maxf(0.0, float(j.doenca["horas"]) - h)
 
 
 static func nova() -> Dictionary:
@@ -107,6 +127,40 @@ static func sol(j: Node) -> float:
 ## Os olhos já mudaram (Sede em diante): os NPCs que olharem de perto notam (etapa 3.5).
 static func olhos_mudados(j: Node) -> bool:
 	return estagio(j) >= 2
+
+
+static func curar(j: Node) -> void:
+	j.doenca = {}
+	j.sol = 0.0
+	DiarioPartida.evento("cura", "Curou-se da infecção vampírica.")
+
+
+## Tratamento da Sede (o antídoto já foi gasto): com 'chance', cura; falhando, a infecção segue e fica a sequela.
+static func tratar_sede(j: Node, chance: float) -> String:
+	if randf() < chance:
+		curar(j)
+		return "O tratamento deu certo. A febre cede, os olhos voltam ao normal. Você está curado."
+	j.sequela_h = SEQUELA_H
+	j.vida_max = j.vida_max_atual()
+	j.vida = minf(float(j.vida), float(j.vida_max))
+	return "O tratamento não pegou. O antídoto se perdeu, a infecção continua, e o corpo ficou fraco (vida máxima −%d por 3 dias)." % int(SEQUELA_VIDA)
+
+
+## O que o médico diz ao examinar a mordida (estágio e horas).
+static func diagnostico(j: Node) -> String:
+	var e := estagio(j)
+	if e < 0:
+		return "Não vejo mordida nenhuma. Você está limpo."
+	var resto := float(j.doenca["horas"])
+	var pausa := " O soro está segurando, por enquanto." if float(j.doenca.get("pausa_h", 0.0)) > 0.0 else ""
+	match e:
+		0:
+			return "A marca ainda está fresca. Você tem umas %d horas antes de a coisa começar a mandar em você.%s Com o antídoto, isso se resolve." % [ceili(horas_ate_proximo(j)), pausa]
+		1:
+			return "Já é a fome. Faltam umas %d horas para a sede. Até lá, o antídoto sozinho ainda cura.%s" % [ceili(horas_ate_proximo(j)), pausa]
+		2:
+			return "É a sede: os olhos já mudaram. Faltam umas %d horas para não ter mais volta. Agora só o antídoto com tratamento, e pode dar errado.%s" % [ceili(horas_ate_proximo(j)), pausa]
+	return "Passou do ponto. Eu sinto muito. Faltam umas %d horas, e não há nada que eu possa fazer." % ceili(resto)
 
 
 ## Começa a infecção, ou adianta +6 h se já estiver infectado. Devolve o aviso para o jogador.

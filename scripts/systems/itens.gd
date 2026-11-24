@@ -10,7 +10,12 @@ const DB := {
 	"sucata": {"nome": "Sucata", "stack": 32, "peso": 0.5, "desc": "Peças para totens e abrigos."},
 	"comida": {"nome": "Comida", "stack": 16, "peso": 0.3, "uso": true, "desc": "Recupera fome e um pouco de vida."},
 	"antibiotico": {"nome": "Antibiótico", "stack": 8, "peso": 0.05, "uso": true, "desc": "Trata doenças."},
-	"antidoto": {"nome": "Antídoto", "stack": 4, "peso": 0.1, "uso": true, "desc": "Tirado de ninhos de morcegos. Interrompe a mutação vampírica."},
+	"antidoto": {"nome": "Antídoto", "stack": 4, "peso": 0.1, "uso": true,
+		"desc": "O médico prepara com sangue antigo. Cura a infecção vampírica na Marca e na Fome; na Sede, só com tratamento de médico."},
+	"sangue_antigo": {"nome": "Sangue antigo", "stack": 4, "peso": 0.2,
+		"desc": "Da Mãe da Colônia, num frasco que não esfria. O Dr. Heitor sabe preparar o antídoto com ele."},
+	"soro_contencao": {"nome": "Soro de contenção", "stack": 4, "peso": 0.3, "uso": true,
+		"desc": "Segura a infecção vampírica por 6 horas de jogo (Marca, Fome e Sede). Não cura."},
 	"machado": {"nome": "Machado", "stack": 1, "peso": 1.5, "ferramenta": true, "desc": "Equipado, corta árvores com o botão esquerdo."},
 	"picareta": {"nome": "Picareta", "stack": 1, "peso": 1.8, "ferramenta": true, "desc": "Equipada, quebra pedras grandes com o botão esquerdo."},
 	"totem": {"nome": "Totem de território", "stack": 1, "peso": 3.0, "uso": true, "desc": "Use para posicionar seu totem aqui."},
@@ -52,6 +57,8 @@ const RECEITAS := [
 	{"id": "soro", "desc": "Contra a disenteria e a sede.", "custo": [["agua_limpa", 1], ["comida", 1]], "hab": "preparar_remedios"},
 	{"id": "kit_cirurgico", "desc": "Para a Cirurgia de campo.", "custo": [["sucata", 2], ["pano", 2], ["bandagem", 1]],
 		"hab": "preparar_remedios"},
+	{"id": "soro_contencao", "desc": "Segura a infecção vampírica por 6 h. Não cura.",
+		"custo": [["antibiotico", 1], ["agua_limpa", 1], ["pano", 1]], "hab": "preparar_remedios"},
 ]
 
 ## Nome do recipiente que o jogador vasculha (V13: CONTEM).
@@ -152,7 +159,7 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 		"esgoto":
 			l = [["sucata", 2]]
 		"ninho":
-			l = [["antidoto", 2 if rng.randf() < 0.25 else 1]]
+			l = [["pano", 1 if rng.randf() < 0.3 else 0]]   # o remédio da mordida agora sai da Mãe da Colônia (MaeColonia)
 	return l.filter(func(x): return x[1] > 0)
 
 

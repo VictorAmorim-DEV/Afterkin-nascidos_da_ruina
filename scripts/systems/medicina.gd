@@ -214,6 +214,8 @@ static func opcoes(arvore: Dictionary, ctx: Dictionary, lista: Array, abertura: 
 	var m := mestre()
 	if abertura and not m.is_empty() and str(m["com"]) == com and str(m["npc"]) == npc and not completa():
 		out.append_array(_opcoes_mestre(nos, ctx, j))
+	if abertura and not m.is_empty() and str(m["com"]) == com and str(m["npc"]) == npc:
+		out.append_array(_opcoes_infeccao(nos, ctx, j))
 	var tr := _opcao_tratar(nos, ctx, j, lista)
 	if not tr.is_empty():
 		out.append(tr)
@@ -267,10 +269,102 @@ static func _opcoes_mestre(nos: Dictionary, ctx: Dictionary, j: Node) -> Array:
 	return [{"texto": "O que era mesmo que o senhor precisava?", "vai": "_med_lembrar"}]
 
 
+# ───────────────────────────── a mordida (marco 3, cura em camadas) ─────────────────────────────
+
+const PRECO_SORO := 30.0                       ## o soro de contenção sai caro (valor no escambo do médico)
+const TRATAR_SEDE_H := 3.0
+const PREPARAR_H := 2.0
+static var _preco_soro: Array = []
+
+const HISTORIA := "Os da noite. (Ele fecha a porta antes de continuar.) Eu já fui atrás de cura, sabe? Uma expedição, " \
+	+ "eu e mais quatro, num ninho de morcegos depois da curva do lago. Lá dorme uma coisa que a gente chamou de Mãe " \
+	+ "da Colônia: velha, inchada, cercada de morcego. O sangue dela é o que segura a mordida; com ele eu preparo o " \
+	+ "antídoto. Voltamos dois. Eu não vou de novo.\n\nSe um dia você for, vá de dia, com luz, arma e bandagem. " \
+	+ "E não vá sozinho se puder evitar. Ah, e não são só eles, não: andam dizendo que no sul tem gente que vira fera, " \
+	+ "e que há mortos que levantam. O mundo ficou grande demais pra gente."
+
+
+## O médico mestre e a mordida: a história do ninho, o exame, o antídoto com sangue antigo, o tratamento da Sede
+## e o soro de contenção (caro).
+static func _opcoes_infeccao(nos: Dictionary, ctx: Dictionary, j: Node) -> Array:
+	var out: Array = []
+	if j == null or Reputacao.valor(str(ctx["com"])) < 0:
+		return out
+	var infectado := Infeccao.ativa(j)
+	var contou := bool(Conversas.flags.get("heitor_conta_ninho", false))
+	if not contou:
+		var fala := HISTORIA
+		if infectado:
+			fala = "Mostra. (Ele examina o pescoço em silêncio.) %s\n\n%s" % [Infeccao.diagnostico(j), HISTORIA]
+		nos["_inf_historia"] = {"fala": fala, "efeitos": [{"med": "historia"}]}
+		out.append({"texto": "Doutor... fui mordido por um deles." if infectado else "O que o senhor sabe dos da noite?",
+			"vai": "_inf_historia"})
+	elif infectado:
+		nos["_inf_exame"] = {"fala": "...", "_dinamico": true}
+		out.append({"texto": "Pode examinar a mordida?", "vai": "_inf_exame", "efeitos": [{"med": "exame"}]})
+	if j.inventario.contar("sangue_antigo") > 0:
+		nos["_inf_antidoto"] = {"fala": "Sangue antigo... ainda morno, depois de tudo. (Ele trabalha em silêncio por umas duas horas.) " \
+			+ "Pronto: uma dose. Na marca ou na fome, ela resolve sozinha. Depois disso, me procure.",
+			"efeitos": [{"med": "preparar"}]}
+		out.append({"texto": "Trouxe o sangue antigo da Mãe da Colônia.", "vai": "_inf_antidoto"})
+	if infectado and Infeccao.estagio(j) == 2 and j.inventario.contar("antidoto") > 0:
+		nos["_inf_trat"] = {"fala": "...", "_dinamico": true}
+		out.append({"texto": "Doutor, preciso do tratamento. Tenho o antídoto.", "vai": "_inf_trat",
+			"efeitos": [{"med": "tratar_sede"}]})
+	if contou:
+		_preco_soro = Consequencias._reparacao_valor(j, PRECO_SORO)
+		if not _preco_soro.is_empty():
+			nos["_inf_soro"] = {"fala": "Isso não cura, entenda bem. Segura a febre por umas seis horas. (Ele te entrega um frasco escuro.)",
+				"efeitos": [{"med": "soro"}]}
+			out.append({"texto": "Me arruma um soro de contenção? Pago com %s." % Itens.texto_lista(_preco_soro),
+				"vai": "_inf_soro"})
+	return out
+
+
+static func _efeito_infeccao(acao: String, ctx: Dictionary, j: Node) -> PackedStringArray:
+	var msgs: PackedStringArray = []
+	var nos: Dictionary = ctx.get("_nos", {})
+	match acao:
+		"historia":
+			Conversas.flags["heitor_conta_ninho"] = true
+			var r := Rumores.conhecer("ninho_lago")
+			if r != "":
+				msgs.append(r)
+		"exame":
+			nos["_inf_exame"] = {"fala": "(Ele examina o pescoço e os olhos.) " + Infeccao.diagnostico(j)}
+		"preparar":
+			j.inventario.remover("sangue_antigo", 1)
+			if j.inventario.adicionar_itens([["antidoto", 1]]):
+				msgs.append("Recebeu: Antídoto.")
+			else:
+				ItemNoChao.largar(j.get_parent(), j.global_position, "antidoto", 1)
+				msgs.append("O antídoto ficou no chão (mochila cheia).")
+			j.passar_tempo(PREPARAR_H, "O preparo levou %d horas." % int(PREPARAR_H))
+		"tratar_sede":
+			j.inventario.remover("antidoto", 1)
+			var r2 := Infeccao.tratar_sede(j, Infeccao.CHANCE_SEDE_MEDICO)
+			var certo := not Infeccao.ativa(j)
+			nos["_inf_trat"] = {"fala": ("(Horas de febre, agulha e pano frio.) Pronto. Olha pra mim... os olhos voltaram. Você está limpo." \
+				if certo else "(Horas de febre, agulha e pano frio. Ele balança a cabeça.) Não pegou. Eu sinto muito. Ainda há tempo, mas pouco.")}
+			msgs.append(r2)
+			j.passar_tempo(TRATAR_SEDE_H, "O tratamento durou %d horas." % int(TRATAR_SEDE_H))
+		"soro":
+			for it in _preco_soro:
+				j.inventario.remover(str(it[0]), int(it[1]))
+			if j.inventario.adicionar_itens([["soro_contencao", 1]]):
+				msgs.append("Recebeu: Soro de contenção.")
+			else:
+				ItemNoChao.largar(j.get_parent(), j.global_position, "soro_contencao", 1)
+			_preco_soro = []
+	return msgs
+
+
 ## Efeitos {"med": "..."} das conversas (Conversas.aplicar).
 static func efeito(acao: String, ctx: Dictionary) -> PackedStringArray:
 	var msgs: PackedStringArray = []
 	var j: Node = ctx["jogador"]
+	if acao in ["historia", "exame", "preparar", "tratar_sede", "soro"]:
+		return _efeito_infeccao(acao, ctx, j)
 	match acao:
 		"aceitar":
 			if _proposta.is_empty():

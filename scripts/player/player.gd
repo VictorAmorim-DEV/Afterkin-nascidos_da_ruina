@@ -93,6 +93,7 @@ var forma: String = "human"              ## só o rato alterna: "human" ou "rat"
 var doenca: Dictionary = {}              ## vazio = saudável; {tipo, horas, total, estagio, origem}
 var sol: float = 0.0                     ## exposição solar do vampiro, em segundos ao sol direto (acima de 60 queima)
 var sangue_t: float = 0.0                ## horas de jogo que ainda restam do efeito do sangue (Sangue)
+var sequela_h: float = 0.0               ## horas de jogo de sequela do tratamento da Sede (vida máxima menor)
 var sangue_forca: float = 0.0            ## dano extra no corpo a corpo enquanto dura (0,3 = +30%)
 var sangue_vel: float = 0.0              ## velocidade extra enquanto dura
 var _farejo_t: float = 0.0               ## s até sentir o cheiro de sangue de novo (Sede em diante)
@@ -615,6 +616,12 @@ func _atualizar_vitais(delta: float) -> void:
 
 ## Efeito do sangue (Sangue) passando; da Sede em diante, o faro avisa de sangue fresco por perto.
 func _atualizar_sangue(delta: float, horas: float) -> void:
+	if sequela_h > 0.0:
+		sequela_h -= horas
+		if sequela_h <= 0.0:
+			sequela_h = 0.0
+			vida_max = vida_max_atual()
+			aviso("A fraqueza do tratamento passou.")
 	if sangue_t > 0.0:
 		sangue_t -= horas
 		if sangue_t <= 0.0:
@@ -837,7 +844,7 @@ func atacar() -> void:
 	dano *= BONUS_ARMA.get(inventario.id_equipado(), 1.0)
 	ataque_cd = 0.42 if forma_rato() else 0.6
 	golpe_t = 0.2
-	aviso("Você acertou um %s (%d de dano)." % [Inimigo.NOMES[alvo.raca], roundi(dano)])
+	aviso("Você acertou %s (%d de dano)." % [("a " if alvo.chefe != "" else "um ") + alvo.nome_exibido(), roundi(dano)])
 	alvo.receber_dano(dano)
 	if not alvo.morto and alvo.raca == "rat" and randf() < 0.18:   # o rato morde de volta; o vampiro morde por habilidade (marco 3)
 		infectar(alvo.raca)
@@ -891,7 +898,7 @@ func _atirar() -> void:
 		return
 	var dano := DANO_TIRO * lerpf(1.0, 0.6, dist / alcance)
 	alvo.receber_dano(dano)
-	aviso("Tiro! Acertou um %s (%d de dano). (%d bala(s))" % [Inimigo.NOMES[alvo.raca], roundi(dano), balas])
+	aviso("Tiro! Acertou %s (%d de dano). (%d bala(s))" % [("a " if alvo.chefe != "" else "um ") + alvo.nome_exibido(), roundi(dano), balas])
 
 
 ## Morador sob o cursor, ao alcance do tiro (null se nenhum).
@@ -1037,7 +1044,11 @@ func passar_tempo(horas: float, texto_fim: String) -> void:
 	if incubacao_h >= 0.0:
 		incubacao_h = maxf(0.05, incubacao_h - horas)
 	if not doenca.is_empty():
-		doenca.horas = maxf(0.05, float(doenca.horas) - horas)
+		if Infeccao.ativa(self):
+			Infeccao.passar(self, horas)
+			doenca.horas = maxf(0.05, float(doenca.horas))
+		else:
+			doenca.horas = maxf(0.05, float(doenca.horas) - horas)
 		doenca.estagio = _estagio_doenca(float(doenca.get("total", 48.0)))
 	var t2 := capa.create_tween()
 	t2.tween_property(texto, "modulate:a", 1.0, 0.4)
@@ -1248,7 +1259,11 @@ func _passar_horas_dormindo(horas: float) -> void:
 	if incubacao_h >= 0.0:
 		incubacao_h = maxf(0.05, incubacao_h - horas)   # a disenteria aparece logo depois de acordar
 	if not doenca.is_empty():
-		doenca.horas = maxf(0.05, float(doenca.horas) - horas)
+		if Infeccao.ativa(self):
+			Infeccao.passar(self, horas)
+			doenca.horas = maxf(0.05, float(doenca.horas))
+		else:
+			doenca.horas = maxf(0.05, float(doenca.horas) - horas)
 		doenca.estagio = _estagio_doenca(float(doenca.get("total", 48.0)))
 
 
@@ -1263,7 +1278,7 @@ func forma_rato() -> bool:
 
 
 func vida_max_atual() -> float:
-	return 60.0 if forma_rato() else 100.0
+	return (60.0 if forma_rato() else 100.0) - (Infeccao.SEQUELA_VIDA if sequela_h > 0.0 else 0.0)
 
 
 ## Escolhe a raça. 'reiniciar' = começo de partida (zera vida, fome, doença e mochila).
@@ -1459,7 +1474,10 @@ func _atualizar_doenca(delta: float) -> void:
 	if doenca.is_empty():
 		return
 	# a V13 tira 24 "horas" por segundo real (esgota em 2 s); aqui a doença corre com o relógio do jogo
-	doenca.horas -= delta * _min_por_s() / 60.0
+	if Infeccao.ativa(self):
+		Infeccao.passar(self, delta * _min_por_s() / 60.0)   # o soro de contenção segura antes
+	else:
+		doenca.horas -= delta * _min_por_s() / 60.0
 	var total: float = doenca.get("total", 48.0)
 	var antes := int(doenca.estagio)
 	doenca.estagio = _estagio_doenca(total)
@@ -1562,17 +1580,39 @@ func _aliviar(h: float) -> void:
 
 
 ## Antídoto dos ninhos de morcegos: cura a mutação vampírica. Para outras doenças não é gasto.
+## Antídoto em camadas (Infeccao): Marca e Fome, cura sozinho; Sede, só com tratamento de médico (o Heitor, ou você
+## mesmo com Cirurgia de campo, com mais risco); Limiar, nada.
 func usar_antidoto() -> void:
 	if not Infeccao.ativa(self):
 		aviso("O antídoto só age contra a infecção vampírica.")
 		return
-	if Infeccao.no_limiar(self):
+	var e := Infeccao.estagio(self)
+	if e >= 3:
 		aviso("O antídoto não funciona mais. Algo dentro de você parou de lutar.")
 		return
+	if e == 2:
+		if not Medicina.tem("cirurgia"):
+			aviso("Na Sede, o antídoto sozinho não segura. Precisa de um médico para o tratamento.")
+			return
+		inventario.remover("antidoto", 1)
+		aviso(Infeccao.tratar_sede(self, Infeccao.CHANCE_SEDE_SOZINHO))
+		return
 	inventario.remover("antidoto", 1)
-	doenca = {}
-	sol = 0.0
+	Infeccao.curar(self)
 	aviso("O antídoto interrompeu a infecção vampírica.")
+
+
+## Soro de contenção: segura a infecção por 6 h (não cura; no Limiar não adianta).
+func usar_soro_contencao() -> void:
+	if not Infeccao.ativa(self):
+		aviso("Não há o que segurar: você não está infectado.")
+		return
+	if Infeccao.no_limiar(self):
+		aviso("O soro não segura mais nada. A infecção passou do ponto.")
+		return
+	inventario.remover("soro_contencao", 1)
+	doenca["pausa_h"] = maxf(float(doenca.get("pausa_h", 0.0)), Infeccao.PAUSA_SORO_H)
+	aviso("O soro desce queimando. A febre para de subir: a infecção está segura por %d horas." % int(Infeccao.PAUSA_SORO_H))
 
 
 # =====================================================================
@@ -1582,7 +1622,7 @@ func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
 	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "genero": genero, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(),
 		"stamina": stamina, "descanso": descanso, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
-		"sangue": [sangue_t, sangue_forca, sangue_vel],
+		"sangue": [sangue_t, sangue_forca, sangue_vel], "sequela": sequela_h,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
 		"equipado": inventario.equipado}
 
@@ -1618,6 +1658,8 @@ func restaurar(d: Dictionary) -> void:
 	sangue_t = float(sg[0])
 	sangue_forca = float(sg[1])
 	sangue_vel = float(sg[2])
+	sequela_h = float(d.get("sequela", 0.0))
+	vida_max = vida_max_atual()
 	var slots := SaveJogo.slots_de(d.get("slots", []))
 	for i in mini(slots.size(), inventario.slots.size()):
 		inventario.slots[i] = slots[i]

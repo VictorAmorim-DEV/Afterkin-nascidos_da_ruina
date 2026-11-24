@@ -460,6 +460,17 @@ func _instanciar(ch: Chunk, spec: Dictionary) -> void:
 			ni.add_child(lt)
 			add_child(ni)
 			no = ni
+			var cena_m := _cena("res://scenes/enemies/inimigo.tscn")
+			if cena_m != null and MaeColonia.presente(p_ni):     # a Mãe da Colônia guarda o ninho (renasce em 1 h real)
+				var mae := cena_m.instantiate() as Inimigo
+				mae.raca = "vampire"
+				mae.chefe = "mae"
+				mae.ninho_p = p_ni
+				mae.dorme = true
+				mae.position = IsoMath.mundo_para_tela(p_ni + Vector2(0.0, NinhoMorcegos.RAIO * 1.6))
+				add_child(mae)
+				ch.inimigos.append(mae)
+				ch.nos.append(mae)
 		"plantacao":
 			var pl := Plantacao.new()
 			pl.r = spec["r"]

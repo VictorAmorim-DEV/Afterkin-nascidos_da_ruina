@@ -118,6 +118,15 @@ func _ready() -> void:
 	lj.add_child(_botao("Mordida de vampiro", func():
 		_j().doenca = {}
 		_j().aviso(Infeccao.morder(_j()))))
+	lj.add_child(_botao("Mãe da Colônia aqui", func():
+		var mae := (load("res://scenes/enemies/inimigo.tscn") as PackedScene).instantiate() as Inimigo
+		mae.raca = "vampire"
+		mae.chefe = "mae"
+		mae.dorme = false
+		mae.ninho_p = IsoMath.tela_para_mundo(_j().global_position)
+		_j().get_parent().add_child(mae)
+		mae.global_position = _j().global_position + IsoMath.mundo_para_tela(Vector2(6.0 * IsoMath.METRO, 0.0))
+		_aviso("Mãe da Colônia a 6 m.")))
 	lj.add_child(_botao("Próximo estágio", func():
 		var j := _j()
 		if not Infeccao.ativa(j):
