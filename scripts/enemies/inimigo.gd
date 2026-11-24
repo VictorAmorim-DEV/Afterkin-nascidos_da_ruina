@@ -304,7 +304,7 @@ func _morrer() -> void:
 	var j := get_tree().get_first_node_in_group("jogador")
 	if _golpe_jogador:
 		DiarioPartida.abate(nome_exibido())
-	if j != null and _golpe_jogador:
+	if j != null and _golpe_jogador and chefe == "":   # a Mãe da Colônia só dá o sangue antigo (MaeColonia)
 		if j.inventario.adicionar_itens([["comida", 1]]):
 			j.aviso("Inimigo derrotado. +1 comida.")
 		else:
