@@ -102,7 +102,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 3.2d (`4fcddab`) Ajustes pedidos depois da 3.2: corpos ficam até o jogador ir a mais de 70 m (aí 5 min
     reais, pausando quando ele volta), arrastar corpos, corpo com marcas de dentes achado põe a comunidade em alerta;
     moradores dormem visíveis na cama (Vila) ou na entrada da barraca, acordam com barulho; pegar quem dorme.
-  - ⬜ 3.3 Cura e Medicina com peso: antídoto em camadas, soro de contenção, diagnóstico com as horas, sequela;
+  - ✅ 3.3 (`3387a16`) Cura e Medicina com peso: antídoto em camadas, soro de contenção, diagnóstico com as horas, sequela;
     Mãe da Colônia no ninho de morcegos (sangue antigo, um por jogador perto, renasce 1 h real com a sala aberta).
   - ⬜ 3.4 Morte: transforma só nos estágios 3–4; mapa de renascimento com locais descobertos, camas e base.
   - ⬜ 3.5 Reação social (laços pela infecção): quarentena, vistoria, esconder/mentir/contar, quem acoberta e quem
