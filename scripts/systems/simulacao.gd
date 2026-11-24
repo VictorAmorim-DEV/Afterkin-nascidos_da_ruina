@@ -255,6 +255,23 @@ static func registrar_noticia(id: String, texto: String, peso: int = 1) -> void:
 	_registrar(id, texto, peso)
 
 
+## Alerta de vampiro (marco 3): acharam marcas de dentes. Por ALERTA_H horas de jogo a comunidade dorme mais leve
+## (Npc._sono) e fica mais desconfiada; a notícia corre.
+const ALERTA_H := 72.0
+
+
+static func alertar(id: String, texto: String) -> void:
+	var c := estado(id)
+	if c.is_empty():
+		return
+	c["alerta_h"] = Reputacao.agora_h() + ALERTA_H
+	_registrar(id, texto + " A comunidade está em alerta.", 3)
+
+
+static func alerta(id: String) -> bool:
+	return float(estado(id).get("alerta_h", -1.0)) > Reputacao.agora_h()
+
+
 ## O jogador tratou um ferido (antibiótico + instruções do médico, ou a Medicina dele): passa a melhorar.
 ## 'reducao' é quanto a gravidade cai na hora (o kit cirúrgico tira da beira da morte).
 static func tratar(id: String, npc: String, reducao: float = 0.15) -> bool:

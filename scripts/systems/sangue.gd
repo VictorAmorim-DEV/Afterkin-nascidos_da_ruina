@@ -33,7 +33,7 @@ static func alvo(j: Node) -> Dictionary:
 	var melhor: Dictionary = {}
 	var dist := ALCANCE
 	var arv := j.get_tree()
-	for n in arv.get_nodes_in_group("corpo") + arv.get_nodes_in_group("errante"):
+	for n in arv.get_nodes_in_group("corpo") + arv.get_nodes_in_group("npc"):
 		var no := n as Node2D
 		if no == null or not is_instance_valid(no):
 			continue
@@ -67,7 +67,7 @@ static func _avaliar(no: Node2D) -> Dictionary:
 			if Reputacao.agora_h() - float(no.get_meta("morte_h", -99.0)) > FRESCO_H:
 				return {"recusa": "O sangue já coagulou."}
 			return {"no": no, "fonte": "corpo", "nome": "de %s" % p.nome()}
-		if no is Errante and (no as Errante).caido():
+		if p.desacordado() or (no is Errante and (no as Errante).caido()):
 			return {"no": no, "fonte": "pessoa", "nome": "de %s" % p.nome()}
 	return {}
 
@@ -77,6 +77,10 @@ static func dica(j: Node) -> String:
 	if estagio(j) < 1:
 		return ""
 	var a := alvo(j)
+	if a.is_empty():
+		var dormindo := _dormindo_perto(j)
+		if dormindo != null:
+			return "%s — pegar %s dormindo" % [Controles.nome("morder"), dormindo.nome()]
 	if a.is_empty() and int(j.postura) == 1:
 		var v := _vitima_de_pe(j)
 		if v != null:
@@ -93,6 +97,14 @@ static func beber(j: Node) -> void:
 		return
 	var a := alvo(j)
 	if a.is_empty() and e >= 1:
+		var dormindo := _dormindo_perto(j)
+		if dormindo != null:
+			if dormindo.tentar_captura(j):
+				j.golpe_t = 0.3
+				j.aviso("%s nem acordou. Está desacordado: %s arrasta, %s bebe." % [dormindo.nome(),
+					Controles.nome("interact"), Controles.nome("morder")])
+				DiarioPartida.evento("rapto", "Pegou %s dormindo." % dormindo.nome())
+			return
 		var v := _vitima_de_pe(j)
 		if v != null:
 			nocautear(j, v)
@@ -125,17 +137,19 @@ static func beber(j: Node) -> void:
 		"pessoa": "Você crava os dentes e bebe o sangue %s. Nunca se sentiu tão forte." % a["nome"]}[fonte]
 	j.aviso(txt)
 	if fonte == "pessoa":
-		_ferir_pessoa(j, no as Errante)
+		_ferir_pessoa(j, no as Npc)
 	if Infeccao.ativa(j):
 		j.doenca["horas"] = maxf(0.01, float(j.doenca["horas"]) - float(f["avanco_h"]))
 	DiarioPartida.evento("sangue", "Bebeu o sangue %s (%s)." % [str(a["nome"]), fonte])
 
 
 ## Pessoa viva: fica mais fraca, lembra de você e, se alguém de uma comunidade viu, é crime grave.
-static func _ferir_pessoa(j: Node, e: Errante) -> void:
-	e.agente["vida"] = maxf(5.0, float(e.agente["vida"]) - 20.0)
+static func _ferir_pessoa(j: Node, e: Npc) -> void:
 	e.vida = maxf(2.0, e.vida - 9.0)
-	e.agente["opiniao"] = int(e.agente.get("opiniao", 0)) - 80
+	if e is Errante:
+		var er := e as Errante
+		er.agente["vida"] = maxf(5.0, float(er.agente["vida"]) - 20.0)
+		er.agente["opiniao"] = int(er.agente.get("opiniao", 0)) - 80
 	e.bebido = true
 	e.set_meta("sem_sangue", true)            # um gole por vez: a vítima precisa de tempo
 	if not e.desacordado():                   # acordado e caído: ele vê quem foi
@@ -150,6 +164,22 @@ static func _ferir_pessoa(j: Node, e: Errante) -> void:
 ## Capuz na mochila (até existir roupa vestida): quem acorda não reconhece o rosto.
 static func rosto_coberto(j: Node) -> bool:
 	return Itens.DB.has("capuz") and j.inventario.contar("capuz") > 0
+
+
+## Morador dormindo ao alcance (na cama ou na entrada da barraca).
+static func _dormindo_perto(j: Node) -> Npc:
+	var pj := IsoMath.tela_para_mundo(j.global_position)
+	var melhor: Npc = null
+	var dist := ALCANCE
+	for n in j.get_tree().get_nodes_in_group("npc"):
+		var npc := n as Npc
+		if npc == null or npc.morto or not npc.dormindo or npc.fora:
+			continue
+		var d := IsoMath.tela_para_mundo(npc.global_position).distance_to(pj)
+		if d < dist:
+			dist = d
+			melhor = npc
+	return melhor
 
 
 ## Errante de pé ao alcance que dá para nocautear (não hostil, sem estar caído).
@@ -183,35 +213,52 @@ static func nocautear(j: Node, e: Errante) -> void:
 	DiarioPartida.evento("rapto", "Nocauteou %s." % e.nome())
 
 
-## E no desacordado: começa ou para de arrastar.
-static func arrastar(j: Node, e: Errante) -> void:
-	if e.arrastado_por != null:
-		e.arrastado_por = null
-		j.carregando = null
-		j.aviso("Você solta %s." % e.nome())
+## E no desacordado ou num corpo: começa ou para de arrastar.
+static func arrastar(j: Node, no: Node2D) -> void:
+	var nome_no: String = no.call("nome") if no.has_method("nome") else "o corpo"
+	if j.carregando == no:
+		_largar(j)
+		j.aviso("Você solta %s." % nome_no)
 		return
-	if j.carregando != null and is_instance_valid(j.carregando):
-		j.carregando.arrastado_por = null
-	e.arrastado_por = j
-	j.carregando = e
+	_largar(j)
+	j.carregando = no
+	if no is Npc:
+		(no as Npc).arrastado_por = j
 	j.set_meta("rapto_visto", false)
-	j.aviso("Você arrasta %s. Devagar, e sem correr." % e.nome())
+	j.aviso("Você arrasta %s. Devagar, e sem correr." % ("o corpo de " + nome_no if no.is_in_group("corpo") else nome_no))
+
+
+static func _largar(j: Node) -> void:
+	var c: Node2D = j.carregando
+	if c != null and is_instance_valid(c) and c is Npc:
+		(c as Npc).arrastado_por = null
+	j.carregando = null
+
+
+## O que está sendo arrastado ainda pode ser arrastado (corpo, ou alguém ainda desacordado)?
+static func arrastavel(no: Node2D) -> bool:
+	if no == null or not is_instance_valid(no) or no.is_queued_for_deletion():
+		return false
+	if no is Npc:
+		return (no as Npc).morto or (no as Npc).desacordado()
+	return no.is_in_group("corpo")
 
 
 ## Enquanto arrasta: se alguém de uma comunidade vir, é crime (uma vez por arrasto).
 static func vigiar_arrasto(j: Node) -> void:
-	var e: Errante = j.carregando
-	if e == null or not is_instance_valid(e) or not e.desacordado():
-		j.carregando = null
+	var e: Node2D = j.carregando
+	if not arrastavel(e):
+		_largar(j)
 		return
 	if bool(j.get_meta("rapto_visto", false)):
 		return
 	var p := IsoMath.tela_para_mundo(e.global_position)
 	for n in j.get_tree().get_nodes_in_group("npc"):
 		var npc := n as Npc
-		if npc != null and not npc.morto and npc.comunidade != "" and not npc.dormindo and Reputacao._viu(npc, j, p):
+		if npc != null and npc != e and not npc.morto and npc.comunidade != "" and not npc.dormindo \
+				and not npc.desacordado() and Reputacao._viu(npc, j, p):
 			j.set_meta("rapto_visto", true)
-			Reputacao.registrar("rapto", p)
+			Reputacao.registrar("corpo" if e.is_in_group("corpo") else "rapto", p)
 			return
 
 
@@ -224,7 +271,7 @@ static func farejar(j: Node) -> Dictionary:
 	var melhor: Dictionary = {}
 	var dist := FAREJA
 	var arv := j.get_tree()
-	for n in arv.get_nodes_in_group("corpo") + arv.get_nodes_in_group("errante"):
+	for n in arv.get_nodes_in_group("corpo") + arv.get_nodes_in_group("npc"):
 		var no := n as Node2D
 		if no == null or not is_instance_valid(no):
 			continue

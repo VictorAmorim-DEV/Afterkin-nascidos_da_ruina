@@ -28,6 +28,18 @@ var fora := false                             ## saiu em expedição ou viagem (
 var furioso := false                          ## ataca o jogador (Consequencias: vingança, guarda expulsando o assassino)
 var _t_golpe := 0.0
 var _t_grito_n := 0.0
+## Sono e rapto (marco 3, Sangue): dorme deitado na cama da casa (ou na entrada da barraca); barulho deixa inquieto
+## e depois acorda. Nocauteado, fica desacordado até 'acorda_h' (hora do jogo) e pode ser arrastado.
+const NOCAUTE_H := 1.5
+const VE_AO_ACORDAR := 8.0 * IsoMath.METRO      ## acordando, reconhece quem estiver até aqui (sem capuz)
+var acorda_h: float = -1.0
+var arrastado_por: Node2D = null
+var bebido := false                              ## beberam o sangue dele
+var suspeita := 0.0                              ## dormindo: 0 = sono pesado, 0,5 = inquieto, 1 = acorda
+var _na_cama := false
+var _cama_no: Node2D = null                      ## desenho da cama (para sumir junto quando o cômodo não está à vista)
+var _t_sono := 0.0
+var _revide_t := 0.0                             ## s partindo para cima de quem tentou pegá-lo dormindo
 
 var _alvo := Vector2.INF                      ## mundo
 var _passo := 0.0
@@ -133,9 +145,155 @@ func _deve_dormir() -> bool:
 
 
 func _dormir(v: bool) -> void:
+	var antes := dormindo
 	dormindo = v
-	visible = not v
+	visible = true
 	_col.set_deferred("disabled", v)
+	if v and not antes:
+		suspeita = 0.0
+		_ir_para_cama()
+	elif not v and _na_cama:
+		_na_cama = false                         # levanta da cama e sai pela porta da casa
+		_cama_no = null
+		modulate.a = 1.0
+		global_position = IsoMath.mundo_para_tela(ponto_da_tarefa("casa"))
+
+
+## Deita na cama da casa dele (Vila: a cama do quarto do prédio; acampamento: na entrada da barraca).
+## O prédio só tem móveis quando está montado perto do jogador; até lá, deita na porta e tenta de novo.
+func _ir_para_cama() -> void:
+	var g := Comunidades.geo(comunidade)
+	_sprite.animation = &"deitado"
+	_sprite.frame = 0
+	if g.is_empty():
+		return
+	var lotes: Array = g.get("lotes", [])
+	if lotes.is_empty():
+		return
+	var lote: Vector2 = lotes[int(dados.get("casa", indice)) % lotes.size()]
+	for e in get_tree().get_nodes_in_group("edificio"):
+		var ed := e as Edificio
+		if ed == null or not ed.pronto:
+			continue
+		var origem := IsoMath.tela_para_mundo(ed.global_position)
+		if origem.distance_to(lote) > 3.0 * M:
+			continue
+		var camas: Array = ed.moveis.filter(func(m): return m.tipo == "cama")
+		if camas.is_empty():
+			return
+		var m: Dictionary = camas[indice % camas.size()]
+		global_position = IsoMath.mundo_para_tela(origem + Vector2((m.x0 + m.x1) / 2.0, (m.y0 + m.y1) / 2.0 + 6.0))
+		_cama_no = m.no
+		_na_cama = true
+		return
+
+
+## Dormindo: deitado; o barulho do jogador por perto deixa inquieto e, passando do ponto, acorda.
+## Com a comunidade em alerta (Simulacao), o sono é mais leve.
+func _sono(delta: float) -> void:
+	velocity = Vector2.ZERO
+	_sprite.animation = &"deitado"
+	_sprite.frame = 0
+	if _na_cama and _cama_no != null and is_instance_valid(_cama_no):
+		modulate.a = _cama_no.modulate.a        # dentro de casa: só aparece quando o cômodo está à vista
+	_t_sono -= delta
+	if _t_sono > 0.0:
+		return
+	_t_sono = 0.5
+	if not _na_cama:
+		_ir_para_cama()
+	var j := get_tree().get_first_node_in_group("jogador") as Node2D
+	if j == null or bool(j.morto):
+		return
+	var d := _dist_jogador()
+	var leve := 2.0 if Simulacao.alerta(comunidade) else 1.0
+	var mesmo := Reputacao._predio_em(get_tree(), _mundo()) == Reputacao._predio_em(get_tree(), IsoMath.tela_para_mundo(j.global_position))
+	var ouve: float = float(j.ruido_efetivo()) * (0.6 if mesmo else 0.25) * leve
+	if d < ouve:
+		var antes := suspeita
+		suspeita = minf(1.0, suspeita + 0.2 * leve)
+		if antes < 0.5 and suspeita >= 0.5:
+			falar("Hm...?", 2.0)
+		if suspeita >= 1.0:
+			falar("Quem tá aí?!", 2.5)
+			acordar_assustado()
+	else:
+		suspeita = maxf(0.0, suspeita - 0.04)
+
+
+## Tentativa de pegá-lo dormindo (Sangue). Sem perceber nada, pega sempre; inquieto, a chance cai.
+## Falhando, ele acorda: foge gritando ou parte para cima (o guarda sempre parte). Devolve true se pegou.
+func tentar_captura(j: Node2D) -> bool:
+	var chance := 1.0 if suspeita < 0.5 else clampf(1.0 - suspeita, 0.1, 0.5)
+	_na_cama = false                             # fica onde está (na cama), em vez de sair pela porta
+	_cama_no = null
+	modulate.a = 1.0
+	if randf() < chance:
+		_dormir(false)
+		nocautear()
+		return true
+	_dormir(false)
+	_sprite.animation = &"andar_frente"
+	if str(dados.get("papel", "")).begins_with("guarda") or randf() < 0.5:
+		_revide_t = 20.0
+		furioso = true
+		falar("Sai de cima de mim!", 2.5)
+	else:
+		_fuga_t = 8.0
+		falar("Socorro! Socorro!", 3.0)
+	Reputacao.registrar("agressao", _mundo(), self)
+	j.aviso("%s acordou antes da hora." % nome())
+	return false
+
+
+func desacordado() -> bool:
+	return acorda_h >= 0.0
+
+
+## Golpe na nuca (Sangue): cai desacordado por NOCAUTE_H horas de jogo.
+func nocautear() -> void:
+	acorda_h = Reputacao.agora_h() + NOCAUTE_H
+	_fuga_t = 0.0
+	conversando = false
+	velocity = Vector2.ZERO
+	_col.set_deferred("disabled", true)
+	falar("Ugh—", 1.5)
+
+
+func _desacordado() -> void:
+	velocity = Vector2.ZERO
+	_sprite.animation = &"deitado"
+	_sprite.frame = 0
+	if Reputacao.agora_h() >= acorda_h:
+		_acordar()
+
+
+## Acorda do nocaute: foge e conta. Se quem fez isso estiver perto e de rosto descoberto, ele viu.
+func _acordar() -> void:
+	acorda_h = -1.0
+	_col.set_deferred("disabled", false)
+	var j := get_tree().get_first_node_in_group("jogador") as Node2D
+	if j != null and j.get("carregando") == self:
+		j.set("carregando", null)
+	arrastado_por = null
+	_fuga_t = 8.0
+	var viu: bool = j != null and not bool(j.morto) and _dist_jogador() < VE_AO_ACORDAR and not Sangue.rosto_coberto(j)
+	_ao_acordar(viu, j)
+
+
+## Morador: viu, a comunidade fica sabendo (ele é a testemunha); não viu, mas beberam o sangue dele, a comunidade
+## entra em alerta. O Errante faz a sua versão.
+func _ao_acordar(viu: bool, j: Node2D) -> void:
+	if comunidade == "":
+		return
+	if viu:
+		falar("Foi você! Eu vi a sua cara!", 3.0)
+		Reputacao.registrar("sangue" if bebido else "rapto", _mundo(), self)
+		j.aviso("%s acordou e viu o seu rosto." % nome())
+	else:
+		falar("O que... o que fizeram comigo?", 3.0)
+		if bebido:
+			Simulacao.alertar(comunidade, "%s acordou fora de casa, fraco, com marcas de dentes no pescoço." % nome())
 
 
 func _physics_process(delta: float) -> void:
@@ -147,14 +305,22 @@ func _physics_process(delta: float) -> void:
 			queue_free()                      # consta como morto: não pode estar andando por aí
 			return
 		var jh := get_tree().get_first_node_in_group("jogador") as Node2D
-		furioso = comunidade != "" and not morto and Consequencias.hostil(comunidade, str(dados.get("id", "")), jh, self)
+		furioso = (comunidade != "" and not morto and Consequencias.hostil(comunidade, str(dados.get("id", "")), jh, self)) \
+			or _revide_t > 0.0
 		var t := _tarefa_agora()
 		if t != tarefa:
 			tarefa = t
 			_alvo = ponto_da_tarefa(t)
 			if dormindo:
 				_dormir(false)                # acordou: sai de casa
-	if dormindo or morto or fora:
+	_revide_t -= delta
+	if morto or fora:
+		return
+	if desacordado():
+		_desacordado()
+		return
+	if dormindo:
+		_sono(delta)
 		return
 	if furioso and vida >= 12.0:
 		var j := get_tree().get_first_node_in_group("jogador") as Node2D
@@ -277,8 +443,10 @@ func _morrer() -> void:
 	morto = true
 	conversando = false
 	remove_from_group("interativo")
-	add_to_group("corpo")                      # o corpo fica um tempo no chão (Sangue: recém-morto)
-	set_meta("morte_h", Reputacao.agora_h())
+	acorda_h = -1.0
+	Corpo.anexar(self, nome(), true)           # o corpo fica no chão (Corpo: some longe do jogador)
+	if bebido:
+		set_meta("mordido", true)
 	_col.set_deferred("disabled", true)
 	velocity = Vector2.ZERO
 	_sprite.animation = &"caido" if _sprite.sprite_frames.has_animation(&"caido") else _sprite.animation
@@ -293,10 +461,6 @@ func _morrer() -> void:
 	var j := get_tree().get_first_node_in_group("jogador")
 	if j != null:
 		j.aviso("%s está %s." % [nome(), "morta" if str(dados.get("genero", "m")) == "f" else "morto"])
-	var t := create_tween()
-	t.tween_interval(60.0)
-	t.tween_property(self, "modulate:a", 0.0, 2.0)
-	t.tween_callback(queue_free)
 
 
 ## Acordou com alguém mexendo na casa dele de noite (Reputacao: furto). Sai para a rua, assustado.
@@ -334,7 +498,7 @@ func falar(texto: String, dur: float = 4.0) -> void:
 
 
 func parado() -> bool:
-	return not dormindo and not morto and not fora and not conversando and _fuga_t <= 0.0 and velocity.length() < 1.0
+	return not dormindo and not desacordado() and not morto and not fora and not conversando and _fuga_t <= 0.0 and velocity.length() < 1.0
 
 
 func _olhar_para_jogador() -> void:
@@ -372,7 +536,7 @@ func _dist_jogador() -> float:
 
 
 func _e_o_alvo() -> bool:
-	if dormindo or morto or fora:
+	if dormindo or morto or fora or desacordado():
 		return false
 	var d := _dist_jogador()
 	if d > ALCANCE_FALA * (2.4 if tarefa == "portao" else 1.0):     # o guarda conversa pela grade do portão
@@ -388,6 +552,8 @@ func prioridade_interacao() -> int:
 
 
 func texto_interacao() -> String:
+	if desacordado() and _dist_jogador() < 2.0 * M:
+		return "E — %s %s" % ["soltar" if arrastado_por != null else "arrastar", nome()]
 	return "E — falar com %s" % nome() if _e_o_alvo() and not conversando and not furioso else ""
 
 
@@ -412,6 +578,12 @@ func fala() -> String:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("interact") and desacordado() and _dist_jogador() < 2.0 * M:
+		var jd := get_tree().get_first_node_in_group("jogador") as Node2D
+		if jd != null and not bool(jd.morto):
+			get_viewport().set_input_as_handled()
+			Sangue.arrastar(jd, self)
+		return
 	if not event.is_action_pressed("interact") or not _e_o_alvo():
 		return
 	var j := get_tree().get_first_node_in_group("jogador")

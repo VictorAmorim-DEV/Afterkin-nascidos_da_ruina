@@ -624,6 +624,11 @@ func _atualizar_sangue(delta: float, horas: float) -> void:
 			aviso("A força do sangue passou.")
 	if carregando != null:
 		correndo = false
+		if not Sangue.arrastavel(carregando):
+			carregando = null
+			return
+		var atras := IsoMath.mundo_para_tela(Vector2.from_angle(face) * -0.7 * IsoMath.METRO)
+		carregando.global_position = carregando.global_position.lerp(global_position + atras, 0.25)
 		_arrasto_t -= delta
 		if _arrasto_t <= 0.0:
 			_arrasto_t = 1.0
@@ -1095,9 +1100,7 @@ func _morrer() -> void:
 	if dirigindo != null and dirigindo.has_method("sair"):
 		dirigindo.sair()
 	morto = true
-	if carregando != null and is_instance_valid(carregando):
-		carregando.arrastado_por = null
-	carregando = null
+	Sangue._largar(self)
 	var causa := "de fome" if fome <= 0.0 else ("de sede" if sede <= 0.0 else "")
 	if causa == "":
 		causa = {"zombie": "atacado por um zumbi", "rat": "atacado por um rato gigante", "vampire": "atacado por um vampiro",

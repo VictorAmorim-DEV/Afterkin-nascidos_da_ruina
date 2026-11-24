@@ -18,12 +18,6 @@ var _t_pensar_e := 0.0
 var _parado_e := 0.0
 var _recompensou := false
 var _alvo_monstro: Node2D = null
-## Rapto (marco 3, Sangue): nocauteado por trás, fica desacordado até 'acorda_h' (hora do jogo) e pode ser arrastado.
-const NOCAUTE_H := 1.5
-const VE_AO_ACORDAR := 8.0 * IsoMath.METRO      ## acordando, reconhece quem estiver até aqui (sem capuz)
-var acorda_h: float = -1.0
-var arrastado_por: Node2D = null
-var bebido := false                              ## beberam o sangue dele (o boato, se ele viu, é mais grave)
 
 
 static func de_agente(a: Dictionary) -> Errante:
@@ -67,31 +61,12 @@ func caido() -> bool:
 	return desacordado() or (bool(agente.get("ferido", false)) and float(agente["vida"]) < 45.0)
 
 
-func desacordado() -> bool:
-	return acorda_h >= 0.0
-
-
-## Golpe na nuca (Sangue): cai desacordado por NOCAUTE_H horas de jogo.
-func nocautear() -> void:
-	acorda_h = Reputacao.agora_h() + NOCAUTE_H
-	_fuga_t = 0.0
-	conversando = false
-	velocity = Vector2.ZERO
-	falar("Ugh—", 1.5)
-
-
-## Acorda: foge e lembra. Se quem fez isso estiver perto e de rosto descoberto, ele viu e conta numa comunidade.
-func _acordar() -> void:
-	acorda_h = -1.0
-	var j := get_tree().get_first_node_in_group("jogador") as Node2D
-	if arrastado_por != null and is_instance_valid(arrastado_por):
-		arrastado_por.set("carregando", null)
-	arrastado_por = null
-	_fuga_t = 8.0
+## Errante: foge e lembra. Se viu o rosto, o boato chega à comunidade mais perto.
+func _ao_acordar(viu: bool, j: Node2D) -> void:
 	agente["opiniao"] = int(agente["opiniao"]) - 60
 	if not (agente["lembra"] as Array).has("rapto"):
 		(agente["lembra"] as Array).append("rapto")
-	if j != null and not bool(j.morto) and _dist_jogador() < VE_AO_ACORDAR and not Sangue.rosto_coberto(j):
+	if viu:
 		falar("Foi você! Eu vi a sua cara!", 3.0)
 		Reputacao.boato_errante(-25 if bebido else -15, "sangue" if bebido else "rapto")
 		j.aviso("%s acordou e viu o seu rosto. Vai contar para alguém." % nome())
@@ -139,19 +114,6 @@ func _physics_process(delta: float) -> void:
 		_atacar_jogador(delta, j)
 		return
 	_seguir_objetivo(delta)
-
-
-## Desacordado: deitado; arrastado, vai atrás de quem arrasta. Na hora, acorda.
-func _desacordado() -> void:
-	velocity = Vector2.ZERO
-	_sprite.animation = &"deitado"
-	_sprite.frame = 0
-	if Reputacao.agora_h() >= acorda_h:
-		_acordar()
-		return
-	if arrastado_por != null and is_instance_valid(arrastado_por):
-		var atras := IsoMath.mundo_para_tela(Vector2.from_angle(float(arrastado_por.face)) * -0.7 * IsoMath.METRO)
-		global_position = global_position.lerp(arrastado_por.global_position + atras, 0.25)
 
 
 ## Anda rumo ao destino do agente; chegando, faz o que o objetivo pede e o Errantes escolhe o próximo.
@@ -304,8 +266,10 @@ func _morrer_por(por_jogador: bool) -> void:
 	morto = true
 	conversando = false
 	remove_from_group("interativo")
-	add_to_group("corpo")
-	set_meta("morte_h", Reputacao.agora_h())
+	acorda_h = -1.0
+	Corpo.anexar(self, nome(), true)
+	if bebido:
+		set_meta("mordido", true)
 	_col.set_deferred("disabled", true)
 	velocity = Vector2.ZERO
 	_sprite.animation = &"caido"
@@ -336,10 +300,6 @@ func _morrer_por(por_jogador: bool) -> void:
 		ItemNoChao.largar(get_parent(), global_position + Vector2(6, 2), str(pick[0]), int(pick[1]))
 	if j != null and por_jogador:
 		j.aviso("%s está mort%s." % [nome(), "a" if agente["genero"] == "f" else "o"])
-	var t := create_tween()
-	t.tween_interval(60.0)
-	t.tween_property(self, "modulate:a", 0.0, 2.0)
-	t.tween_callback(queue_free)
 
 
 # ───────────────────────────── conversa ─────────────────────────────

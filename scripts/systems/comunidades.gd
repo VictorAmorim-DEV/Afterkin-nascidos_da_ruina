@@ -105,9 +105,11 @@ static func _geo_vilarejo(ad: Dictionary) -> Dictionary:
 		para_dentro = Vector2(signf(para_dentro.x), 0.0)          # portões nas pontas da rua (oeste e leste)
 		portoes.append({"dentro": meio + para_dentro * 160.0, "fora": meio - para_dentro * 200.0, "meio": meio})
 	var casas: Array = []
+	var lotes: Array = []                     ## origem (mundo) do prédio de cada casa: a cama fica lá dentro
 	for cs in ad["casas"]:
 		var cdd: Dictionary = cs
 		var hp: Vector2 = cdd["p"]
+		lotes.append(hp)
 		var norte: bool = cdd["f"] == "s"
 		casas.append(Vector2(hp.x + 224.0, yc + (-110.0 if norte else 110.0)))   # na rua, em frente ao portão do lote
 	var centro := Vector2(muro.get_center().x, yc)
@@ -116,7 +118,7 @@ static func _geo_vilarejo(ad: Dictionary) -> Dictionary:
 		fogueira + Vector2(140, 90)]
 	var trabalho: Array = [Vector2(muro.position.x + 260.0, yc - 60.0), Vector2(muro.end.x - 260.0, yc + 60.0),
 		Vector2(muro.position.x + 420.0, yc + 70.0), Vector2(muro.end.x - 420.0, yc - 70.0)]
-	return {"area": muro, "portoes": portoes, "casas": casas, "fogueira": fogueira, "praca": praca,
+	return {"area": muro, "portoes": portoes, "casas": casas, "lotes": lotes, "fogueira": fogueira, "praca": praca,
 		"trabalho": trabalho, "centro": centro}
 
 
