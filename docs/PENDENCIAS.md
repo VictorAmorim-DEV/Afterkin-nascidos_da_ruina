@@ -104,7 +104,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     moradores dormem visíveis na cama (Vila) ou na entrada da barraca, acordam com barulho; pegar quem dorme.
   - ✅ 3.3 (`3387a16`) Cura e Medicina com peso: antídoto em camadas, soro de contenção, diagnóstico com as horas, sequela;
     Mãe da Colônia no ninho de morcegos (sangue antigo, um por jogador perto, renasce 1 h real com a sala aberta).
-  - ⬜ 3.4 Morte: transforma só nos estágios 3–4; mapa de renascimento com locais descobertos, camas e base.
+  - ✅ 3.4 (`dff79c1`) Morte: transforma só nos estágios 3–4; mapa de renascimento com locais descobertos, camas e base.
   - ⬜ 3.5 Reação social (laços pela infecção): quarentena, vistoria, esconder/mentir/contar, quem acoberta e quem
     denuncia, transformado é monstro (guarda ataca de dia e de noite). A regra da comunidade vale para qualquer
     infectado ou transformado, jogador ou NPC (23/11/2026): quarentena (enfermaria ou casa trancada até existir a
