@@ -77,6 +77,7 @@ var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
 var passos: Dictionary = {}               ## progresso dos PrimeirosPassos (contagem por evento, "_ativo", "noite")
+var diario: Dictionary = {}               ## diário do jogador (Diario: abates, marcos, espécies, tempo vivo)
 var local_inicio: String = ""            ## onde estava quando tudo começou (Inicio)
 var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
 var _ultimo_dano: String = ""            ## quem bateu por último (para a causa da morte no DiarioPartida)
@@ -1112,6 +1113,7 @@ func _morrer() -> void:
 		dirigindo.sair()
 	morto = true
 	Sangue._largar(self)
+	Diario.morreu(self)
 	if raca == "human" and Infeccao.ativa(self) and Infeccao.estagio(self) >= 2:
 		_morrer_infectado()                     # Sede ou Limiar: não renasce, acorda transformado onde caiu
 		return
@@ -1325,6 +1327,7 @@ func definir_raca(r: String, reiniciar: bool = true) -> void:
 		fome = 100.0
 		sede = 100.0
 		passos = {}
+		diario = {}
 		incubacao_h = -1.0
 		sol = 0.0
 		doenca = {}
@@ -1654,7 +1657,7 @@ func usar_soro_contencao() -> void:
 # =====================================================================
 func dados_para_salvar() -> Dictionary:
 	var p := IsoMath.tela_para_mundo(dirigindo.global_position if dirigindo != null else global_position)
-	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "genero": genero, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(),
+	return {"p": [p.x, p.y], "raca": raca, "forma": forma, "vida": vida, "fome": fome, "sede": sede, "origem": origem, "genero": genero, "local_inicio": local_inicio, "incubacao": incubacao_h, "passos": passos.duplicate(), "diario": diario.duplicate(true),
 		"stamina": stamina, "descanso": descanso, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"sangue": [sangue_t, sangue_forca, sangue_vel], "sequela": sequela_h,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
@@ -1676,6 +1679,8 @@ func restaurar(d: Dictionary) -> void:
 	local_inicio = str(d.get("local_inicio", ""))
 	incubacao_h = float(d.get("incubacao", -1.0))
 	passo_restaurar(d.get("passos", {}))
+	if d.has("diario"):
+		diario = (d["diario"] as Dictionary).duplicate(true)
 	stamina = float(d.get("stamina", stamina_max))
 	descanso = float(d.get("descanso", 100.0))
 	sol = float(d.get("sol", 0.0))

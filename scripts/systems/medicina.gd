@@ -331,6 +331,7 @@ static func _efeito_infeccao(acao: String, ctx: Dictionary, j: Node) -> PackedSt
 	match acao:
 		"historia":
 			Conversas.flags["heitor_conta_ninho"] = true
+			Diario.ouvir(j, ["vampire", "mae", "rat", "zombie"])   # a história fala do ninho, das feras e dos mortos
 			var r := Rumores.conhecer("ninho_lago")
 			if r != "":
 				msgs.append(r)

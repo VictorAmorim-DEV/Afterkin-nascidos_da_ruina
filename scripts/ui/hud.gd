@@ -69,6 +69,7 @@ func _ready() -> void:
 	menu.mudou.connect(mm._layout)                 # a dica "M · mapa" acompanha a tecla
 	add_child(TelaMapa.new())                      # M: mapa do mundo, com legenda e descobertas
 	add_child(PrimeirosPassos.new())               # lista dos primeiros passos, embaixo do minimapa
+	add_child(DiarioUI.new())                      # J: diário do jogador (objetivo, registro, raças e espécies)
 	var dev := PainelDev.new()                     # F1: modo desenvolvedor (só em build de debug)
 	dev.name = "PainelDev"
 	add_child(dev)
@@ -209,9 +210,9 @@ func _montar_vitais() -> void:
 ## Linha de ajuda montada com as teclas atuais (muda quando o jogador remapeia no menu).
 func _texto_ajuda() -> void:
 	var n := func(a: String) -> String: return Controles.nome(a)
-	ajuda.text = "%s %s %s %s mover · %s correr · %s agachar · %s deitar · %s pular · %s lanterna · %s interagir / entrar no veículo · %s mochila · %s atacar/colher · %s forma (rato) · %s mapa · %s salvar · %s menu · F9 trocar raça" % [
+	ajuda.text = "%s %s %s %s mover · %s correr · %s agachar · %s deitar · %s pular · %s lanterna · %s interagir / entrar no veículo · %s mochila · %s diário · %s atacar/colher · %s forma (rato) · %s mapa · %s salvar · %s menu · F9 trocar raça" % [
 		n.call("move_up"), n.call("move_left"), n.call("move_down"), n.call("move_right"), n.call("run"), n.call("crouch"),
-		n.call("prone"), n.call("jump"), n.call("flashlight"), n.call("interact"), n.call("inventory"), n.call("attack"),
+		n.call("prone"), n.call("jump"), n.call("flashlight"), n.call("interact"), n.call("inventory"), n.call("diario"), n.call("attack"),
 		n.call("transform"), n.call("minimapa"), n.call("salvar_rapido"), n.call("menu")]
 
 

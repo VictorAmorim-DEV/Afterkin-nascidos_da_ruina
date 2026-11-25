@@ -132,6 +132,8 @@ static func olhos_mudados(j: Node) -> bool:
 static func curar(j: Node) -> void:
 	j.doenca = {}
 	j.sol = 0.0
+	if Diario.marcar(j, "curado"):
+		j.aviso("Diário: sobrevivi à mordida de um vampiro.")
 	DiarioPartida.evento("cura", "Curou-se da infecção vampírica.")
 
 
