@@ -716,10 +716,10 @@ Esta seção vale sobre as anteriores onde houver conflito (§7, §8, §9, §11,
   o território vampírico de um ponto alto antes de escurecer) → **A noite do ataque** (os vampiros atacam a Vila; a
   mordida é possível) → desfecho: mordido, buscar a cura ou ceder; não mordido, "eles voltam" e o jogo fica livre.
   No ato 2, outro NPC (a definir) explica as raças e as espécies.
-- **Ponto alto e ataque** (25/11/2026): o ponto alto do "Veja com seus olhos" é a **torre de vigia** da Vila, com
-  escada (as outras comunidades também terão as suas; o relevo do mapa vem depois, quando o cenário for refeito). De
-  lá, antes de escurecer, avista-se o ninho de morcegos mais perto da Vila, que fica marcado no mapa como território
-  dos da noite. Na noite do ataque, os vampiros **arrombam o portão** (fica arrombado até alguém consertar).
+- **"Veja com seus olhos" e ataque** (25/11/2026): o passo é **encontrar o ninho** de que o Heitor fala (chegar perto
+  de um ninho de morcegos; os ninhos serão realocados depois). As **torres de vigia** ficam nas muralhas, uma de cada
+  lado do portão, em todas as comunidades (não fazem parte da missão; o relevo do mapa vem quando o cenário for
+  refeito). Na noite do ataque, os vampiros **arrombam o portão** (fica arrombado até alguém consertar).
 - **Começo no código (3.7a):** na criação escolhem-se só a origem e o gênero; o bilhete e o prólogo antigos saem. Sons
   da cutscene provisória gerados no código (o jogo ainda não tem áudio).
 - **Depois do marco 3:** níveis de habilidade → teste de 3D → teste de rede (sala no host, EOS, Steam e código).

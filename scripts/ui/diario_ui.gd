@@ -205,6 +205,7 @@ func _process(delta: float) -> void:
 	if (j.diario as Dictionary).is_empty():
 		Diario.iniciar(j)
 	Diario.vigiar(j)
+	MissaoPrincipal.vigiar(j)
 	if _raiz.visible:
 		_montar()
 

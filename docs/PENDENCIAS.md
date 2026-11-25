@@ -116,10 +116,11 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     - ✅ 3.7a (`c8212ce`) Cutscene provisória e início fixo na enfermaria da Vila.
     - ✅ 3.7b (`86ee4c6`) Passos 1–3 da missão: Toné (o resgate), Dona Iracema (a Vila acolhe), Dr. Heitor (os da noite, as
       outras espécies, o ninho, o soro e o pedido da torre).
-    - ⬜ 3.7c Torre de vigia da Vila (escada; avista o ninho mais perto antes de escurecer) e "A noite do ataque"
-      (arrombam o portão; mordida possível) com o desfecho.
+    - ✅ 3.7b2 "Veja com seus olhos" vira encontrar o ninho (sem torre; 25/11/2026).
+    - ⬜ 3.7c "A noite do ataque" (arrombam o portão; mordida possível) e o desfecho.
   - ⬜ 3.8 Playtest do marco 3.
-- ⬜ Torres de vigia (com escada) nas outras comunidades, como a da Vila (25/11/2026).
+- ⬜ Torres de vigia com escada nas muralhas das comunidades, uma de cada lado do portão (25/11/2026; fora da missão).
+- ⬜ Realocar os ninhos de morcegos (25/11/2026; o passo "Veja com seus olhos" usa o mais perto que existir).
 - ⬜ Depois do marco 3: níveis de habilidade (por hobbies e trabalhos; a missão do mestre dá o nível máximo; sem
   nível de personagem). Junta as antigas ideias de habilidades e trabalhos do playtest 2a.
 - ⬜ Depois do 3D: teste de rede — sala no PC do host (até 10), Epic Online Services (amigos, lobby, retransmissão),

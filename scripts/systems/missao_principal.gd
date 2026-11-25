@@ -2,7 +2,7 @@ class_name MissaoPrincipal
 extends RefCounted
 ## Missão principal do ato 1 (marco 3, etapa 3.7; docs/DECISOES_DESIGN.md, "O começo" e "Ato 1").
 ## É do mundo (do grupo, regra do co-op): o passo vale para todos e vai no save do mundo.
-## Passos: 1 acordar e achar o Toné → 2 Dona Iracema → 3 Dr. Heitor → 4 "Veja com seus olhos" (a torre de vigia) →
+## Passos: 1 acordar e achar o Toné → 2 Dona Iracema → 3 Dr. Heitor → 4 "Veja com seus olhos" (achar o ninho) →
 ## 5 "A noite do ataque" → 6 desfecho. 99 = encerrada (o jogo fica livre). Cada passo aparece no "Objetivo atual" do
 ## diário (Diario.objetivo) e as falas entram na conversa como opções (DialogoUI), pelo efeito {"missao": "..."}.
 
@@ -17,8 +17,10 @@ const OBJETIVOS := {
 	1: "Descobrir quem me trouxe: falar com o Toné, o guarda do portão da Vila.",
 	2: "Falar com a Dona Iracema, a líder da Vila (de dia, na praça).",
 	3: "Falar com o Dr. Heitor, o médico (de dia, na enfermaria).",
-	4: "Veja com seus olhos: subir na torre de vigia da Vila e olhar o mato antes de escurecer.",
+	4: "Veja com seus olhos: encontrar o ninho de morcegos de que o Dr. Heitor falou.",
+	5: "Voltar para dentro do muro da Vila antes de escurecer.",
 }
+const ACHA_NINHO := 12.0 * IsoMath.METRO       ## chegar a esta distância de um ninho conta como "ver com seus olhos"
 
 static var passo := 0                       ## 0 = ainda não acordou
 
@@ -139,8 +141,8 @@ const FALA_IRACEMA := "Então você é o achado do Toné. (Ela te mede de cima a
 	+ "ninguém fica parado.\n\nE o Dr. Heitor quer te ver. Vai lá antes que ele venha te buscar."
 const FALA_HEITOR := "Ah, o paciente andando. Ótimo. Deixa eu ver esse corte... (Ele examina a sua cabeça.) " \
 	+ "Cicatrizando. Você teve sorte de o Toné te achar antes deles.%s\n\nEu também preparo um soro que segura a " \
-	+ "mordida por umas horas. Sai caro: os ingredientes estão acabando.\n\nE um pedido: antes de escurecer, suba na " \
-	+ "torre de vigia e olhe pro mato. Veja com seus olhos onde eles dormem. Quem vê uma vez não volta mais tarde pra Vila."
+	+ "mordida por umas horas. Sai caro: os ingredientes estão acabando.\n\nE um pedido: vá até esse ninho, de dia, e " \
+	+ "veja com seus olhos onde eles dormem. Não entre. Quem vê uma vez não volta mais tarde pra Vila."
 
 
 ## Opção da missão na conversa com quem conduz o passo atual (só na abertura).
@@ -184,6 +186,18 @@ static func efeito(acao: String, ctx: Dictionary) -> PackedStringArray:
 	if ativa():
 		msgs.append("Objetivo: %s" % objetivo())
 	return msgs
+
+
+## A cada segundo (DiarioUI): passos que se cumprem andando pelo mundo.
+static func vigiar(j: Node) -> void:
+	if passo != 4 or j == null or bool(j.morto):
+		return
+	var pj := IsoMath.tela_para_mundo(j.global_position)
+	for p in MundoGen.ninhos():
+		if p.distance_to(pj) <= ACHA_NINHO:
+			_avancar(5)
+			j.aviso("O cheiro de morcego e coisa podre. É aqui que eles dormem. Objetivo: %s" % objetivo())
+			return
 
 
 static func dados_para_salvar() -> Dictionary:
