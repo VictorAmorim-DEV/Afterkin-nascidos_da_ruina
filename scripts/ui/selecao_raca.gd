@@ -298,6 +298,7 @@ func _levar_ao_inicio(j: Node) -> String:
 	VidaComunidade.zerar()
 	MaeColonia.zerar()
 	Portaria.zerar()
+	Vigilancia.zerar()
 	DiarioPartida.iniciar(str(j.origem), str(j.genero), str((Inicio.DADOS.get(local_inicio, {}) as Dictionary).get("nome", local_inicio)))
 	var area := _mapa._area_destaque()
 	if area.has_area():

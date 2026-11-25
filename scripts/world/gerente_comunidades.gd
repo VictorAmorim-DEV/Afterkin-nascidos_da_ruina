@@ -31,6 +31,7 @@ func _process(delta: float) -> void:
 	Reputacao.passo()                          # boatos que chegaram à hora de correr
 	Simulacao.passo()                          # turnos do ecossistema das comunidades (longe e perto)
 	Portaria.passo(get_tree())                 # quem mentiu sobre a arma e aparece com ela lá dentro
+	Vigilancia.passo(get_tree())               # quem contou dos seus olhos; o vampiro reconhecido
 	var agora_h := Reputacao.agora_h()
 	if _ultimo_h >= 0.0 and agora_h > _ultimo_h and agora_h - _ultimo_h < 1.0:
 		VidaComunidade.passo(agora_h - _ultimo_h)     # trabalho em tempo real (o sono não conta)

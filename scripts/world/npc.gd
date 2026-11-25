@@ -306,7 +306,10 @@ func _physics_process(delta: float) -> void:
 			return
 		var jh := get_tree().get_first_node_in_group("jogador") as Node2D
 		furioso = (comunidade != "" and not morto and Consequencias.hostil(comunidade, str(dados.get("id", "")), jh, self)) \
-			or _revide_t > 0.0
+			or _revide_t > 0.0 or Vigilancia.ataca(self)
+		if not furioso and comunidade != "" and Vigilancia.monstro.has(comunidade) and _dist_jogador() < 12.0 * M \
+				and not dormindo and not desacordado():
+			_fuga_t = 4.0                         # um deles aqui dentro: quem não luta, foge
 		var t := _tarefa_agora()
 		if t != tarefa:
 			tarefa = t

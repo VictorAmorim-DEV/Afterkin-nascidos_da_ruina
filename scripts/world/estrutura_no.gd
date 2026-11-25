@@ -66,6 +66,8 @@ func texto_interacao() -> String:
 	if _dist() > ALCANCE:
 		return ""
 	var rep := Reputacao.valor(comunidade)
+	if Vigilancia.em_quarentena(comunidade):
+		return "%s %s: fechado para você (quarentena)" % ["Barril" if tipo == "agua" else "Bancada", Comunidades.de(comunidade)]
 	if tipo == "agua":
 		return "E — encher garrafas com água limpa%s" % ("" if rep >= VidaComunidade.REP_AGUA else " (1 comida por garrafa)")
 	return "Bancada %s: receitas 25%% mais baratas aqui (abra a mochila)" % Comunidades.de(comunidade) \
@@ -73,12 +75,12 @@ func texto_interacao() -> String:
 
 
 func _process(_delta: float) -> void:
-	if tipo == "bancada" and _dist() < ALCANCE * 1.5 and Reputacao.valor(comunidade) >= VidaComunidade.REP_BANCADA:
+	if tipo == "bancada" and _dist() < ALCANCE * 1.5 and Reputacao.valor(comunidade) >= VidaComunidade.REP_BANCADA 			and not Vigilancia.em_quarentena(comunidade):
 		Itens.bancada_ate = Time.get_ticks_msec() + 400
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if tipo != "agua" or not event.is_action_pressed("interact") or _dist() > ALCANCE:
+	if tipo != "agua" or not event.is_action_pressed("interact") or _dist() > ALCANCE or Vigilancia.em_quarentena(comunidade):
 		return
 	if get_tree().get_first_node_in_group("janela_jogo") != null:
 		return

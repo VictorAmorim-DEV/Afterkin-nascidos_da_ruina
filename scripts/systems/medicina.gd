@@ -302,6 +302,10 @@ static func _opcoes_infeccao(nos: Dictionary, ctx: Dictionary, j: Node) -> Array
 	elif infectado:
 		nos["_inf_exame"] = {"fala": "...", "_dinamico": true}
 		out.append({"texto": "Pode examinar a mordida?", "vai": "_inf_exame", "efeitos": [{"med": "exame"}]})
+	if not infectado and Vigilancia.em_quarentena(str(ctx["com"])):
+		nos["_inf_limpo"] = {"fala": "(Ele examina o pescoço e os olhos com calma.) Limpo. Pode andar por aí: eu aviso o pessoal.",
+			"efeitos": [{"med": "liberar"}]}
+		out.append({"texto": "Doutor, pode ver se eu estou limpo?", "vai": "_inf_limpo"})
 	if j.inventario.contar("sangue_antigo") > 0:
 		nos["_inf_antidoto"] = {"fala": "Sangue antigo... ainda morno, depois de tudo. (Ele trabalha em silêncio por umas duas horas.) " \
 			+ "Pronto: uma dose. Na marca ou na fome, ela resolve sozinha. Depois disso, me procure.",
@@ -363,6 +367,9 @@ static func _efeito_infeccao(acao: String, ctx: Dictionary, j: Node) -> PackedSt
 static func efeito(acao: String, ctx: Dictionary) -> PackedStringArray:
 	var msgs: PackedStringArray = []
 	var j: Node = ctx["jogador"]
+	if acao == "liberar":
+		Vigilancia.liberar(str(ctx["com"]))
+		return PackedStringArray(["Quarentena encerrada."])
 	if acao in ["historia", "exame", "preparar", "tratar_sede", "soro"]:
 		return _efeito_infeccao(acao, ctx, j)
 	match acao:

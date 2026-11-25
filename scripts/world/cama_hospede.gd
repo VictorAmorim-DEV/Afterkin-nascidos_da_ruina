@@ -32,6 +32,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if j == null or j.dirigindo != null or j.morto or j.descansando != null or j.dormindo:
 		return
 	get_viewport().set_input_as_handled()
+	if Vigilancia.em_quarentena(comunidade):
+		j.aviso("“Quarentena. Essa cama não é pra você agora.”")
+		return
 	if Reputacao.valor(comunidade) < VidaComunidade.REP_DORMIR:
 		j.aviso("“Essa cama é pra quem a gente conhece.” (reputação %d de %d)" % [Reputacao.valor(comunidade), VidaComunidade.REP_DORMIR])
 		return

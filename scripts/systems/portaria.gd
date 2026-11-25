@@ -21,6 +21,7 @@ static var abre_ate: Dictionary = {}        ## com -> segundos reais até quando
 static var conhece: Dictionary = {}         ## com -> true: já passou pelo controle uma vez
 static var castigo_h: Dictionary = {}       ## com -> hora do jogo até quando volta a ser revistado
 static var mentiu_arma: Dictionary = {}     ## com -> true: entrou dizendo que não estava armado, e estava
+static var recusou: Dictionary = {}         ## com -> dia em que se recusou a mostrar o pescoço (em alerta)
 static var _t_vigia := 0.0
 
 
@@ -30,6 +31,11 @@ static func zerar() -> void:
 	conhece = {}
 	castigo_h = {}
 	mentiu_arma = {}
+	recusou = {}
+
+
+static func _dia() -> int:
+	return int(Reputacao.agora_h() / 24.0)
 
 
 static func _agora_s() -> float:
@@ -99,24 +105,39 @@ static func abertura(com: String, npc: Npc, ctx: Dictionary) -> Dictionary:
 	var noite: bool = ciclo != null and not Comunidades.portao_aberto(com, float(ciclo.minutos))
 	if noite and Reputacao.valor(com) < VidaComunidade.REP_NOITE:
 		return {"no": "_p_noite", "nos": {"_p_noite": {"fala": "De noite não abre pra quem eu não conheço. Volta de manhã."}}}
-	var nos := {"_p_entra": {"fala": "...", "_dinamico": true}, "_p_nao": {"fala": "Então daí você não passa."}}
+	if int(recusou.get(com, -1)) == _dia():
+		return {"no": "_p_recusou", "nos": {"_p_recusou": {"fala": "Já falei: sem mostrar o pescoço, hoje não entra."}}}
+	var nos := {"_p_entra": {"fala": "...", "_dinamico": true}, "_p_nao": {"fala": "Então daí você não passa."},
+		"_p_recusa": {"fala": "Então hoje você não entra. Com a vila em alerta, não tem conversa.", "efeitos": [{"portaria": "recusou"}]}}
 	var arm := armas(j)
+	var mordido := Infeccao.ativa(j)
+	var alerta := Simulacao.alerta(com)
 	match faixa(com):
 		"revista":
 			var abre := "Alto lá. Primeira vez aqui? " if not conhece.has(com) else "Alto lá. "
 			if Simulacao.alerta(com):
 				abre = "Alto lá. A vila tá em alerta: todo mundo passa pelo procedimento. "
-			nos["_p_revista"] = {"fala": abre + "Vou te olhar e dar uma geral na mochila. Arma fica comigo; você pega na saída.",
-				"opcoes": [{"texto": "Pode olhar.", "vai": "_p_entra", "efeitos": [{"portaria": "revista"}]},
-					{"texto": "Ninguém mexe nas minhas coisas.", "vai": "_p_nao"}]}
+			var pede := " E mostra o pescoço." if alerta else ""
+			var ops: Array = [{"texto": "Pode olhar.", "vai": "_p_entra", "efeitos": [{"portaria": "revista"}]}]
+			if mordido:
+				ops.append({"texto": "Fui mordido. Pode olhar.", "vai": "_p_entra", "efeitos": [{"portaria": "revista", "contar": true}]})
+			ops.append({"texto": "Ninguém mexe nas minhas coisas.", "vai": "_p_nao"})
+			if alerta:
+				ops.append({"texto": "Não vou mostrar o pescoço.", "vai": "_p_recusa"})
+			nos["_p_revista"] = {"fala": abre + "Vou te olhar e dar uma geral na mochila. Arma fica comigo; você pega na saída." + pede,
+				"opcoes": ops}
 			return {"no": "_p_revista", "nos": nos}
 		"pergunta":
-			nos["_p_pergunta"] = {"fala": "Procedimento: mordida, ferido, armado?",
-				"opcoes": [{"texto": "Tô armado. Deixo com você.", "vai": "_p_entra", "efeitos": [{"portaria": "deixa"}]},
-					{"texto": "Nada disso.", "vai": "_p_entra", "efeitos": [{"portaria": "nada", "armado": not arm.is_empty()}]}]}
+			var ops2: Array = [{"texto": "Tô armado. Deixo com você.", "vai": "_p_entra", "efeitos": [{"portaria": "deixa"}]},
+				{"texto": "Nada disso.", "vai": "_p_entra", "efeitos": [{"portaria": "nada", "armado": not arm.is_empty()}]}]
+			if mordido:
+				ops2.append({"texto": "Fui mordido.", "vai": "_p_entra", "efeitos": [{"portaria": "deixa", "contar": true}]})
+			nos["_p_pergunta"] = {"fala": "Procedimento: mordida, ferido, armado?", "opcoes": ops2}
 			return {"no": "_p_pergunta", "nos": nos}
-	nos["_p_confia"] = {"fala": "Ô, de volta. Tudo bem? Nada de ferida, nada de mordida?",
-		"opcoes": [{"texto": "Tudo certo.", "vai": "_p_entra", "efeitos": [{"portaria": "confia"}]}]}
+	var ops3: Array = [{"texto": "Tudo certo.", "vai": "_p_entra", "efeitos": [{"portaria": "confia"}]}]
+	if mordido:
+		ops3.append({"texto": "Fui mordido.", "vai": "_p_entra", "efeitos": [{"portaria": "confia", "contar": true}]})
+	nos["_p_confia"] = {"fala": "Ô, de volta. Tudo bem? Nada de ferida, nada de mordida?", "opcoes": ops3}
 	return {"no": "_p_confia", "nos": nos}
 
 
@@ -139,6 +160,9 @@ static func efeito(ed: Dictionary, ctx: Dictionary) -> PackedStringArray:
 	var com := str(ctx["com"])
 	var nos: Dictionary = ctx.get("_nos", {})
 	var acao := str(ed["portaria"])
+	if acao == "recusou":
+		recusou[com] = _dia()
+		return msgs
 	match acao:
 		"sair":
 			var g: Array = guardados.get(com, [])
@@ -160,7 +184,7 @@ static func efeito(ed: Dictionary, ctx: Dictionary) -> PackedStringArray:
 		"nada":
 			if bool(ed.get("armado", false)):
 				mentiu_arma[com] = true
-	var r := exame(j, com, acao)
+	var r := exame(j, com, "contar" if bool(ed.get("contar", false)) else acao)
 	nos["_p_entra"] = {"fala": str(r["fala"])}
 	if bool(r["entra"]):
 		conhece[com] = true
@@ -185,7 +209,10 @@ static func _guardar(j: Node, com: String, arm: Array) -> void:
 
 
 ## O exame visual (e, na 3.5c, a vistoria da infecção). {"entra", "fala", "aviso"?}
-static func exame(j: Node, com: String, _modo: String) -> Dictionary:
+static func exame(j: Node, com: String, modo: String) -> Dictionary:
+	var v := Vigilancia.vistoria(j, com, modo)
+	if not v.is_empty():
+		return v
 	var ferido: bool = float(j.vida) < float(j.vida_max) * 0.5
 	var fala := "(Ele te olha de cima a baixo.) Pode passar."
 	if ferido:
@@ -229,7 +256,7 @@ static func abordar(j: Node, com: String, quem: Npc) -> void:
 
 static func dados_para_salvar() -> Dictionary:
 	return {"guardados": guardados.duplicate(true), "conhece": conhece.duplicate(), "castigo_h": castigo_h.duplicate(),
-		"mentiu_arma": mentiu_arma.duplicate()}
+		"mentiu_arma": mentiu_arma.duplicate(), "recusou": recusou.duplicate()}
 
 
 static func restaurar(d: Dictionary) -> void:
@@ -238,3 +265,4 @@ static func restaurar(d: Dictionary) -> void:
 	conhece = (d.get("conhece", {}) as Dictionary).duplicate()
 	castigo_h = (d.get("castigo_h", {}) as Dictionary).duplicate()
 	mentiu_arma = (d.get("mentiu_arma", {}) as Dictionary).duplicate()
+	recusou = (d.get("recusou", {}) as Dictionary).duplicate()

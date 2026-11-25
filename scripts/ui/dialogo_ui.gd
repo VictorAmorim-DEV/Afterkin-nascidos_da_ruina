@@ -16,6 +16,7 @@ var _botoes: Array = []                ## [Button, opção] na ordem das teclas
 var _msgs: PackedStringArray = []
 var _abertura := ""                     ## nó que abriu a conversa (ganha a opção "Alguma novidade?")
 var _ja_abriu := false                  ## o NPC já falou nesta conversa: chegar à abertura não repete a saudação
+var _quarentena := false                ## de quarentena e este NPC não fala com você (Vigilancia)
 
 ## Falas para quando a conversa volta ao começo (a saudação já foi dita; o nó pode trocar com "volta").
 const CONTINUAR := ["Mais alguma coisa?", "E o que mais?", "Pode falar.", "Diga.", "Hm. E então?"]
@@ -72,9 +73,15 @@ func _ready() -> void:
 			break
 	var odiado: bool = npc.comunidade != "" and Reputacao.valor(npc.comunidade) <= -40
 	var cob: Dictionary = Consequencias.cobranca(npc.comunidade, _ctx["npc"], _ctx, seguir) if npc.comunidade != "" and not odiado else {}
+	var lado_de_fora: bool = npc.comunidade != "" and npc.tarefa == "portao" and not Portaria.dentro(npc.comunidade, _ctx["jogador"])
 	if odiado:
 		_arvore = {"nos": {"some": {"fala": "Some daqui. Ninguém aqui tem nada pra falar com você."}}}
 		abertura = "some"
+	elif npc.comunidade != "" and Vigilancia.em_quarentena(npc.comunidade) and not lado_de_fora \
+			and not Vigilancia.fala_na_quarentena(npc):
+		_arvore = {"nos": {"_q": {"fala": Vigilancia.fala_quarentena(npc)}}}
+		abertura = "_q"
+		_quarentena = true
 	elif not cob.is_empty():
 		(_arvore["nos"] as Dictionary).merge(cob["nos"], true)
 		abertura = str(cob["no"])
@@ -83,6 +90,8 @@ func _ready() -> void:
 		var lt: Dictionary = {}
 		if npc.comunidade != "":
 			lt = Portaria.abertura(npc.comunidade, npc, _ctx)       # guarda do portão, você do lado de fora
+			if lt.is_empty():
+				lt = Vigilancia.abertura_notar(npc, _ctx, seguir)       # olhos da Sede à vista: quem acoberta
 			if lt.is_empty():
 				lt = VidaComunidade.abertura_barrado(npc.comunidade, _ctx["npc"], _ctx, seguir)
 			if lt.is_empty():
@@ -95,7 +104,7 @@ func _ready() -> void:
 			(_arvore["nos"] as Dictionary).merge(lt["nos"], true)
 			abertura = str(lt["no"])
 	_ctx["_nos"] = _arvore["nos"]
-	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just", "_v_retorno"]) else seguir
+	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just", "_v_retorno", "_acoberta"]) else seguir
 	if abertura == "_v_barrado" or abertura.begins_with("_p_"):
 		_abertura = abertura                 # barrado: nada de novidades, só o portão   # "Alguma novidade?" fica na conversa normal
 	Conversas.vistos["%s/%s" % [_ctx["com"], _ctx["npc"]]] = true
@@ -133,22 +142,25 @@ func _ir(id: String) -> void:
 				continue                           # pergunta sobre quem já morreu, como se estivesse vivo
 			lista.append(o)
 	var no_portao := _abertura.begins_with("_p_")      # do lado de fora: só o controle do portão
-	if id == _abertura and not no_portao and not _arvore["nos"].has("_novidade") and Reputacao.valor(npc.comunidade) > -40:
+	var em_q: bool = npc.comunidade != "" and Vigilancia.em_quarentena(npc.comunidade)
+	if id == _abertura and not no_portao and not em_q and not _arvore["nos"].has("_novidade") and Reputacao.valor(npc.comunidade) > -40:
 		var n := Rumores.novidade_para(npc.comunidade, true)
 		if not n.is_empty():
 			_arvore["nos"]["_novidade"] = {"fala": "Ficou sabendo? %s" % str(n["texto"]), "_ouvir": n,
 				"opcoes": [{"texto": "E o que mais?", "vai": _abertura}]}
 			lista.append({"texto": "Alguma novidade por aqui?", "vai": "_novidade"})
 	if npc.comunidade != "" and Reputacao.valor(npc.comunidade) > -40 and not no_portao:
-		lista.append_array(Medicina.opcoes(_arvore, _ctx, lista, id == _abertura))
-		lista.append_array(VidaComunidade.opcoes(_arvore, _ctx, id == _abertura or id == "_v_barrado"))
+		if not _quarentena:
+			lista.append_array(Medicina.opcoes(_arvore, _ctx, lista, id == _abertura))
+		if not em_q:                                   # de quarentena: escambo, trabalhos e serviços fechados
+			lista.append_array(VidaComunidade.opcoes(_arvore, _ctx, id == _abertura or id == "_v_barrado"))
 		lista.append_array(Portaria.opcoes(_arvore, _ctx, npc, id == _abertura))
 	if no.has("_ouvir"):
 		var av := Rumores.ouvir(no["_ouvir"])
 		if av != "":
 			_msgs.append(av)
 	var folha: bool = (no.get("opcoes", []) as Array).is_empty() and lista.is_empty()
-	var pode_seguir: bool = _arvore["nos"].has(_abertura) and not _abertura in ["some", "_v_barrado"] and not no_portao
+	var pode_seguir: bool = _arvore["nos"].has(_abertura) and not _abertura in ["some", "_v_barrado", "_q"] and not no_portao
 	if folha and pode_seguir and id != _abertura and not bool(no.get("sem_sair", false)) and not bool(no.get("encerra", false)):
 		lista.append({"texto": "Outra coisa...", "vai": _abertura})   # a fala acabou, mas a conversa pode seguir
 	if not bool(no.get("sem_sair", false)):
