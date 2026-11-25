@@ -105,7 +105,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
   - ✅ 3.3 (`3387a16`) Cura e Medicina com peso: antídoto em camadas, soro de contenção, diagnóstico com as horas, sequela;
     Mãe da Colônia no ninho de morcegos (sangue antigo, um por jogador perto, renasce 1 h real com a sala aberta).
   - ✅ 3.4 (`dff79c1`) Morte: transforma só nos estágios 3–4; mapa de renascimento com locais descobertos, camas e base.
-  - ⬜ 3.5 Reação social (laços pela infecção): quarentena, vistoria, esconder/mentir/contar, quem acoberta e quem
+  - ✅ 3.5 (`62c2c38`, `a77f89c`, `b002772`) Reação social (laços pela infecção): quarentena, vistoria, esconder/mentir/contar, quem acoberta e quem
     denuncia, transformado é monstro (guarda ataca de dia e de noite). A regra da comunidade vale para qualquer
     infectado ou transformado, jogador ou NPC (23/11/2026): quarentena (enfermaria ou casa trancada até existir a
     cela), expulsão, ou morte se ninguém tiver afinidade com ele; atacando, os outros reagem.
