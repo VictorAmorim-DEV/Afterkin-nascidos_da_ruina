@@ -153,7 +153,7 @@ static func vigiar(j: Node) -> void:
 
 ## O objetivo atual: a missão principal (3.7) manda; senão, a cura; senão, os primeiros passos; senão, sobreviver.
 static func objetivo(j: Node) -> String:
-	var missao := str(_d(j).get("missao", ""))
+	var missao := MissaoPrincipal.objetivo()
 	if missao != "":
 		return missao
 	if str(j.raca) == "vampire":

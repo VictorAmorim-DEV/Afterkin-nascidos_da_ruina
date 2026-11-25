@@ -151,6 +151,7 @@ func _ir(id: String) -> void:
 			lista.append({"texto": "Alguma novidade por aqui?", "vai": "_novidade"})
 	if npc.comunidade != "" and Reputacao.valor(npc.comunidade) > -40 and not no_portao:
 		if not _quarentena:
+			lista = MissaoPrincipal.opcoes(_arvore, _ctx, id == _abertura) + lista   # a missão vem primeiro
 			lista.append_array(Medicina.opcoes(_arvore, _ctx, lista, id == _abertura))
 		if not em_q:                                   # de quarentena: escambo, trabalhos e serviços fechados
 			lista.append_array(VidaComunidade.opcoes(_arvore, _ctx, id == _abertura or id == "_v_barrado"))

@@ -2,13 +2,25 @@ class_name MissaoPrincipal
 extends RefCounted
 ## Missão principal do ato 1 (marco 3, etapa 3.7; docs/DECISOES_DESIGN.md, "O começo" e "Ato 1").
 ## É do mundo (do grupo, regra do co-op): o passo vale para todos e vai no save do mundo.
-## 3.7a: o começo — todos acordam na enfermaria da Vila dos Pescadores (a casa do Dr. Heitor), resgatados pelo Toné.
+## Passos: 1 acordar e achar o Toné → 2 Dona Iracema → 3 Dr. Heitor → 4 "Veja com seus olhos" (a torre de vigia) →
+## 5 "A noite do ataque" → 6 desfecho. 99 = encerrada (o jogo fica livre). Cada passo aparece no "Objetivo atual" do
+## diário (Diario.objetivo) e as falas entram na conversa como opções (DialogoUI), pelo efeito {"missao": "..."}.
 
 const COM := "vila_dos_pescadores"
 const MEDICO := "medico"
 const PRIMEIRA_FALA := "O que aconteceu? Onde estou?"
 
-static var passo := 0                       ## 0 = ainda não acordou (os passos entram na 3.7b)
+const ENCERRADA := 99
+## Quem conduz cada passo da conversa: passo -> id do NPC na Vila.
+const QUEM := {1: "guarda_dia", 2: "lider", 3: "medico"}
+const OBJETIVOS := {
+	1: "Descobrir quem me trouxe: falar com o Toné, o guarda do portão da Vila.",
+	2: "Falar com a Dona Iracema, a líder da Vila (de dia, na praça).",
+	3: "Falar com o Dr. Heitor, o médico (de dia, na enfermaria).",
+	4: "Veja com seus olhos: subir na torre de vigia da Vila e olhar o mato antes de escurecer.",
+}
+
+static var passo := 0                       ## 0 = ainda não acordou
 
 
 static func zerar() -> void:
@@ -88,6 +100,90 @@ static func acordar(j: Node) -> void:
 	if passo < 1:
 		passo = 1
 	j.aviso(PRIMEIRA_FALA)
+	await j.get_tree().create_timer(5.0).timeout
+	if is_instance_valid(j) and passo == 1:
+		j.aviso("Alguém do lado de fora: \"Foi o Toné que trouxe, ontem à noite. Tá lá no portão.\"")
+
+
+static func ativa() -> bool:
+	return passo >= 1 and passo < ENCERRADA
+
+
+## O objetivo do passo atual ("" sem missão): o diário mostra.
+static func objetivo() -> String:
+	return str(OBJETIVOS.get(passo, "")) if ativa() else ""
+
+
+static func _avancar(para: int) -> void:
+	if passo < para:
+		passo = para
+		DiarioPartida.evento("missao", "Missão principal: %s" % str(OBJETIVOS.get(para, "passo %d" % para)))
+
+
+# ───────────────────────────── conversas ─────────────────────────────
+
+const FALA_TONE := "Olha só, de pé! (Ele baixa a espingarda.) Fui eu, sim, cidadão. Ontem, voltando da ronda, achei " \
+	+ "seu carro de rodas pro ar na estrada da costa, e três deles rondando, de olho brilhando. Dei dois tiros pro alto, " \
+	+ "eles sumiram no mato, e eu te arrastei até a caminhonete. Procedimento: ninguém fica pra trás. (Ele desvia o " \
+	+ "olhar.) Não mais.%s\n\nO Dr. Heitor costurou sua cabeça. Agora vai falar com a Dona Iracema. Aqui ninguém fica " \
+	+ "sem ela saber."
+const TONE_ORIGEM := {
+	"policial": " Vi o distintivo no painel e pensei: esse é dos nossos.",
+	"mecanico": " Ainda tentei desvirar o carro. Vai ter que arrumar outro, mecânico.",
+	"enfermeiro": " Achei uma maleta de primeiros socorros no banco. O doutor ficou de olho nela.",
+	"mestre_obras": " Tinha uma trena e um capacete no banco de trás. Muro aqui sempre precisa de quem entenda.",
+}
+const FALA_IRACEMA := "Então você é o achado do Toné. (Ela te mede de cima a baixo.) Escuta, {meu filho/minha filha}: " \
+	+ "aqui a regra é simples. O portão abre às seis e fecha às seis, e depois disso não abre pra ninguém, nem pra mim. " \
+	+ "Comida e cama a gente divide com quem trabalha: rede, peixe, muro, o que tiver. Ninguém aqui é de ferro, mas " \
+	+ "ninguém fica parado.\n\nE o Dr. Heitor quer te ver. Vai lá antes que ele venha te buscar."
+const FALA_HEITOR := "Ah, o paciente andando. Ótimo. Deixa eu ver esse corte... (Ele examina a sua cabeça.) " \
+	+ "Cicatrizando. Você teve sorte de o Toné te achar antes deles.%s\n\nEu também preparo um soro que segura a " \
+	+ "mordida por umas horas. Sai caro: os ingredientes estão acabando.\n\nE um pedido: antes de escurecer, suba na " \
+	+ "torre de vigia e olhe pro mato. Veja com seus olhos onde eles dormem. Quem vê uma vez não volta mais tarde pra Vila."
+
+
+## Opção da missão na conversa com quem conduz o passo atual (só na abertura).
+static func opcoes(arvore: Dictionary, ctx: Dictionary, abertura: bool) -> Array:
+	var out: Array = []
+	if not abertura or not ativa() or str(ctx["com"]) != COM or str(QUEM.get(passo, "")) != str(ctx["npc"]):
+		return out
+	var nos: Dictionary = arvore["nos"]
+	var j: Node = ctx["jogador"]
+	match passo:
+		1:
+			var extra := str(TONE_ORIGEM.get(str(j.origem), "")) if j != null else ""
+			nos["_m_tone"] = {"fala": FALA_TONE % extra, "efeitos": [{"missao": "tone"}],
+				"opcoes": [{"texto": "Obrigado, Toné. Eu te devo essa.", "vai": "_m_tone_fim"}]}
+			nos["_m_tone_fim"] = {"fala": "Deve nada. Só não me faça voltar lá fora pra te buscar de novo."}
+			out.append({"texto": "Foi você que me trouxe pra cá?", "vai": "_m_tone"})
+		2:
+			nos["_m_iracema"] = {"fala": FALA_IRACEMA, "efeitos": [{"missao": "iracema"}]}
+			out.append({"texto": "O Toné disse pra eu falar com a senhora.", "vai": "_m_iracema"})
+		3:
+			var contou := bool(Conversas.flags.get("heitor_conta_ninho", false))
+			var hist := "" if contou else "\n\nVocê deve estar se perguntando o que era aquilo na estrada. " + Medicina.HISTORIA
+			nos["_m_heitor"] = {"fala": FALA_HEITOR % hist, "efeitos": [{"missao": "heitor"}]}
+			out.append({"texto": "A Dona Iracema disse que o senhor queria me ver.", "vai": "_m_heitor"})
+	return out
+
+
+## Efeito {"missao": acao} de uma fala da missão.
+static func efeito(acao: String, ctx: Dictionary) -> PackedStringArray:
+	var msgs: PackedStringArray = []
+	match acao:
+		"tone":
+			_avancar(2)
+		"iracema":
+			Reputacao.mudar(COM, 5, "acolhido pela Vila")
+			_avancar(3)
+		"heitor":
+			if not bool(Conversas.flags.get("heitor_conta_ninho", false)):
+				msgs.append_array(Medicina.efeito("historia", ctx))   # a história do ninho, das feras e dos mortos
+			_avancar(4)
+	if ativa():
+		msgs.append("Objetivo: %s" % objetivo())
+	return msgs
 
 
 static func dados_para_salvar() -> Dictionary:
