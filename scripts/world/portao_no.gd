@@ -79,12 +79,17 @@ func texto_interacao() -> String:
 	if comunidade != "":
 		if aberto:
 			return ""
-		var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
-		var de_dia: bool = ciclo != null and Comunidades.portao_aberto(comunidade, float(ciclo.minutos))
-		if de_dia:
-			return "Portão de %s: fechado para você (fale com o guarda)" % Comunidades.nome(comunidade)
-		return "E — chamar o guarda (%s, fechado até de manhã)" % Comunidades.nome(comunidade)
+		if Portaria.guarda_do_portao(get_tree(), comunidade, _meio_mundo()) != null:
+			return "E — chamar o guarda (%s)" % Comunidades.nome(comunidade)
+		if Portaria.guarda_do_portao(get_tree(), comunidade) != null:
+			return "Portão de %s trancado (o guarda está no outro portão)" % Comunidades.nome(comunidade)
+		return "E — abrir o portão (%s: ninguém de guarda)" % Comunidades.nome(comunidade)
 	return "E — %s portão" % ("fechar" if aberto else "abrir")
+
+
+## Meio do vão do portão, em coordenadas de mundo (a e b já são de mundo).
+func _meio_mundo() -> Vector2:
+	return (a + b) * 0.5
 
 
 ## Alguém (jogador ou inimigo) parado no vão?
@@ -109,11 +114,24 @@ func _unhandled_input(event: InputEvent) -> void:
 	if j == null or j.dirigindo != null:
 		return
 	if comunidade != "":
-		var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
-		if aberto or (ciclo != null and Comunidades.portao_aberto(comunidade, float(ciclo.minutos))):
-			return                               # de dia, quem decide é o guarda (conversa)
+		if aberto:
+			return
 		get_viewport().set_input_as_handled()
-		j.aviso(VidaComunidade.pedir_para_entrar(comunidade))   # de noite: com reputação alta, o guarda abre
+		var g := Portaria.guarda_do_portao(get_tree(), comunidade, _meio_mundo())
+		if g == null and Portaria.guarda_do_portao(get_tree(), comunidade) != null:
+			j.aviso("Trancado. O guarda de turno está no outro portão.")
+			return
+		if g != null:                            # quem decide é o guarda do turno (Portaria)
+			if get_tree().get_first_node_in_group("janela_jogo") == null:
+				var ui := DialogoUI.new()
+				ui.npc = g
+				get_tree().current_scene.add_child(ui)
+			return
+		if VidaComunidade.barrado(comunidade) or Consequencias.expulso(comunidade):
+			j.aviso("Trancado por dentro. Ninguém vai abrir para você.")
+			return
+		Portaria.abrir(comunidade)
+		j.aviso("Ninguém de guarda. O portão estava só encostado.")
 		return
 	get_viewport().set_input_as_handled()
 	if aberto and _vao_ocupado():

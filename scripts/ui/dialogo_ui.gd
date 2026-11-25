@@ -82,7 +82,9 @@ func _ready() -> void:
 		abertura = seguir
 		var lt: Dictionary = {}
 		if npc.comunidade != "":
-			lt = VidaComunidade.abertura_barrado(npc.comunidade, _ctx["npc"], _ctx, seguir)
+			lt = Portaria.abertura(npc.comunidade, npc, _ctx)       # guarda do portão, você do lado de fora
+			if lt.is_empty():
+				lt = VidaComunidade.abertura_barrado(npc.comunidade, _ctx["npc"], _ctx, seguir)
 			if lt.is_empty():
 				lt = Consequencias.abertura_parente(npc.comunidade, _ctx["npc"], _ctx, seguir)
 			if lt.is_empty():
@@ -94,8 +96,8 @@ func _ready() -> void:
 			abertura = str(lt["no"])
 	_ctx["_nos"] = _arvore["nos"]
 	_abertura = abertura if not (abertura.begins_with("_c_") or abertura in ["_luto", "_inv", "_just", "_v_retorno"]) else seguir
-	if abertura == "_v_barrado":
-		_abertura = "_v_barrado"                 # barrado: nada de novidades, só o portão   # "Alguma novidade?" fica na conversa normal
+	if abertura == "_v_barrado" or abertura.begins_with("_p_"):
+		_abertura = abertura                 # barrado: nada de novidades, só o portão   # "Alguma novidade?" fica na conversa normal
 	Conversas.vistos["%s/%s" % [_ctx["com"], _ctx["npc"]]] = true
 	_ir(abertura)
 
@@ -130,21 +132,23 @@ func _ir(id: String) -> void:
 			if not bool((o as Dictionary).get("luto", false)) and Consequencias.cita_morto(str((o as Dictionary)["texto"])):
 				continue                           # pergunta sobre quem já morreu, como se estivesse vivo
 			lista.append(o)
-	if id == _abertura and not _arvore["nos"].has("_novidade") and Reputacao.valor(npc.comunidade) > -40:
+	var no_portao := _abertura.begins_with("_p_")      # do lado de fora: só o controle do portão
+	if id == _abertura and not no_portao and not _arvore["nos"].has("_novidade") and Reputacao.valor(npc.comunidade) > -40:
 		var n := Rumores.novidade_para(npc.comunidade, true)
 		if not n.is_empty():
 			_arvore["nos"]["_novidade"] = {"fala": "Ficou sabendo? %s" % str(n["texto"]), "_ouvir": n,
 				"opcoes": [{"texto": "E o que mais?", "vai": _abertura}]}
 			lista.append({"texto": "Alguma novidade por aqui?", "vai": "_novidade"})
-	if npc.comunidade != "" and Reputacao.valor(npc.comunidade) > -40:
+	if npc.comunidade != "" and Reputacao.valor(npc.comunidade) > -40 and not no_portao:
 		lista.append_array(Medicina.opcoes(_arvore, _ctx, lista, id == _abertura))
 		lista.append_array(VidaComunidade.opcoes(_arvore, _ctx, id == _abertura or id == "_v_barrado"))
+		lista.append_array(Portaria.opcoes(_arvore, _ctx, npc, id == _abertura))
 	if no.has("_ouvir"):
 		var av := Rumores.ouvir(no["_ouvir"])
 		if av != "":
 			_msgs.append(av)
 	var folha: bool = (no.get("opcoes", []) as Array).is_empty() and lista.is_empty()
-	var pode_seguir: bool = _arvore["nos"].has(_abertura) and not _abertura in ["some", "_v_barrado"]
+	var pode_seguir: bool = _arvore["nos"].has(_abertura) and not _abertura in ["some", "_v_barrado"] and not no_portao
 	if folha and pode_seguir and id != _abertura and not bool(no.get("sem_sair", false)) and not bool(no.get("encerra", false)):
 		lista.append({"texto": "Outra coisa...", "vai": _abertura})   # a fala acabou, mas a conversa pode seguir
 	if not bool(no.get("sem_sair", false)):
@@ -203,7 +207,7 @@ func _process(_delta: float) -> void:
 	var j: Node2D = _ctx.get("jogador")
 	if j == null or bool(j.get("morto")) or not is_instance_valid(npc) or npc.dormindo:
 		_fechar()
-	elif IsoMath.tela_para_mundo(npc.global_position - j.global_position).length() > LONGE * (2.0 if npc.tarefa == "portao" else 1.0):
+	elif IsoMath.tela_para_mundo(npc.global_position - j.global_position).length() > LONGE * (2.6 if npc.tarefa == "portao" else 1.0):
 		_fechar()                                  # o jogo não pausa: andou para longe, a conversa acaba
 
 

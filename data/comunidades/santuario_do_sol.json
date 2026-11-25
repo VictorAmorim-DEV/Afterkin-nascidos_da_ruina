@@ -129,12 +129,12 @@
 			],
 			"casa": 2,
 			"rotina": {
-				"madrugada": "casa",
+				"madrugada": "portao",
 				"amanhecer": "trabalho",
 				"manha": "trabalho",
 				"tarde": "trabalho",
 				"tardezinha": "fogueira",
-				"noite": "casa"
+				"noite": "portao"
 			}
 		},
 		{
