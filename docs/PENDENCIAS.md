@@ -116,7 +116,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     - ✅ 3.7a (`c8212ce`) Cutscene provisória e início fixo na enfermaria da Vila.
     - ✅ 3.7b (`86ee4c6`) Passos 1–3 da missão: Toné (o resgate), Dona Iracema (a Vila acolhe), Dr. Heitor (os da noite, as
       outras espécies, o ninho, o soro e o pedido da torre).
-    - ✅ 3.7b2 "Veja com seus olhos" vira encontrar o ninho (sem torre; 25/11/2026).
+    - ✅ 3.7b2 (`57dbe68`) "Veja com seus olhos" vira encontrar o ninho (sem torre; 25/11/2026).
     - ⬜ 3.7c "A noite do ataque" (arrombam o portão; mordida possível) e o desfecho.
   - ⬜ 3.8 Playtest do marco 3.
 - ⬜ Torres de vigia com escada nas muralhas das comunidades, uma de cada lado do portão (25/11/2026; fora da missão).
