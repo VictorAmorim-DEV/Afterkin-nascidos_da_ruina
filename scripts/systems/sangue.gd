@@ -161,9 +161,9 @@ static func _ferir_pessoa(j: Node, e: Npc) -> void:
 
 # ───────────────────────────── rapto (3.2c) ─────────────────────────────
 
-## Capuz na mochila (até existir roupa vestida): quem acorda não reconhece o rosto.
+## Capuz vestido: quem acorda não reconhece o rosto.
 static func rosto_coberto(j: Node) -> bool:
-	return Itens.DB.has("capuz") and j.inventario.contar("capuz") > 0
+	return j.inventario.veste("capuz")
 
 
 ## Morador dormindo ao alcance (na cama ou na entrada da barraca).

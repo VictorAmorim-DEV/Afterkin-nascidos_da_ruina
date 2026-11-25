@@ -194,6 +194,13 @@ static func chance_mordida(j: Node, de_onde_mundo: Vector2) -> float:
 	return clampf(c, 0.0, 1.0)
 
 
-## Gola ou cachecol de couro na mochila (até existir roupa vestida).
+## Cachecol de couro vestido: cobre a mordida e protege o pescoço.
 static func protegido(j: Node) -> bool:
-	return Itens.DB.has("cachecol_couro") and j.inventario.contar("cachecol_couro") > 0
+	return j.inventario.veste("cachecol_couro")
+
+
+## Os olhos mudados estão escondidos? De dia, óculos escuros; de noite, capuz (ou os óculos).
+static func olhos_cobertos(j: Node) -> bool:
+	if j.inventario.veste("oculos_escuros"):
+		return true
+	return j.inventario.veste("capuz") and j._eh_noite()

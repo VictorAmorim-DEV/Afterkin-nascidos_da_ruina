@@ -12,6 +12,13 @@ const DB := {
 	"antibiotico": {"nome": "Antibiótico", "stack": 8, "peso": 0.05, "uso": true, "desc": "Trata doenças."},
 	"antidoto": {"nome": "Antídoto", "stack": 4, "peso": 0.1, "uso": true,
 		"desc": "O médico prepara com sangue antigo. Cura a infecção vampírica na Marca e na Fome; na Sede, só com tratamento de médico."},
+	# acessórios (marco 3.5): só valem vestidos (Inventario.acessorios), base do futuro sistema de roupas
+	"cachecol_couro": {"nome": "Cachecol de couro", "stack": 1, "peso": 0.2, "acessorio": "pescoco",
+		"desc": "Vestido, cobre a mordida do pescoço e deixa a mordida do vampiro mais difícil de romper fundo (−15%)."},
+	"capuz": {"nome": "Capuz", "stack": 1, "peso": 0.2, "acessorio": "cabeca",
+		"desc": "Vestido, esconde o rosto (quem acordar de um rapto não te reconhece) e, de noite, os olhos."},
+	"oculos_escuros": {"nome": "Óculos escuros", "stack": 1, "peso": 0.05, "acessorio": "olhos",
+		"desc": "Vestidos, escondem os olhos de dia."},
 	"sangue_antigo": {"nome": "Sangue antigo", "stack": 4, "peso": 0.2,
 		"desc": "Da Mãe da Colônia, num frasco que não esfria. O Dr. Heitor sabe preparar o antídoto com ele."},
 	"soro_contencao": {"nome": "Soro de contenção", "stack": 4, "peso": 0.3, "uso": true,
@@ -57,6 +64,8 @@ const RECEITAS := [
 	{"id": "soro", "desc": "Contra a disenteria e a sede.", "custo": [["agua_limpa", 1], ["comida", 1]], "hab": "preparar_remedios"},
 	{"id": "kit_cirurgico", "desc": "Para a Cirurgia de campo.", "custo": [["sucata", 2], ["pano", 2], ["bandagem", 1]],
 		"hab": "preparar_remedios"},
+	{"id": "cachecol_couro", "desc": "Cobre a mordida. Vista no inventário.", "custo": [["pano", 3]]},
+	{"id": "capuz", "desc": "Esconde o rosto e, de noite, os olhos. Vista no inventário.", "custo": [["pano", 2]]},
 	{"id": "soro_contencao", "desc": "Segura a infecção vampírica por 6 h. Não cura.",
 		"custo": [["antibiotico", 1], ["agua_limpa", 1], ["pano", 1]], "hab": "preparar_remedios"},
 ]
@@ -133,6 +142,7 @@ static func saque(tipo: String, rng: RandomNumberGenerator) -> Array:
 				["agua_limpa", 1 if rng.randf() < 0.06 else 0], ["pano", rng.randi_range(0, 2)]]
 		"comoda":
 			l = [["antibiotico", 1 if rng.randf() < 0.12 else 0], ["sucata", rng.randi_range(0, 1)],
+				["oculos_escuros", 1 if rng.randf() < 0.05 else 0],
 				["municao", rng.randi_range(1, 3) if rng.randf() < 0.05 else 0], ["pano", rng.randi_range(0, 1)],
 				["radio", 1 if rng.randf() < 0.03 else 0]]
 		"estante":

@@ -15,6 +15,7 @@ var _info := VBoxContainer.new()
 var _botoes := HBoxContainer.new()
 var _receitas := VBoxContainer.new()
 var _status := Label.new()
+var _acess := HBoxContainer.new()          ## encaixes de acessório (pescoço, cabeça, olhos): clicar tira
 var _terr_info := Label.new()
 var _terr_botoes := HBoxContainer.new()
 var _cartoes := GridContainer.new()      ## V13: aba Status (statusItems)
@@ -91,6 +92,8 @@ func _montar() -> void:
 	meio.add_child(lado)
 	_equip.add_theme_font_size_override("font_size", 14)
 	lado.add_child(_equip)
+	_acess.add_theme_constant_override("separation", 4)
+	lado.add_child(_acess)
 	lado.add_child(HSeparator.new())
 	_info.custom_minimum_size = Vector2(300, 90)
 	lado.add_child(_info)
@@ -162,6 +165,18 @@ func _atualizar() -> void:
 		_inv.peso_total(), Inventario.CAPACIDADE_KG, " · SOBRECARGA" if _inv.sobrecarga() > 0.0 else ""]
 	var e := _inv.id_equipado()
 	_equip.text = ("Equipado: " + Itens.nome(e)) if e != "" else "Mãos livres"
+	for c in _acess.get_children():
+		c.queue_free()
+	for enc in Inventario.ENCAIXES:
+		var b := Button.new()
+		var id := str(_inv.acessorios.get(enc, ""))
+		b.text = "%s\n%s" % [Inventario.NOMES_ENCAIXE[enc], Itens.nome(id) if id != "" else "—"]
+		b.custom_minimum_size = Vector2(98, 40)
+		b.add_theme_font_size_override("font_size", 11)
+		b.tooltip_text = "Clique para tirar." if id != "" else "Vista um acessório pelo item."
+		b.disabled = id == ""
+		b.pressed.connect(func(): _inv.tirar(enc))
+		_acess.add_child(b)
 	_montar_info()
 	_montar_receitas()
 	_montar_territorio()
@@ -239,6 +254,8 @@ func _montar_info() -> void:
 		_botao("Desequipar" if _sel == _inv.equipado else "Equipar", func(): _inv.alternar_equipado(_sel))
 	if d.get("uso", false):
 		_botao("Usar", func(): _inv.usar(_sel))
+	if str(d.get("acessorio", "")) != "":
+		_botao("Vestir", func(): _inv.vestir(_sel))
 	_botao("Largar 1", func(): _jogador.largar_slot(_sel, 1), x.quantidade > 1)
 	_botao("Largar tudo", func(): _jogador.largar_slot(_sel, 0))
 

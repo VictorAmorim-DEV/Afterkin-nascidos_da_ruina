@@ -1658,7 +1658,7 @@ func dados_para_salvar() -> Dictionary:
 		"stamina": stamina, "descanso": descanso, "sol": sol, "doenca": doenca.duplicate(), "lanterna": lanterna_ligada,
 		"sangue": [sangue_t, sangue_forca, sangue_vel], "sequela": sequela_h,
 		"slots": inventario.slots.map(func(x): return null if x == null else (x as Dictionary).duplicate()),
-		"equipado": inventario.equipado}
+		"equipado": inventario.equipado, "acessorios": inventario.acessorios.duplicate()}
 
 
 func restaurar(d: Dictionary) -> void:
@@ -1698,4 +1698,7 @@ func restaurar(d: Dictionary) -> void:
 	for i in mini(slots.size(), inventario.slots.size()):
 		inventario.slots[i] = slots[i]
 	inventario.equipado = int(d.get("equipado", -1))
+	var ac: Dictionary = d.get("acessorios", {})
+	for enc in Inventario.ENCAIXES:
+		inventario.acessorios[enc] = str(ac.get(enc, ""))
 	inventario.mudou.emit()

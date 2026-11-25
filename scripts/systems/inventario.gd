@@ -11,6 +11,10 @@ const CAPACIDADE_KG := 35.0  ## acima disso o jogador fica lento, cansa mais e f
 
 var slots: Array = []
 var equipado: int = -1       ## índice do slot da ferramenta equipada (-1 = mãos livres)
+## Encaixes de acessório (marco 3.5): id do item vestido ("" = vazio). Base do futuro sistema de roupas.
+const ENCAIXES := ["pescoco", "cabeca", "olhos"]
+const NOMES_ENCAIXE := {"pescoco": "Pescoço", "cabeca": "Cabeça", "olhos": "Olhos"}
+var acessorios: Dictionary = {"pescoco": "", "cabeca": "", "olhos": ""}
 var jogador: Node = null     ## quem usa os itens (comer, remédio...)
 
 
@@ -177,6 +181,41 @@ func retirar(i: int, qtd: int = 0) -> Dictionary:
 	return out
 
 
+## Está vestindo este item?
+func veste(id: String) -> bool:
+	return acessorios.values().has(id)
+
+
+## Veste o acessório do slot 'i' (o que estava no encaixe volta para a mochila).
+func vestir(i: int) -> void:
+	var x = slots[i]
+	if x == null:
+		return
+	var enc := str(Itens.DB[x.id].get("acessorio", ""))
+	if enc == "":
+		return
+	var antigo := str(acessorios.get(enc, ""))
+	var id: String = x.id
+	remover(id, 1)
+	acessorios[enc] = id
+	if antigo != "" and adicionar_parcial(antigo, 1) < 1 and jogador != null:
+		jogador.largar_item(antigo, 1)
+	if jogador != null:
+		jogador.aviso("Vestiu: %s." % Itens.nome(id))
+	mudou.emit()
+
+
+## Tira o acessório do encaixe e devolve à mochila (ou ao chão, se não couber).
+func tirar(enc: String) -> void:
+	var id := str(acessorios.get(enc, ""))
+	if id == "":
+		return
+	acessorios[enc] = ""
+	if adicionar_parcial(id, 1) < 1 and jogador != null:
+		jogador.largar_item(id, 1)
+	mudou.emit()
+
+
 func usar(i: int) -> void:
 	var x = slots[i]
 	if x == null or jogador == null:
@@ -241,6 +280,7 @@ func fabricar(id: String) -> void:
 ## Itens iniciais da V13 (resetInventory).
 func inicial() -> void:
 	slots.fill(null)
+	acessorios = {"pescoco": "", "cabeca": "", "olhos": ""}
 	empilhar(slots, "madeira", 5)
 	empilhar(slots, "sucata", 3)
 	empilhar(slots, "comida", 2)
