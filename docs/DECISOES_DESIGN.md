@@ -716,6 +716,12 @@ Esta seção vale sobre as anteriores onde houver conflito (§7, §8, §9, §11,
   o território vampírico de um ponto alto antes de escurecer) → **A noite do ataque** (os vampiros atacam a Vila; a
   mordida é possível) → desfecho: mordido, buscar a cura ou ceder; não mordido, "eles voltam" e o jogo fica livre.
   No ato 2, outro NPC (a definir) explica as raças e as espécies.
+- **Ponto alto e ataque** (25/11/2026): o ponto alto do "Veja com seus olhos" é a **torre de vigia** da Vila, com
+  escada (as outras comunidades também terão as suas; o relevo do mapa vem depois, quando o cenário for refeito). De
+  lá, antes de escurecer, avista-se o ninho de morcegos mais perto da Vila, que fica marcado no mapa como território
+  dos da noite. Na noite do ataque, os vampiros **arrombam o portão** (fica arrombado até alguém consertar).
+- **Começo no código (3.7a):** na criação escolhem-se só a origem e o gênero; o bilhete e o prólogo antigos saem. Sons
+  da cutscene provisória gerados no código (o jogo ainda não tem áudio).
 - **Depois do marco 3:** níveis de habilidade → teste de 3D → teste de rede (sala no host, EOS, Steam e código).
 - **Dose única** (o Jajá mordido junto, uma dose para os dois): guardada como ideia de cena, se couber num formato
   que funcione com 1 a 10 jogadores.

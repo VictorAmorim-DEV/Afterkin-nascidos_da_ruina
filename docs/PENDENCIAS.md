@@ -111,9 +111,15 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     cela), expulsão, ou morte se ninguém tiver afinidade com ele; atacando, os outros reagem.
   - ✅ 3.6 (`0056082`) Diário do jogador (J): objetivo atual, sobrevivência, "O que está acontecendo comigo?", lista com [✓],
     página "Raças e espécies".
-  - ⬜ 3.7 Começo e ato 1 (gancho das primeiras horas): cutscene provisória (pular aos 5 s, ESC por 2 s), enfermaria
+  - 🔄 3.7 Começo e ato 1 (gancho das primeiras horas): cutscene provisória (pular aos 5 s, ESC por 2 s), enfermaria
     da Vila e o Toné, missão principal até "A noite do ataque".
+    - ✅ 3.7a (`c8212ce`) Cutscene provisória e início fixo na enfermaria da Vila.
+    - ✅ 3.7b (`86ee4c6`) Passos 1–3 da missão: Toné (o resgate), Dona Iracema (a Vila acolhe), Dr. Heitor (os da noite, as
+      outras espécies, o ninho, o soro e o pedido da torre).
+    - ⬜ 3.7c Torre de vigia da Vila (escada; avista o ninho mais perto antes de escurecer) e "A noite do ataque"
+      (arrombam o portão; mordida possível) com o desfecho.
   - ⬜ 3.8 Playtest do marco 3.
+- ⬜ Torres de vigia (com escada) nas outras comunidades, como a da Vila (25/11/2026).
 - ⬜ Depois do marco 3: níveis de habilidade (por hobbies e trabalhos; a missão do mestre dá o nível máximo; sem
   nível de personagem). Junta as antigas ideias de habilidades e trabalhos do playtest 2a.
 - ⬜ Depois do 3D: teste de rede — sala no PC do host (até 10), Epic Online Services (amigos, lobby, retransmissão),
