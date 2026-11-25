@@ -68,7 +68,7 @@ func _ready() -> void:
 	menu.mudou.connect(_texto_ajuda)
 	menu.mudou.connect(mm._layout)                 # a dica "M · mapa" acompanha a tecla
 	add_child(TelaMapa.new())                      # M: mapa do mundo, com legenda e descobertas
-	add_child(PrimeirosPassos.new())               # lista dos primeiros passos, embaixo do minimapa
+	add_child(MissoesUI.new())                     # painel "Missões", embaixo do minimapa (recolhe com um clique)
 	add_child(DiarioUI.new())                      # J: diário do jogador (objetivo, registro, raças e espécies)
 	var dev := PainelDev.new()                     # F1: modo desenvolvedor (só em build de debug)
 	dev.name = "PainelDev"

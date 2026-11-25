@@ -200,27 +200,25 @@ func confirmar() -> void:
 			if introducao_ligada():
 				var c := CutsceneInicio.new()
 				get_parent().add_child(c)
-				c.terminou.connect(_comecar_partida.bind(j, true))
+				c.terminou.connect(_comecar_partida.bind(j))
 				c.abrir()
 			else:
-				_comecar_partida(j, false)
+				_comecar_partida(j)
 			return
 		j.aviso("Agora você é %s." % NOMES[escolhida])
 	_raiz.visible = false
 	get_tree().paused = false
 
 
-## Opção "Introdução e primeiros passos" (Configurações > Partida); ligada por padrão.
+## Opção "Introdução" (Configurações > Partida): a cutscene do começo; ligada por padrão.
 static func introducao_ligada() -> bool:
 	return bool(Controles.ler_cfg().get_value("jogo", "introducao", true))
 
 
-## Depois da cutscene (ou sem ela): solta o jogo, o personagem acorda na enfermaria e os primeiros passos ligam.
-func _comecar_partida(j: Node, com_passos: bool) -> void:
+## Depois da cutscene (ou sem ela): solta o jogo e o personagem acorda na enfermaria.
+func _comecar_partida(j: Node) -> void:
 	get_tree().paused = false
 	MissaoPrincipal.acordar(j)
-	if com_passos:
-		get_tree().call_group("primeiros_passos", "iniciar", j)
 
 
 ## Começo da partida: zera o mundo e leva o jogador à enfermaria da Vila dos Pescadores (a casa do Dr. Heitor), às 08:00.

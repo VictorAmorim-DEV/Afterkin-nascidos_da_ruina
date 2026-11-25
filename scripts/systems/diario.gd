@@ -139,8 +139,12 @@ static func vigiar(j: Node) -> void:
 		if IsoMath.tela_para_mundo(ini.global_position).distance_to(pj) > VE_M * IsoMath.METRO:
 			continue
 		ver(j, "mae" if str(ini.get("chefe")) == "mae" else str(ini.get("raca")))
-	if bool(j.passos.get("noite", false)):
-		marcar(j, "primeira_noite")
+	if not tem(j, "primeira_noite"):                   # o dia seguinte amanheceu (6h) com ele vivo
+		var ciclo := j.get_tree().get_first_node_in_group("ciclo_dia_noite")
+		if ciclo != null and Reputacao.agora_h() - float(_d(j)["inicio_h"]) >= 12.0 and int(ciclo.minutos) >= 360 \
+				and int(ciclo.minutos) < 720:
+			if marcar(j, "primeira_noite"):
+				j.aviso("O sol nasceu. Você sobreviveu à primeira noite.")
 	if Medicina.completa():
 		marcar(j, "medico")
 	if Infeccao.ativa(j):
@@ -151,7 +155,7 @@ static func vigiar(j: Node) -> void:
 
 # ───────────────────────────── página 1: agora ─────────────────────────────
 
-## O objetivo atual: a missão principal (3.7) manda; senão, a cura; senão, os primeiros passos; senão, sobreviver.
+## O objetivo atual: a missão principal (3.7) manda; senão, a cura; senão, sobreviver.
 static func objetivo(j: Node) -> String:
 	var missao := MissaoPrincipal.objetivo()
 	if missao != "":
@@ -171,13 +175,6 @@ static func objetivo(j: Node) -> String:
 		if bool(Conversas.flags.get("heitor_conta_ninho", false)):
 			return "Matar a Mãe da Colônia no ninho de morcegos, depois da curva do lago, e trazer o sangue antigo."
 		return "Achar a cura: o médico da Vila dos Pescadores deve saber o que fazer com a mordida."
-	if bool(j.passos.get("_ativo", false)):
-		for p in PrimeirosPassos.PASSOS:
-			var pa: Array = p
-			var feito := bool(j.passos.get("noite", false)) if pa[0] == "noite" \
-				else int(j.passos.get(pa[3], 0)) >= int(pa[4])
-			if not feito:
-				return str(pa[1])
 	return "Sobreviver. Conhecer a ilha e descobrir o que aconteceu com o mundo."
 
 

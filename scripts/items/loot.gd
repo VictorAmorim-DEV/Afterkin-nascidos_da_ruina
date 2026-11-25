@@ -14,7 +14,6 @@ static func vasculhar(jogador: Node, tipo: String, rng: RandomNumberGenerator, a
 	var p := IsoMath.tela_para_mundo(jogador.global_position)
 	if Comunidades.em(p) != "":
 		Reputacao.registrar("furto", p)          # tudo ali é de alguém; só é furto se alguém vir
-	jogador.get_tree().call_group("primeiros_passos", "evento", "vasculhou")
 	ao_concluir.call()
 	if randf() < 0.07:                          # um bilhete no meio das coisas (Rumores, canal "bilhete")
 		var rid := Rumores.sortear_do_canal("bilhete")

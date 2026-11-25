@@ -76,7 +76,7 @@ var ruido_piso: float = 0.0              ## barulho mínimo imposto de fora nest
 var inventario: Inventario
 var ataque_cd: float = 0.0               ## recarga do golpe (V13: player.attackCd)
 var golpe_t: float = 0.0                 ## tempo restante da animação de golpe
-var passos: Dictionary = {}               ## progresso dos PrimeirosPassos (contagem por evento, "_ativo", "noite")
+var passos: Dictionary = {}               ## progresso dos antigos primeiros passos (só vai e volta no save; sem uso)
 var diario: Dictionary = {}               ## diário do jogador (Diario: abates, marcos, espécies, tempo vivo)
 var local_inicio: String = ""            ## onde estava quando tudo começou (Inicio)
 var origem: String = ""                  ## policial, mecanico, enfermeiro ou mestre_obras (Origens)
@@ -695,7 +695,6 @@ func beber(qtd: float, chance_doenca: float, de_onde: String, extra: String = ""
 	if chance_doenca > 0.0 and doenca.is_empty() and incubacao_h < 0.0 and randf() < chance_doenca:
 		incubacao_h = randf_range(INCUBACAO_MIN_H, INCUBACAO_MAX_H)
 	aviso("Você bebeu %s.%s" % [de_onde, extra])
-	get_tree().call_group("primeiros_passos", "evento", "bebeu")
 	return true
 
 
@@ -726,7 +725,6 @@ func acender_fogueira() -> void:
 	f.position = global_position + IsoMath.mundo_para_tela(frente)
 	get_parent().add_child(f)
 	aviso("Você acendeu uma fogueira. Ela faz luz e chama atenção.")
-	get_tree().call_group("primeiros_passos", "evento", "acendeu")
 
 
 ## Larga 'qtd' (0 = tudo) do slot no chão, à frente do jogador.

@@ -142,8 +142,6 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 	Vigilancia.restaurar(pendente.get("vigilancia", {}))
 	MissaoPrincipal.restaurar(pendente.get("missao", {"passo": 99}))   # save de antes do ato 1: missão encerrada
 	Conversas.restaurar(pendente.get("conversas", {}))
-	if j != null and bool(j.passos.get("_ativo", false)):
-		arvore.call_group("primeiros_passos", "iniciar", j)
 	pendente = {}
 	if j != null:
 		j.aviso("Partida carregada.")
