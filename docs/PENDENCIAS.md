@@ -109,7 +109,7 @@ Legenda: ⬜ falta · 🔄 em andamento · ✅ feito (com o commit) · 💭 idei
     denuncia, transformado é monstro (guarda ataca de dia e de noite). A regra da comunidade vale para qualquer
     infectado ou transformado, jogador ou NPC (23/11/2026): quarentena (enfermaria ou casa trancada até existir a
     cela), expulsão, ou morte se ninguém tiver afinidade com ele; atacando, os outros reagem.
-  - ⬜ 3.6 Diário do jogador (J): objetivo atual, sobrevivência, "O que está acontecendo comigo?", lista com [✅],
+  - ✅ 3.6 (`0056082`) Diário do jogador (J): objetivo atual, sobrevivência, "O que está acontecendo comigo?", lista com [✓],
     página "Raças e espécies".
   - ⬜ 3.7 Começo e ato 1 (gancho das primeiras horas): cutscene provisória (pular aos 5 s, ESC por 2 s), enfermaria
     da Vila e o Toné, missão principal até "A noite do ataque".
