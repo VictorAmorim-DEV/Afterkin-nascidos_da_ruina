@@ -2,7 +2,8 @@ class_name SelecaoRaca
 extends CanvasLayer
 ## Tela inicial (V13: #startCard). O jogo fica pausado até confirmar.
 ## Toda partida começa como Humano (docs/DECISOES_DESIGN.md, Q3): na abertura se escolhe a ORIGEM (Origens, Q5/Q18)
-## e a grade de raças fica escondida.
+## e a grade de raças fica escondida. Todos começam na enfermaria da Vila dos Pescadores (marco 3, etapa 3.7a): a
+## origem muda só o kit; não se escolhe mais o lugar.
 ## F9 abre de novo durante a partida, com a grade, para trocar de raça nos testes (mantém mochila e posição).
 
 ## Título da próxima abertura (ex.: depois de morrer). Sobrevive ao recarregamento da cena.
@@ -37,12 +38,6 @@ var origem: String = "policial"
 var genero: String = "m"
 var _linha_genero := HBoxContainer.new()  ## homem ou mulher (só no começo da partida)
 var _botoes_genero: Dictionary = {}
-var _grade_local := GridContainer.new()   ## onde você estava quando tudo começou (Inicio)
-var _rotulo_local := Label.new()
-var _botoes_local: Dictionary = {}
-var local_inicio: String = "porto_atlantico"
-var _mapa := MapaMundo.new()            ## mapa com o lugar escolhido realçado (só no começo)
-var _local_manual := false                ## o jogador escolheu o local (a origem não troca mais o padrão)
 var _comecar := Button.new()
 var _continuar := Button.new()
 var _raiz := Control.new()
@@ -81,13 +76,7 @@ func _montar() -> void:
 	var col := VBoxContainer.new()
 	col.custom_minimum_size = Vector2(620, 0)
 	col.add_theme_constant_override("separation", 12)
-	var lado := HBoxContainer.new()          # escolhas à esquerda, mapa à direita
-	lado.add_theme_constant_override("separation", 16)
-	painel.add_child(lado)
-	lado.add_child(col)
-	_mapa.modo_inicio = true
-	_mapa.custom_minimum_size = Vector2(440, 480)
-	lado.add_child(_mapa)
+	painel.add_child(col)
 	_titulo.add_theme_font_size_override("font_size", 24)
 	col.add_child(_titulo)
 	var sub := Label.new()
@@ -144,24 +133,6 @@ func _montar() -> void:
 		_linha_genero.add_child(bg)
 		_botoes_genero[g[0]] = bg
 	col.add_child(_linha_genero)
-	_rotulo_local.text = "Onde você estava quando tudo começou?"
-	_rotulo_local.add_theme_font_size_override("font_size", 15)
-	col.add_child(_rotulo_local)
-	_grade_local.columns = 3
-	_grade_local.add_theme_constant_override("h_separation", 8)
-	_grade_local.add_theme_constant_override("v_separation", 8)
-	col.add_child(_grade_local)
-	var grupo_l := ButtonGroup.new()
-	for l in Inicio.IDS:
-		var b := Button.new()
-		b.toggle_mode = true
-		b.button_group = grupo_l
-		b.text = "%s\n%s" % [Inicio.nome(l), Inicio.tipo(l)]
-		b.custom_minimum_size = Vector2(196, 48)
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.pressed.connect(_escolher_local.bind(l, true))
-		_grade_local.add_child(b)
-		_botoes_local[l] = b
 	_descricao.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_descricao.custom_minimum_size = Vector2(0, 60)
 	col.add_child(_descricao)
@@ -188,25 +159,11 @@ func _escolher(r: String) -> void:
 
 func _escolher_origem(o: String) -> void:
 	origem = o
-	if not _local_manual:                     # a origem sugere o local, até o jogador escolher um
-		_escolher_local(str(Inicio.PADRAO.get(o, "porto_atlantico")), false)
-	_atualizar_descricao()
-
-
-func _escolher_local(l: String, manual: bool) -> void:
-	local_inicio = l
-	_local_manual = _local_manual or manual
-	_botoes_local[l].button_pressed = true
-	_mapa.destaque = l
-	var r := _mapa._area_destaque()
-	if r.has_area():
-		_mapa.focar(r.get_center(), 3.0)
 	_atualizar_descricao()
 
 
 func _atualizar_descricao() -> void:
-	_descricao.text = "%s: %s\nQuando tudo começou, você estava %s." % [Origens.nome(origem),
-		str((Origens.DADOS[origem] as Dictionary)["descricao"]), Inicio.onde(local_inicio)]
+	_descricao.text = "%s: %s" % [Origens.nome(origem), str((Origens.DADOS[origem] as Dictionary)["descricao"])]
 
 
 func abrir(reiniciar: bool) -> void:
@@ -220,10 +177,6 @@ func abrir(reiniciar: bool) -> void:
 	_grade.visible = not reiniciar
 	_grade_origem.visible = reiniciar
 	_linha_genero.visible = reiniciar
-	_grade_local.visible = reiniciar
-	_mapa.visible = reiniciar
-	_rotulo_local.visible = reiniciar
-	_local_manual = false
 	_botoes[escolhida].button_pressed = true
 	_escolher(escolhida)
 	if reiniciar:
@@ -242,15 +195,15 @@ func confirmar() -> void:
 		if _reiniciar:
 			j.definir_origem(origem)
 			j.genero = genero
-			var onde := _levar_ao_inicio(j)
+			_levar_ao_inicio(j)
 			_raiz.visible = false
 			if introducao_ligada():
-				var p := Prologo.new()
-				get_parent().add_child(p)
-				p.terminou.connect(_comecar_partida.bind(j, onde, true))
-				p.abrir(origem, local_inicio, onde)
+				var c := CutsceneInicio.new()
+				get_parent().add_child(c)
+				c.terminou.connect(_comecar_partida.bind(j, true))
+				c.abrir()
 			else:
-				_comecar_partida(j, onde, false)
+				_comecar_partida(j, false)
 			return
 		j.aviso("Agora você é %s." % NOMES[escolhida])
 	_raiz.visible = false
@@ -262,29 +215,21 @@ static func introducao_ligada() -> bool:
 	return bool(Controles.ler_cfg().get_value("jogo", "introducao", true))
 
 
-## Depois do prólogo (ou sem ele): solta o jogo, dá as boas-vindas, o bilhete e liga os primeiros passos.
-func _comecar_partida(j: Node, onde: String, com_passos: bool) -> void:
+## Depois da cutscene (ou sem ela): solta o jogo, o personagem acorda na enfermaria e os primeiros passos ligam.
+func _comecar_partida(j: Node, com_passos: bool) -> void:
 	get_tree().paused = false
-	j.aviso("Você estava %s quando tudo começou. Encontre água, comida e abrigo." % onde)
-	j.ler_bilhete_inicial()
+	MissaoPrincipal.acordar(j)
 	if com_passos:
 		get_tree().call_group("primeiros_passos", "iniciar", j)
 
 
-## Leva o jogador a uma casa ou prédio sorteado no lugar escolhido, sem inimigos em volta, às 08:00 (Inicio).
-## Devolve a frase de onde ele estava ("numa casa de Porto Atlântico").
-func _levar_ao_inicio(j: Node) -> String:
-	j.local_inicio = local_inicio
+## Começo da partida: zera o mundo e leva o jogador à enfermaria da Vila dos Pescadores (a casa do Dr. Heitor), às 08:00.
+func _levar_ao_inicio(j: Node) -> void:
+	j.local_inicio = ""
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
 	if ciclo != null:
 		ciclo.minutos = 480.0
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
-	var a := Inicio.achar(local_inicio, rng)
-	if a.is_empty():
-		return Inicio.onde(local_inicio)
-	Inicio.zona_segura = a["zona"]
-	# você conhece o lugar onde morava: a área já vem revelada no mapa (e o acampamento, descoberto)
+	Inicio.zona_segura = Rect2()
 	Descobertas.zerar()
 	Respawn.zerar()
 	Conversas.zerar()
@@ -299,17 +244,9 @@ func _levar_ao_inicio(j: Node) -> String:
 	MaeColonia.zerar()
 	Portaria.zerar()
 	Vigilancia.zerar()
-	DiarioPartida.iniciar(str(j.origem), str(j.genero), str((Inicio.DADOS.get(local_inicio, {}) as Dictionary).get("nome", local_inicio)))
-	var area := _mapa._area_destaque()
-	if area.has_area():
-		Descobertas.revelar_retangulo(area.grow(20.0 * IsoMath.METRO))
-	var nome_camp: String = (Inicio.DADOS[local_inicio] as Dictionary).get("acampamento", "")
-	if nome_camp != "":
-		Descobertas.acampamentos.append(nome_camp)
-	var mundo := get_tree().get_first_node_in_group("mundo")
-	if mundo != null and mundo.has_method("teleportar"):
-		mundo.teleportar(a["p"])
-	return str(a["onde"])
+	MissaoPrincipal.zerar()
+	DiarioPartida.iniciar(str(j.origem), str(j.genero), Comunidades.nome(MissaoPrincipal.COM))
+	MissaoPrincipal.levar_a_enfermaria(j)
 
 
 func esta_aberta() -> bool:

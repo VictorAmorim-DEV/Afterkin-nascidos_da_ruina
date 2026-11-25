@@ -188,7 +188,7 @@ static func lugares_descobertos(local_inicio: String) -> Array:
 	for id in Inicio.IDS:
 		if id == local_inicio or _area_revelada(str(id)):
 			out.append(id)
-	if out.is_empty():
+	if out.is_empty() and local_inicio != "":
 		out.append(Inicio.IDS[0])
 	return out
 
