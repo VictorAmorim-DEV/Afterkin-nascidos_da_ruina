@@ -32,6 +32,7 @@ func _process(delta: float) -> void:
 	Simulacao.passo()                          # turnos do ecossistema das comunidades (longe e perto)
 	Portaria.passo(get_tree())                 # quem mentiu sobre a arma e aparece com ela lá dentro
 	Vigilancia.passo(get_tree())               # quem contou dos seus olhos; o vampiro reconhecido
+	NoiteDoAtaque.passo(get_tree())            # a noite do ataque (ato 1) e o portão arrombado
 	var agora_h := Reputacao.agora_h()
 	if _ultimo_h >= 0.0 and agora_h > _ultimo_h and agora_h - _ultimo_h < 1.0:
 		VidaComunidade.passo(agora_h - _ultimo_h)     # trabalho em tempo real (o sono não conta)
@@ -55,8 +56,9 @@ func _process(delta: float) -> void:
 			var pt := p as PortaoNo
 			if pt != null and pt.comunidade != "":
 				# sempre fechado: só abre quando o guarda abre para alguém passar (Portaria)
-				pt.definir_aberto(Portaria.aberto(pt.comunidade) and not Consequencias.portao_fechado_para(pt.comunidade, pj) \
-					and not VidaComunidade.portao_fechado_para(pt.comunidade, pj))
+				pt.definir_aberto(NoiteDoAtaque.arrombado(pt.comunidade) or (Portaria.aberto(pt.comunidade) \
+					and not Consequencias.portao_fechado_para(pt.comunidade, pj) \
+					and not VidaComunidade.portao_fechado_para(pt.comunidade, pj)))
 
 
 static func _dist_rect(p: Vector2, r: Rect2) -> float:

@@ -166,6 +166,10 @@ static func aplicar(efeitos: Array, ctx: Dictionary) -> PackedStringArray:
 			msgs.append_array(Consequencias.responder(ed, ctx, ctx.get("_nos", {})))
 		if ed.has("med"):
 			msgs.append_array(Medicina.efeito(str(ed["med"]), ctx))
+		if ed.has("portao_conserto"):
+			var cm := NoiteDoAtaque.consertar(str(ctx["com"]))
+			if cm != "":
+				msgs.append(cm)
 		if ed.has("missao"):
 			msgs.append_array(MissaoPrincipal.efeito(str(ed["missao"]), ctx))
 		if ed.has("portaria"):

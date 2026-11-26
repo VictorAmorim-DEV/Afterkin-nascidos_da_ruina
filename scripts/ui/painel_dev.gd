@@ -127,6 +127,12 @@ func _ready() -> void:
 		_j().get_parent().add_child(mae)
 		mae.global_position = _j().global_position + IsoMath.mundo_para_tela(Vector2(6.0 * IsoMath.METRO, 0.0))
 		_aviso("Mãe da Colônia a 6 m.")))
+	lj.add_child(_botao("Noite do ataque agora", func():
+		if MissaoPrincipal.passo < 5 or MissaoPrincipal.passo > 6:
+			MissaoPrincipal.passo = 5
+		NoiteDoAtaque.zerar()
+		NoiteDoAtaque.marcado_h = Reputacao.agora_h()
+		_aviso("Ataque na Vila em instantes (perto dela: %d vampiros)." % NoiteDoAtaque.quantos(get_tree()))))
 	lj.add_child(_botao("Próximo estágio", func():
 		var j := _j()
 		if not Infeccao.ativa(j):

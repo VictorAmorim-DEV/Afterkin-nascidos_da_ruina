@@ -29,6 +29,7 @@ const ESPECIES := [
 ## Marcos que viram [✓] na página do registro, na voz do personagem.
 const MARCOS := {
 	"primeira_noite": "Sobrevivi à primeira noite.",
+	"noite_ataque": "Sobrevivi à noite do ataque.",
 	"mordido": "Fui mordido por um vampiro.",
 	"curado": "Sobrevivi à mordida de um vampiro.",
 	"transformado": "Virei um deles.",

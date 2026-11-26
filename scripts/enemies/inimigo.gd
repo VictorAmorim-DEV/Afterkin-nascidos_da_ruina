@@ -20,6 +20,9 @@ const DIRECOES: Array[String] = ["frente", "lado", "costas"]
 var casa: Edificio = null          ## casa onde mora; o vampiro volta para ela de dia e dorme
 var chefe: String = ""             ## "mae" = Mãe da Colônia (MaeColonia), mini boss do ninho de morcegos
 var ninho_p := Vector2.ZERO        ## ninho da Mãe da Colônia (mundo)
+var invasao := Vector2.INF         ## invasor (NoiteDoAtaque): ponto da Vila para onde ele vai, caçando quem achar
+var _fuga_p := Vector2.INF         ## fugindo da Vila ao amanhecer: some quando chega longe
+var _fuga_t := 0.0
 var _revoada_cd: float = 0.0
 
 var hp: float = 45.0
@@ -139,6 +142,19 @@ func _physics_process(delta: float) -> void:
 	var tem_alvo := false
 	if alerta > 0.0 and d < 28.0 * M:
 		alvo = pm
+		tem_alvo = true
+	elif _fuga_p != Vector2.INF:
+		alvo = _fuga_p
+		tem_alvo = true
+		_fuga_t -= delta
+		if _fuga_t <= 0.0 or em.distance_to(_fuga_p) < 1.5 * M:
+			queue_free()
+			return
+	elif invasao != Vector2.INF:
+		# invasor: anda pela Vila de um ponto a outro, caçando quem estiver acordado
+		if em.distance_to(invasao) < 2.0 * M:
+			invasao = invasao + Vector2(randf_range(-14, 14), randf_range(-5, 5)) * M
+		alvo = invasao
 		tem_alvo = true
 	elif casa != null and raca == "vampire" and not noite:
 		# de dia o vampiro volta para o primeiro cômodo da casa e volta a dormir
@@ -272,6 +288,21 @@ func _rota(em: Vector2, alvo: Vector2, eb: Edificio, pb: Edificio) -> Array:
 	else:
 		r = pb.rota_entrada(em - off) if alvo_edif == pb else [alvo - off, null]
 	return [r[0] + off, r[1], off, ed]
+
+
+## Amanheceu na noite do ataque: sai da Vila pelo portão e some.
+func fugir_da_vila() -> void:
+	var g := Comunidades.geo(NoiteDoAtaque.COM)
+	invasao = Vector2.INF
+	alerta = 0.0
+	_fuga_t = 25.0
+	var portoes: Array = g.get("portoes", [])
+	if portoes.is_empty():
+		_fuga_p = _mundo() + Vector2(40, 0) * M
+		return
+	var fora: Vector2 = (portoes[0] as Dictionary)["fora"]
+	var centro: Vector2 = g["centro"]
+	_fuga_p = fora + (fora - centro).normalized() * 30.0 * M
 
 
 func receber_dano(n: float, por_jogador: bool = true) -> void:

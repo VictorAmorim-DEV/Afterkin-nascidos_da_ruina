@@ -243,6 +243,7 @@ func _levar_ao_inicio(j: Node) -> void:
 	Portaria.zerar()
 	Vigilancia.zerar()
 	MissaoPrincipal.zerar()
+	NoiteDoAtaque.zerar()
 	DiarioPartida.iniciar(str(j.origem), str(j.genero), Comunidades.nome(MissaoPrincipal.COM))
 	MissaoPrincipal.levar_a_enfermaria(j)
 

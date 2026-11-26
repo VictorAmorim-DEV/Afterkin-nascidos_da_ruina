@@ -68,6 +68,7 @@ static func salvar(arvore: SceneTree) -> String:
 		"portaria": Portaria.dados_para_salvar(),
 		"vigilancia": Vigilancia.dados_para_salvar(),
 		"missao": MissaoPrincipal.dados_para_salvar(),
+		"noite_ataque": NoiteDoAtaque.dados_para_salvar(),
 	}
 	var f := FileAccess.open(ARQUIVO, FileAccess.WRITE)
 	if f == null:
@@ -141,6 +142,7 @@ static func aplicar_resto(arvore: SceneTree) -> void:
 	Portaria.restaurar(pendente.get("portaria", {}))
 	Vigilancia.restaurar(pendente.get("vigilancia", {}))
 	MissaoPrincipal.restaurar(pendente.get("missao", {"passo": 99}))   # save de antes do ato 1: missão encerrada
+	NoiteDoAtaque.restaurar(pendente.get("noite_ataque", {}))
 	Conversas.restaurar(pendente.get("conversas", {}))
 	pendente = {}
 	if j != null:

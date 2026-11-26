@@ -325,6 +325,12 @@ func _physics_process(delta: float) -> void:
 	if dormindo:
 		_sono(delta)
 		return
+	if NoiteDoAtaque.na_vila(comunidade) and NoiteDoAtaque.lutador(self) and vida >= 12.0:
+		var inv := NoiteDoAtaque.alvo_do_lutador(self)
+		if inv != null:
+			conversando = false
+			_lutar(delta, inv)
+			return
 	if furioso and vida >= 12.0:
 		var j := get_tree().get_first_node_in_group("jogador") as Node2D
 		if j != null and not j.morto and j.dirigindo == null and _dist_jogador() < 16.0 * M:
@@ -397,6 +403,34 @@ func _atacar(delta: float, j: Node2D) -> void:
 		_animar(false)
 
 
+## Noite do ataque: o guarda ou um dos fortes parte para cima do vampiro (o guarda às vezes atira).
+func _lutar(delta: float, v: Inimigo) -> void:
+	_t_golpe -= delta
+	_t_grito_n -= delta
+	if _t_grito_n <= 0.0:
+		_t_grito_n = 7.0
+		falar(["Pra cima deles!", "Segura o portão!", "Ninguém sai de casa!", "Aqui, desgraçado!"][randi() % 4], 2.0)
+	var d := IsoMath.tela_para_mundo(v.global_position - global_position).length()
+	var guarda := str(dados.get("papel", "")).begins_with("guarda")
+	if guarda and d < 9.0 * M and d > 2.0 * M and randf() < 0.012:
+		v.receber_dano(NoiteDoAtaque.TIRO, false)
+		falar("*BANG*", 0.8)
+		return
+	if d > 1.0 * M:
+		var dir := IsoMath.tela_para_mundo(v.global_position - global_position).normalized()
+		velocity = IsoMath.mundo_para_tela(dir * VEL * 1.9)
+		move_and_slide()
+		_passo += VEL * 1.9 * delta * 0.09
+		_olhar = dir
+		_animar(true)
+	elif _t_golpe <= 0.0:
+		_t_golpe = 1.2
+		velocity = Vector2.ZERO
+		v.receber_dano(NoiteDoAtaque.GOLPE, false)
+		_olhar = IsoMath.tela_para_mundo(v.global_position - global_position).normalized()
+		_animar(false)
+
+
 ## Correndo para longe do jogador (atacado).
 func _fugir(delta: float) -> void:
 	_fuga_t -= delta
@@ -427,6 +461,8 @@ func _fugir(delta: float) -> void:
 func receber_dano(n: float, por_jogador: bool = true) -> void:
 	if morto:
 		return
+	if not por_jogador:
+		n = NoiteDoAtaque.segurar_dano(self, n)    # na noite do ataque, quem é da Vila cai ferido, não morre
 	vida -= n
 	_sprite.modulate = Color(1.0, 0.4, 0.4)
 	create_tween().tween_property(_sprite, "modulate", Color.WHITE, 0.25)

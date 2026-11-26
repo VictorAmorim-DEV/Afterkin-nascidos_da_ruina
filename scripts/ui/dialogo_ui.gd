@@ -156,6 +156,7 @@ func _ir(id: String) -> void:
 		if not em_q:                                   # de quarentena: escambo, trabalhos e serviços fechados
 			lista.append_array(VidaComunidade.opcoes(_arvore, _ctx, id == _abertura or id == "_v_barrado"))
 		lista.append_array(Portaria.opcoes(_arvore, _ctx, npc, id == _abertura))
+		lista.append_array(NoiteDoAtaque.opcoes(_arvore, _ctx, id == _abertura))
 	if no.has("_ouvir"):
 		var av := Rumores.ouvir(no["_ouvir"])
 		if av != "":

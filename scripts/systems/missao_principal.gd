@@ -19,6 +19,8 @@ const OBJETIVOS := {
 	3: "Falar com o Dr. Heitor, o médico (de dia, na enfermaria).",
 	4: "Veja com seus olhos: encontrar o ninho de morcegos de que o Dr. Heitor falou.",
 	5: "Voltar para dentro do muro da Vila antes de escurecer.",
+	6: "A noite do ataque: defender a Vila dos Pescadores até o amanhecer.",
+	7: "A mordida: buscar a cura com o Dr. Heitor, ou ceder.",
 }
 const ACHA_NINHO := 12.0 * IsoMath.METRO       ## chegar a esta distância de um ninho conta como "ver com seus olhos"
 
@@ -188,16 +190,56 @@ static func efeito(acao: String, ctx: Dictionary) -> PackedStringArray:
 	return msgs
 
 
-## A cada segundo (DiarioUI): passos que se cumprem andando pelo mundo.
+## A cada segundo (DiarioUI): passos que se cumprem andando pelo mundo ou pelo estado do personagem.
 static func vigiar(j: Node) -> void:
-	if passo != 4 or j == null or bool(j.morto):
+	if j == null:
 		return
-	var pj := IsoMath.tela_para_mundo(j.global_position)
-	for p in MundoGen.ninhos():
-		if p.distance_to(pj) <= ACHA_NINHO:
-			_avancar(5)
-			j.aviso("O cheiro de morcego e coisa podre. É aqui que eles dormem. Objetivo: %s" % objetivo())
-			return
+	match passo:
+		4:
+			if bool(j.morto):
+				return
+			var pj := IsoMath.tela_para_mundo(j.global_position)
+			for p in MundoGen.ninhos():
+				if p.distance_to(pj) <= ACHA_NINHO:
+					_avancar(5)
+					NoiteDoAtaque.agendar()            # os da noite vêm hoje à noite
+					j.aviso("O cheiro de morcego e coisa podre. É aqui que eles dormem. Objetivo: %s" % objetivo())
+					return
+		5:
+			NoiteDoAtaque.agendar()                    # save do meio do passo: garante a noite marcada
+		6:
+			if not NoiteDoAtaque.ativo:                # carregou um save do meio do ataque: a noite acabou
+				fim_do_ataque(j)
+		7:
+			if not Infeccao.ativa(j):
+				encerrar()
+				j.aviso("A mordida ficou para trás." if str(j.raca) == "human" else "Você cedeu. A Vila não é mais o seu lugar.")
+
+
+## A noite do ataque começou (NoiteDoAtaque).
+static func inicio_do_ataque() -> void:
+	if passo >= 4 and passo < 6:
+		_avancar(6)
+
+
+## Amanheceu, ou caiu o último invasor: o desfecho do ato 1.
+static func fim_do_ataque(j: Node) -> void:
+	if passo != 6:
+		return
+	if j != null and not bool(j.morto):
+		Diario.marcar(j, "noite_ataque")
+	if j != null and Infeccao.ativa(j):
+		_avancar(7)
+		j.aviso("A noite acabou, mas a marca no seu pescoço não. Objetivo: %s" % objetivo())
+		return
+	encerrar()
+	if j != null:
+		j.aviso("O dia nasce sobre o portão arrombado. Dona Iracema: \"Eles voltam. Prepare-se.\"")
+
+
+static func encerrar() -> void:
+	passo = ENCERRADA
+	DiarioPartida.evento("missao", "Ato 1 concluído.")
 
 
 static func dados_para_salvar() -> Dictionary:
