@@ -2,27 +2,41 @@ class_name NoiteDoAtaque
 extends RefCounted
 ## "A noite do ataque" (marco 3, etapa 3.7c; docs/DECISOES_DESIGN.md, ato 1): evento do mundo no fim do ato 1.
 ## Na noite do dia em que alguém viu o ninho (MissaoPrincipal passo 5), às 22h, os da noite ARROMBAM o portão da Vila
-## dos Pescadores: 3 vampiros (+1 por jogador a mais) entram e caçam quem estiver acordado. Os guardas e os mais fortes
-## lutam; os outros se trancam em casa. Moradores saem feridos, não mortos (marco 3). Acaba quando todos os vampiros
-## caem ou ao amanhecer (os que sobrarem fogem). O portão fica arrombado (aberto) até alguém consertar.
+## dos Pescadores: 6 vampiros por portão, mais 3 por jogador (cada um destes num portão sorteado), entram e caçam quem
+## estiver acordado. Quem tem "arma" no arquivo da comunidade luta (na Vila: Toné, Neide e Jajá com arma de fogo, Seu
+## Valdir com facão, Dona Iracema com katana, o Dr. Heitor no braço); os outros se trancam em casa. Moradores saem
+## feridos, não mortos (marco 3), enquanto houver invasor na Vila. Acaba quando todos os vampiros caem ou às 6h (os
+## que sobrarem fogem, sem atacar). O portão fica arrombado (aberto) até alguém consertar.
 
 const COM := MissaoPrincipal.COM
 const HORA := 22.0
-const N_BASE := 3
-const N_POR_JOGADOR := 1
+const POR_PORTAO := 6
+const POR_JOGADOR := 3
 const PERTO_M := 160.0                       ## jogador a esta distância da Vila: o ataque acontece de verdade, com ele
 const VIDA_MIN_MORADOR := 8.0                ## no ataque, ninguém da Vila morre: cai ferido
 const CONSERTO_MADEIRA := 4
 const CONSERTO_SOZINHO_H := 24.0             ## sem ajuda, a Vila conserta o portão sozinha depois disso
-const LUTA_M := 14.0                         ## o lutador parte para cima do vampiro a esta distância
-const GOLPE := 9.0
-const TIRO := 14.0
+const LUTA_M := 45.0                         ## o lutador caça o vampiro mais perto dentro desta distância (a Vila toda)
+## Armas dos moradores que lutam: tiro (dano, recarga s, alcance m) ou golpe (dano, recarga s). Arma de fogo de
+## perto vira coronhada.
+const ARMAS := {
+	"espingarda": {"nome": "espingarda", "tiro": 18.0, "recarga": 2.6, "alcance": 9.0},
+	"pistola": {"nome": "pistola", "tiro": 12.0, "recarga": 1.8, "alcance": 10.0},
+	"facao": {"nome": "facão", "golpe": 13.0, "recarga": 1.1},
+	"katana": {"nome": "katana", "golpe": 18.0, "recarga": 1.0},
+	"maos": {"nome": "as mãos", "golpe": 6.0, "recarga": 1.4},
+}
+const CORONHADA := 6.0
+const VIDA_LUTADOR := 100.0                  ## no ataque, quem luta aguenta mais (a vida normal de um morador é 40)
+const VIDA_NORMAL := 40.0
 
 static var marcado_h := -1.0                 ## hora (absoluta, de jogo) em que o ataque começa; -1 = não marcado
 static var ativo := false
 static var aconteceu := false
 static var arrombado_ate := -1.0             ## hora de jogo em que a Vila termina o conserto sozinha; -1 = inteiro
+static var fim_h := -1.0                     ## 6h seguintes ao começo (hora absoluta): o ataque acaba
 static var _vampiros: Array = []             ## nós dos invasores (não vão no save)
+static var _todos: Array = []                ## invasores ainda no mundo, inclusive os que estão fugindo
 static var _feridos: Dictionary = {}         ## id do NPC -> true (quem caiu ferido nesta noite)
 
 
@@ -31,7 +45,9 @@ static func zerar() -> void:
 	ativo = false
 	aconteceu = false
 	arrombado_ate = -1.0
+	fim_h = -1.0
 	_vampiros = []
+	_todos = []
 	_feridos = {}
 
 
@@ -49,9 +65,24 @@ static func agendar() -> void:
 	marcado_h = dia * 24.0 + HORA if (h >= 6.0 and h < HORA) else agora + 0.5
 
 
-## Quantos vampiros entram: 3, mais 1 por jogador além do primeiro.
+## Quantos vampiros entram: 6 por portão, mais 3 por jogador.
 static func quantos(arv: SceneTree) -> int:
-	return N_BASE + N_POR_JOGADOR * maxi(0, arv.get_nodes_in_group("jogador").size() - 1)
+	var g := Comunidades.geo(COM)
+	var n_portoes: int = maxi(1, (g.get("portoes", []) as Array).size())
+	return POR_PORTAO * n_portoes + POR_JOGADOR * maxi(1, arv.get_nodes_in_group("jogador").size())
+
+
+## Portão de cada invasor: os 6 de cada portão, e os 3 por jogador num portão sorteado.
+static func portoes_dos_invasores(arv: SceneTree) -> Array:
+	var g := Comunidades.geo(COM)
+	var n_portoes: int = maxi(1, (g.get("portoes", []) as Array).size())
+	var out: Array = []
+	for k in n_portoes:
+		for i in POR_PORTAO:
+			out.append(k)
+	for i in quantos(arv) - out.size():
+		out.append(randi() % n_portoes)
+	return out
 
 
 static func _jogador_perto(arv: SceneTree) -> bool:
@@ -75,16 +106,22 @@ static func passo(arv: SceneTree) -> void:
 	if not ativo:
 		return
 	_vampiros = _vampiros.filter(func(v): return is_instance_valid(v) and not (v as Inimigo).morto)
-	var ciclo := arv.get_first_node_in_group("ciclo_dia_noite")
-	var amanheceu: bool = ciclo != null and float(ciclo.minutos) >= 360.0 and float(ciclo.minutos) < 18.0 * 60.0
-	if _vampiros.is_empty() or amanheceu:
+	if _vampiros.is_empty() or agora >= fim_h:
 		terminar(arv)
+
+
+## As 6h seguintes (hora absoluta de jogo) a partir de 'agora'.
+static func proximas_6h(agora: float) -> float:
+	var dia := floorf(agora / 24.0)
+	var seis := dia * 24.0 + 6.0
+	return seis if seis > agora else seis + 24.0
 
 
 static func comecar(arv: SceneTree) -> void:
 	ativo = true
 	aconteceu = true
-	arrombado_ate = Reputacao.agora_h() + CONSERTO_SOZINHO_H + 12.0
+	fim_h = proximas_6h(Reputacao.agora_h())
+	arrombado_ate = fim_h + CONSERTO_SOZINHO_H
 	_feridos = {}
 	MissaoPrincipal.inicio_do_ataque()
 	var j := arv.get_first_node_in_group("jogador")
@@ -98,20 +135,23 @@ static func comecar(arv: SceneTree) -> void:
 	var cena: PackedScene = load("res://scenes/enemies/inimigo.tscn")
 	var pai: Node = j.get_parent() if j != null else arv.current_scene
 	var centro: Vector2 = g["centro"]
-	for i in quantos(arv):
-		var pt: Dictionary = portoes[i % portoes.size()]
+	for k in portoes_dos_invasores(arv):
+		var pt: Dictionary = portoes[int(k)]
 		var v := cena.instantiate() as Inimigo
 		v.raca = "vampire"
 		v.dorme = false
 		v.invasao = centro
 		pai.add_child(v)
 		var fora: Vector2 = pt["fora"]
-		v.global_position = IsoMath.mundo_para_tela(fora + Vector2(randf_range(-60, 60), randf_range(-60, 60)))
+		v.global_position = IsoMath.mundo_para_tela(fora + Vector2(randf_range(-90, 90), randf_range(-90, 90)))
 		_vampiros.append(v)
+		_todos.append(v)
 	for n in arv.get_nodes_in_group("npc"):
 		var np := n as Npc
-		if np != null and np.comunidade == COM and lutador(np) and np.dormindo and not np.morto:
-			np._dormir(false)                     # o estrondo acorda quem pega em arma
+		if np != null and np.comunidade == COM and lutador(np) and not np.morto:
+			np.vida = maxf(np.vida, VIDA_LUTADOR)  # quem pega em arma aguenta mais nesta noite
+			if np.dormindo:
+				np._dormir(false)                 # o estrondo acorda quem pega em arma
 	Simulacao.alertar(COM, "Os da noite arrombaram o portão!")
 	if j != null:
 		j.aviso("Um estrondo no portão! Os da noite arrombaram o portão da Vila!")
@@ -125,6 +165,10 @@ static func terminar(arv: SceneTree) -> void:
 			(v as Inimigo).fugir_da_vila()
 			fugiram += 1
 	_vampiros = []
+	for n in arv.get_nodes_in_group("npc"):
+		var np := n as Npc
+		if np != null and np.comunidade == COM and not np.morto:
+			np.vida = minf(np.vida, VIDA_NORMAL)
 	var nomes: PackedStringArray = []
 	for id in _feridos:
 		nomes.append(Simulacao._nome_npc(COM, str(id)))
@@ -141,15 +185,30 @@ static func na_vila(com: String) -> bool:
 	return ativo and com == COM
 
 
-## Este morador pega em arma no ataque? (os guardas e os mais fortes, como na Vigilancia)
+## Ainda há invasor no mundo (atacando ou fugindo)? Enquanto houver, ninguém da Vila morre por monstro.
+static func protegida(com: String) -> bool:
+	if com != COM:
+		return false
+	_todos = _todos.filter(func(v): return is_instance_valid(v) and not (v as Inimigo).morto)
+	return ativo or not _todos.is_empty()
+
+
+## Este morador pega em arma no ataque? Quem tem "arma" no arquivo da comunidade (senão, os guardas).
 static func lutador(np: Npc) -> bool:
-	var papel := str(np.dados.get("papel", ""))
-	return papel.begins_with("guarda") or papel in Vigilancia.FORTES
+	if np.dados.has("arma"):
+		return true
+	return str(np.dados.get("papel", "")).begins_with("guarda")
+
+
+## A arma do morador (ARMAS); sem "arma" no arquivo, o guarda usa pistola e os outros as mãos.
+static func arma(np: Npc) -> Dictionary:
+	var id := str(np.dados.get("arma", "pistola" if str(np.dados.get("papel", "")).begins_with("guarda") else "maos"))
+	return ARMAS.get(id, ARMAS["maos"])
 
 
 ## Dano de monstro num morador da Vila durante o ataque: ele cai ferido, não morre.
 static func segurar_dano(np: Npc, n: float) -> float:
-	if not na_vila(np.comunidade):
+	if not protegida(np.comunidade):
 		return n
 	if np.vida - n < VIDA_MIN_MORADOR:
 		var id := str(np.dados.get("id", ""))
@@ -213,7 +272,7 @@ static func consertar(com: String) -> String:
 
 
 static func dados_para_salvar() -> Dictionary:
-	return {"marcado_h": marcado_h, "aconteceu": aconteceu, "arrombado_ate": arrombado_ate}
+	return {"marcado_h": marcado_h, "aconteceu": aconteceu, "arrombado_ate": arrombado_ate, "fim_h": fim_h}
 
 
 ## No save não vão os invasores: carregar no meio do ataque encerra a noite (o portão continua arrombado).
@@ -222,3 +281,4 @@ static func restaurar(d: Dictionary) -> void:
 	marcado_h = float(d.get("marcado_h", -1.0))
 	aconteceu = bool(d.get("aconteceu", false))
 	arrombado_ate = float(d.get("arrombado_ate", -1.0))
+	fim_h = float(d.get("fim_h", -1.0))

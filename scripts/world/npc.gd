@@ -39,6 +39,7 @@ var suspeita := 0.0                              ## dormindo: 0 = sono pesado, 0
 var _na_cama := false
 var _cama_no: Node2D = null                      ## desenho da cama (para sumir junto quando o cômodo não está à vista)
 var _t_sono := 0.0
+var _ultimo_por_jogador := true                 ## o último dano veio do jogador? (morte por monstro não é assassinato)
 var _revide_t := 0.0                             ## s partindo para cima de quem tentou pegá-lo dormindo
 
 var _alvo := Vector2.INF                      ## mundo
@@ -87,6 +88,8 @@ func _mundo() -> Vector2:
 
 ## Fase atual do dia (DiaNoite.Fase) e a tarefa da rotina para ela. Ferido (Simulacao) fica em casa.
 func _tarefa_agora() -> String:
+	if NoiteDoAtaque.na_vila(comunidade) and NoiteDoAtaque.lutador(self) and vida >= 12.0:
+		return "portao"                          # noite do ataque: quem tem arma vai para os portões, não dorme
 	if not Simulacao.ferido(comunidade, str(dados.get("id", ""))).is_empty():
 		return "casa"
 	var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
@@ -403,7 +406,8 @@ func _atacar(delta: float, j: Node2D) -> void:
 		_animar(false)
 
 
-## Noite do ataque: o guarda ou um dos fortes parte para cima do vampiro (o guarda às vezes atira).
+## Noite do ataque: quem tem arma parte para cima do vampiro. Arma de fogo atira de longe (recarga) e, colada,
+## dá coronhada; facão, katana e as mãos batem de perto (NoiteDoAtaque.ARMAS).
 func _lutar(delta: float, v: Inimigo) -> void:
 	_t_golpe -= delta
 	_t_grito_n -= delta
@@ -411,10 +415,15 @@ func _lutar(delta: float, v: Inimigo) -> void:
 		_t_grito_n = 7.0
 		falar(["Pra cima deles!", "Segura o portão!", "Ninguém sai de casa!", "Aqui, desgraçado!"][randi() % 4], 2.0)
 	var d := IsoMath.tela_para_mundo(v.global_position - global_position).length()
-	var guarda := str(dados.get("papel", "")).begins_with("guarda")
-	if guarda and d < 9.0 * M and d > 2.0 * M and randf() < 0.012:
-		v.receber_dano(NoiteDoAtaque.TIRO, false)
-		falar("*BANG*", 0.8)
+	var a := NoiteDoAtaque.arma(self)
+	if a.has("tiro") and d > 1.5 * M and d < float(a["alcance"]) * M:
+		velocity = Vector2.ZERO
+		_olhar = IsoMath.tela_para_mundo(v.global_position - global_position).normalized()
+		_animar(false)
+		if _t_golpe <= 0.0:
+			_t_golpe = float(a["recarga"])
+			v.receber_dano(float(a["tiro"]), false)
+			falar("*BANG*", 0.8)
 		return
 	if d > 1.0 * M:
 		var dir := IsoMath.tela_para_mundo(v.global_position - global_position).normalized()
@@ -424,9 +433,9 @@ func _lutar(delta: float, v: Inimigo) -> void:
 		_olhar = dir
 		_animar(true)
 	elif _t_golpe <= 0.0:
-		_t_golpe = 1.2
+		_t_golpe = float(a["recarga"])
 		velocity = Vector2.ZERO
-		v.receber_dano(NoiteDoAtaque.GOLPE, false)
+		v.receber_dano(float(a.get("golpe", NoiteDoAtaque.CORONHADA)), false)
 		_olhar = IsoMath.tela_para_mundo(v.global_position - global_position).normalized()
 		_animar(false)
 
@@ -463,6 +472,7 @@ func receber_dano(n: float, por_jogador: bool = true) -> void:
 		return
 	if not por_jogador:
 		n = NoiteDoAtaque.segurar_dano(self, n)    # na noite do ataque, quem é da Vila cai ferido, não morre
+	_ultimo_por_jogador = por_jogador
 	vida -= n
 	_sprite.modulate = Color(1.0, 0.4, 0.4)
 	create_tween().tween_property(_sprite, "modulate", Color.WHITE, 0.25)
@@ -494,9 +504,10 @@ func _morrer() -> void:
 	var com_nome := not id.begins_with("figurante") and comunidade != ""
 	if com_nome:
 		Reputacao.npc_morreu(comunidade, id)
-	Reputacao.registrar("assassinato", _mundo(), null, id if com_nome else "")
+	if _ultimo_por_jogador:
+		Reputacao.registrar("assassinato", _mundo(), null, id if com_nome else "")
 	if com_nome:
-		Consequencias.morte(comunidade, id, "jogador")
+		Consequencias.morte(comunidade, id, "jogador" if _ultimo_por_jogador else "monstro")
 	var j := get_tree().get_first_node_in_group("jogador")
 	if j != null:
 		j.aviso("%s está %s." % [nome(), "morta" if str(dados.get("genero", "m")) == "f" else "morto"])

@@ -105,7 +105,11 @@ func _physics_process(delta: float) -> void:
 	# acordado, também enxerga: só no mesmo ambiente (mesmo prédio, ou os dois na rua), conforme luz, neblina,
 	# postura e lanterna do jogador
 	var ve: bool = jog.vida > 0.0 and eb == pb and d < float(jog.alcance_ser_visto())
-	if not dorme or alerta > 0.0:
+	if _fuga_p != Vector2.INF:
+		ouve = 0.0                                   # fugindo da Vila ao amanhecer: não caça ninguém
+		ve = false
+		alerta = 0.0
+	elif not dorme or alerta > 0.0:
 		var h := _humano_perto(em, eb, d if (d < ouve or ve) else INF)
 		if h != null:
 			j = h                                # a presa agora é um humano: errante ou morador
@@ -132,7 +136,7 @@ func _physics_process(delta: float) -> void:
 	if d < ouve or ve:
 		alerta = 4.0
 
-	if raca == "vampire" and _mordida(delta, j, jog, d, eb == pb):
+	if raca == "vampire" and _fuga_p == Vector2.INF and _mordida(delta, j, jog, d, eb == pb):
 		return
 	var vel := 62.0 if raca == "rat" else 46.0
 	var noite := _noite()
@@ -215,7 +219,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = Vector2.ZERO
 
-	if d < 24.0 and ataque_t <= 0.0 and eb == pb:
+	if d < 24.0 and ataque_t <= 0.0 and eb == pb and _fuga_p == Vector2.INF:
 		ataque_t = 1.3
 		golpe_t = 0.25
 		if j == jog:

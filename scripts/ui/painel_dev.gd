@@ -131,8 +131,11 @@ func _ready() -> void:
 		if MissaoPrincipal.passo < 5 or MissaoPrincipal.passo > 6:
 			MissaoPrincipal.passo = 5
 		NoiteDoAtaque.zerar()
+		var ciclo := get_tree().get_first_node_in_group("ciclo_dia_noite")
+		if ciclo != null:
+			ciclo.minutos = 22.0 * 60.0                # o ataque é de noite: o relógio vai para as 22h
 		NoiteDoAtaque.marcado_h = Reputacao.agora_h()
-		_aviso("Ataque na Vila em instantes (perto dela: %d vampiros)." % NoiteDoAtaque.quantos(get_tree()))))
+		_aviso("22h: ataque na Vila em instantes (perto dela: %d vampiros)." % NoiteDoAtaque.quantos(get_tree()))))
 	lj.add_child(_botao("Próximo estágio", func():
 		var j := _j()
 		if not Infeccao.ativa(j):

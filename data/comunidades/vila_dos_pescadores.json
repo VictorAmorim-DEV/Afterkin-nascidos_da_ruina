@@ -56,6 +56,7 @@
 	"npcs": [
 		{
 			"id": "lider",
+			"arma": "katana",
 			"nome": "Dona Iracema",
 			"titulo": "líder",
 			"genero": "f",
@@ -79,6 +80,7 @@
 		},
 		{
 			"id": "guarda_dia",
+			"arma": "espingarda",
 			"nome": "Toné",
 			"nome_completo": "Antonio Ferraz",
 			"titulo": "guarda do dia",
@@ -103,6 +105,7 @@
 		},
 		{
 			"id": "guarda_noite",
+			"arma": "pistola",
 			"nome": "Neide",
 			"nome_completo": "Claudineide",
 			"titulo": "guarda da noite",
@@ -127,6 +130,7 @@
 		},
 		{
 			"id": "comerciante",
+			"arma": "facao",
 			"nome": "Seu Valdir",
 			"titulo": "comerciante",
 			"genero": "m",
@@ -172,6 +176,7 @@
 		},
 		{
 			"id": "medico",
+			"arma": "maos",
 			"nome": "Dr. Heitor",
 			"titulo": "médico",
 			"genero": "m",
@@ -218,6 +223,7 @@
 		},
 		{
 			"id": "pescador",
+			"arma": "pistola",
 			"nome": "Jajá",
 			"nome_completo": "Jaílson",
 			"titulo": "pescador",
